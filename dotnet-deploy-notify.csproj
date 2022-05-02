@@ -8,7 +8,7 @@
     <RootNamespace>DotNetDeployNotify</RootNamespace>
     <AssemblyName>DotNetDeployNotify</AssemblyName>
     <PackageId>Zaiets.dotnet.deploy.notify</PackageId>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
     <Authors>Vladyslav Zaiets</Authors>
     <Description>Deployment notification pipeline for .NET - build status to Telegram/Slack/Discord webhooks</Description>
     <PackageTags>dotnet deployment notify webhooks telegram slack discord</PackageTags>
