@@ -23,6 +23,31 @@ services:
     networks:
       - deploy-notify-network
 
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+    networks:
+      - deploy-notify-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_DB: deploy-notify
+      POSTGRES_USER: deployuser
+      POSTGRES_PASSWORD: deploypassword
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+    networks:
+      - deploy-notify-network
+
+volumes:
+  postgres_data:
+
 networks:
   deploy-notify-network:
     driver: bridge
