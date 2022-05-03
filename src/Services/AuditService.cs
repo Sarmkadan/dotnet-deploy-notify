@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -151,13 +152,13 @@ public class AuditService : IAuditService
             Metadata = new Dictionary<string, object>()
         };
 
-        if (beforeState != null)
+        if (beforeState is not null)
         {
             entry.Metadata["BeforeChannel"] = beforeState.ChannelType.ToString();
             entry.Metadata["BeforeEnabled"] = beforeState.IsEnabled;
         }
 
-        if (afterState != null)
+        if (afterState is not null)
         {
             entry.Metadata["AfterChannel"] = afterState.ChannelType.ToString();
             entry.Metadata["AfterEnabled"] = afterState.IsEnabled;

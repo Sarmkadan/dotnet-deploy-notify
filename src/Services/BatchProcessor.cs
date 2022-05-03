@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -38,7 +39,7 @@ public class NotificationBatchProcessor : IBatchProcessor<DeploymentNotification
         List<DeploymentNotification> items,
         int batchSize = 10)
     {
-        if (items == null || items.Count == 0)
+        if (items is null || items.Count == 0)
             return new List<DeploymentNotification>();
 
         var processed = new List<DeploymentNotification>();

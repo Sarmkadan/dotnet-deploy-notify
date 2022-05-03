@@ -52,6 +52,13 @@ dotnet_style_readonly_field = true:suggestion
 # Organize using directives
 dotnet_sort_system_first = true
 dotnet_separate_import_directive_groups = false
+csharp_using_directives_placement = inside_namespace:suggestion
+
+# Prefer file-scoped namespaces
+csharp_style_namespace_declarations = file_scoped:suggestion
+
+# Prefer compound assignment
+csharp_style_prefer_compound_assignment = true:suggestion
 
 # File header
 file_header_template = Copyright (c) 2026 Red Rocket Software. All rights reserved.

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -50,7 +51,7 @@ public class RetryHelper
             catch (Exception ex)
             {
                 if (attempt == policy.MaxAttempts ||
-                    (policy.ShouldRetry != null && !policy.ShouldRetry(ex)))
+                    (policy.ShouldRetry is not null && !policy.ShouldRetry(ex)))
                 {
                     _logger.LogError(ex, "Operation failed after {Attempt} attempts", attempt);
                     throw;
@@ -85,7 +86,7 @@ public class RetryHelper
             catch (Exception ex)
             {
                 if (attempt == policy.MaxAttempts ||
-                    (policy.ShouldRetry != null && !policy.ShouldRetry(ex)))
+                    (policy.ShouldRetry is not null && !policy.ShouldRetry(ex)))
                 {
                     throw;
                 }

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -10,7 +11,7 @@ namespace DotNetDeployNotify.Configuration;
 /// <summary>
 /// Fluent builder for channel configurations
 /// </summary>
-public class ChannelConfigurationBuilder
+public sealed class ChannelConfigurationBuilder
 {
     private readonly ChannelConfiguration _config;
 
@@ -127,7 +128,7 @@ public class ChannelConfigurationBuilder
 /// <summary>
 /// Configuration for the notification system
 /// </summary>
-public class NotificationSystemConfiguration
+public sealed class NotificationSystemConfiguration
 {
     public List<ChannelConfiguration> Channels { get; set; } = new();
     public int BatchSize { get; set; } = 10;
@@ -165,7 +166,7 @@ public class NotificationSystemConfiguration
 /// <summary>
 /// Builder for notification system configuration
 /// </summary>
-public class NotificationSystemConfigurationBuilder
+public sealed class NotificationSystemConfigurationBuilder
 {
     private readonly NotificationSystemConfiguration _config = new();
     private readonly List<ChannelConfiguration> _channels = new();
