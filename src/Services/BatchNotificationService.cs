@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -135,7 +136,7 @@ public class BatchNotificationService : IBatchNotificationService
         lock (_lockObject)
         {
             var batch = _batches.FirstOrDefault(b => b.Id == batchId);
-            if (batch == null)
+            if (batch is null)
             {
                 throw new ArgumentException("Batch not found", nameof(batchId));
             }
@@ -158,7 +159,7 @@ public class BatchNotificationService : IBatchNotificationService
         lock (_lockObject)
         {
             var batch = _batches.FirstOrDefault(b => b.Id == batchId);
-            if (batch == null)
+            if (batch is null)
             {
                 throw new ArgumentException("Batch not found", nameof(batchId));
             }
@@ -187,7 +188,7 @@ public class BatchNotificationService : IBatchNotificationService
             batch = _batches.FirstOrDefault(b => b.Id == batchId);
         }
 
-        if (batch == null)
+        if (batch is null)
         {
             throw new ArgumentException("Batch not found", nameof(batchId));
         }
@@ -257,7 +258,7 @@ public class BatchNotificationService : IBatchNotificationService
         lock (_lockObject)
         {
             var batch = _batches.FirstOrDefault(b => b.Id == batchId);
-            if (batch == null)
+            if (batch is null)
             {
                 throw new ArgumentException("Batch not found", nameof(batchId));
             }
@@ -282,7 +283,7 @@ public class BatchNotificationService : IBatchNotificationService
         lock (_lockObject)
         {
             var batch = _batches.FirstOrDefault(b => b.Id == batchId);
-            if (batch == null)
+            if (batch is null)
             {
                 throw new ArgumentException("Batch not found", nameof(batchId));
             }

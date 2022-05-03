@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -71,7 +72,7 @@ public interface IEventBus
 /// <summary>
 /// In-memory event bus implementation
 /// </summary>
-public class InMemoryEventBus : IEventBus
+public sealed class InMemoryEventBus : IEventBus
 {
     private readonly Dictionary<Type, List<object>> _handlers = new();
     private readonly ILogger<InMemoryEventBus> _logger;
@@ -146,7 +147,7 @@ public class InMemoryEventBus : IEventBus
 /// <summary>
 /// Example event handler that logs notification creation
 /// </summary>
-public class NotificationCreatedEventHandler : IEventHandler<NotificationCreatedEvent>
+public sealed class NotificationCreatedEventHandler : IEventHandler<NotificationCreatedEvent>
 {
     private readonly ILogger<NotificationCreatedEventHandler> _logger;
 
@@ -168,7 +169,7 @@ public class NotificationCreatedEventHandler : IEventHandler<NotificationCreated
 /// <summary>
 /// Example event handler that tracks delivery failures
 /// </summary>
-public class ChannelDeliveryFailedEventHandler : IEventHandler<ChannelDeliveryFailedEvent>
+public sealed class ChannelDeliveryFailedEventHandler : IEventHandler<ChannelDeliveryFailedEvent>
 {
     private readonly ILogger<ChannelDeliveryFailedEventHandler> _logger;
 
@@ -200,7 +201,7 @@ public interface INotificationObserver
 /// <summary>
 /// Subject class for managing observers
 /// </summary>
-public class NotificationObservable
+public sealed class NotificationObservable
 {
     private readonly List<INotificationObserver> _observers = new();
     private readonly ILogger<NotificationObservable> _logger;

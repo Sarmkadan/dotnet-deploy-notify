@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -67,7 +68,7 @@ public class ValidationService : IValidationService
     {
         var errors = new List<string>();
 
-        if (notification == null)
+        if (notification is null)
         {
             errors.Add("Notification cannot be null");
             return ValidationResult.Failure(errors.ToArray());
@@ -106,7 +107,7 @@ public class ValidationService : IValidationService
     {
         var errors = new List<string>();
 
-        if (config == null)
+        if (config is null)
         {
             errors.Add("Channel configuration cannot be null");
             return ValidationResult.Failure(errors.ToArray());
@@ -127,7 +128,7 @@ public class ValidationService : IValidationService
         if (config.MaxRetries < 0)
             errors.Add("Max retries cannot be negative");
 
-        if (config.CustomHeaders == null)
+        if (config.CustomHeaders is null)
             errors.Add("Custom headers cannot be null");
 
         return errors.Any()
@@ -142,7 +143,7 @@ public class ValidationService : IValidationService
     {
         var errors = new List<string>();
 
-        if (payload == null)
+        if (payload is null)
         {
             errors.Add("Webhook payload cannot be null");
             return ValidationResult.Failure(errors.ToArray());
@@ -154,7 +155,7 @@ public class ValidationService : IValidationService
         if (string.IsNullOrWhiteSpace(payload.EventType))
             errors.Add("Event type is required");
 
-        if (payload.Data == null)
+        if (payload.Data is null)
             errors.Add("Payload data is required");
         else
         {

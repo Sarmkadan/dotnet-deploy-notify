@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Threading.Tasks;
 using dotnet_deploy_notify;

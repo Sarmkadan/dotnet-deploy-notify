@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace DotNetDeployNotify.Core.Models;
 /// <summary>
 /// Represents the payload structure sent to webhooks
 /// </summary>
-public class WebhookPayload
+public sealed class WebhookPayload
 {
     /// <summary>Unique event identifier</summary>
     public string EventId { get; set; } = Guid.NewGuid().ToString();
@@ -38,7 +39,7 @@ public class WebhookPayload
     {
         return !string.IsNullOrWhiteSpace(EventId) &&
                !string.IsNullOrWhiteSpace(EventType) &&
-               Data != null &&
+               Data is not null &&
                Data.IsValid();
     }
 
@@ -55,7 +56,7 @@ public class WebhookPayload
 /// <summary>
 /// Core deployment data within a webhook payload
 /// </summary>
-public class WebhookData
+public sealed class WebhookData
 {
     /// <summary>Project name</summary>
     public string ProjectName { get; set; } = string.Empty;
