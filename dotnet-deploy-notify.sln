@@ -5,6 +5,8 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-deploy-notify", "dotnet-deploy-notify.csproj", "{2CF01CD3-D7C7-4A5E-B6B8-064FC165E2DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "dotnet-deploy-notify.Tests", "tests\dotnet-deploy-notify.Tests\dotnet-deploy-notify.Tests.csproj", "{C5D6E7F8-A9B0-1234-DEFA-345678901234}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{2CF01CD3-D7C7-4A5E-B6B8-064FC165E2DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2CF01CD3-D7C7-4A5E-B6B8-064FC165E2DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2CF01CD3-D7C7-4A5E-B6B8-064FC165E2DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C5D6E7F8-A9B0-1234-DEFA-345678901234}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C5D6E7F8-A9B0-1234-DEFA-345678901234}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C5D6E7F8-A9B0-1234-DEFA-345678901234}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C5D6E7F8-A9B0-1234-DEFA-345678901234}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
