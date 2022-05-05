@@ -76,7 +76,9 @@ logs/
 
 # Configuration with sensitive data
 appsettings.production.json
+appsettings.Development.json
 appsettings.local.json
 *.key
 *.pem
 *.pfx
+*.DotSettings.user

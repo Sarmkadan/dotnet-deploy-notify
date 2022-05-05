@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
@@ -10,8 +10,9 @@
     <Version>1.0.0</Version>
     <Authors>Vladyslav Zaiets</Authors>
     <Description>Deployment notification pipeline for .NET - build status to Telegram/Slack/Discord webhooks</Description>
-    <PackageProjectUrl>https://github.com/vladyslav-zaiets/dotnet-deploy-notify</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/vladyslav-zaiets/dotnet-deploy-notify</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/sarmkadan/dotnet-deploy-notify</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/sarmkadan/dotnet-deploy-notify</RepositoryUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 

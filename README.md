@@ -4,34 +4,34 @@ A comprehensive deployment notification pipeline for .NET applications. Send bui
 
 ## Features
 
-✨ **Multi-Channel Support**
+**Multi-Channel Support**
 - Telegram messaging
 - Slack webhooks
 - Discord webhooks
 - Generic HTTP webhooks
 - Email notifications (extensible)
 
-🔄 **Robust Delivery**
+**Robust Delivery**
 - Automatic retry with exponential backoff
 - Configurable timeouts and retry policies
 - Dead-letter handling for failed deliveries
 - Request/response logging for debugging
 
-📊 **Monitoring & Metrics**
+**Monitoring & Metrics**
 - Real-time health checks
 - Delivery metrics and analytics
 - Channel-specific performance tracking
 - Request/response history logging
 - Audit logging of all operations
 
-🔧 **Flexible Configuration**
+**Flexible Configuration**
 - Channel filtering by environment and build status
 - Priority-based routing
 - Per-channel customization
 - Template rendering for custom messages
 - Settings validation with suggestions
 
-📦 **Batch Processing**
+**Batch Processing**
 - Group multiple notifications
 - Scheduled batch delivery
 - Batch progress tracking
