@@ -177,7 +177,7 @@ public static class StringExtensions
         if (currentLine.Length > 0)
             lines.Add(currentLine.ToString().TrimEnd());
 
-        return string.Join(Environment.NewLine, lines);
+        return string.Join(System.Environment.NewLine, lines);
     }
 
     /// <summary>

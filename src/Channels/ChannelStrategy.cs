@@ -199,7 +199,7 @@ public class ChannelAdapter
 
         try
         {
-            var payloadBuilder = _payloadBuilderFactory.CreateBuilder(config.ChannelType);
+            var payloadBuilder = WebhookPayloadBuilderFactory.CreateBuilder(config.ChannelType);
             var payload = payloadBuilder.BuildPayload(notification);
 
             _logger.LogDebug("Sending notification via {Channel}", config.ChannelType);

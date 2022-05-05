@@ -154,8 +154,7 @@ public class RequestLogger : IRequestLogger
             {
                 WebhookUrl = webhookUrl,
                 Method = "POST",
-                ErrorMessage = errorMessage,
-                IsSuccessful = false
+                ErrorMessage = errorMessage
             };
 
             _logs.Add(entry);

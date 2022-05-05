@@ -38,6 +38,9 @@ public interface INotificationRepository
 
     /// <summary>Retrieves notifications by status</summary>
     Task<List<DeploymentNotification>> GetByStatusAsync(BuildStatus status, int limit);
+
+    /// <summary>Retrieves all notifications</summary>
+    Task<List<DeploymentNotification>> GetAllAsync();
 }
 
 /// <summary>
@@ -206,6 +209,14 @@ public class NotificationRepository : INotificationRepository
                 .Take(limit)
                 .ToList();
             return Task.FromResult(results);
+        }
+    }
+
+    public Task<List<DeploymentNotification>> GetAllAsync()
+    {
+        lock (_lockObject)
+        {
+            return Task.FromResult(_notifications.OrderByDescending(n => n.CreatedAt).ToList());
         }
     }
 }

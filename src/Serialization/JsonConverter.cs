@@ -18,7 +18,7 @@ public class BuildStatusConverter : JsonConverter<BuildStatus>
     {
         var stringValue = reader.GetString();
         if (string.IsNullOrEmpty(stringValue))
-            return BuildStatus.Pending;
+            return BuildStatus.Started;
 
         return Enum.Parse<BuildStatus>(stringValue, ignoreCase: true);
     }

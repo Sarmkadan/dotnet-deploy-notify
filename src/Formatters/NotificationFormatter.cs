@@ -78,14 +78,14 @@ public class TextNotificationFormatter : INotificationFormatter
 
         // Add wrapped message
         var messageLines = WrapText(notification.Message, 62);
-        foreach (var line in messageLines.Split(Environment.NewLine))
+        foreach (var line in messageLines.Split(System.Environment.NewLine))
         {
             lines.Add($"║ {PadRight(line, 62)} ║");
         }
 
         lines.Add("╚════════════════════════════════════════════════════════════════╝");
 
-        return string.Join(Environment.NewLine, lines);
+        return string.Join(System.Environment.NewLine, lines);
     }
 
     public string GetContentType() => "text/plain";
@@ -121,7 +121,7 @@ public class TextNotificationFormatter : INotificationFormatter
         if (currentLine.Length > 0)
             lines.Add(currentLine.ToString());
 
-        return string.Join(Environment.NewLine, lines);
+        return string.Join(System.Environment.NewLine, lines);
     }
 }
 
@@ -201,7 +201,7 @@ public class MarkdownNotificationFormatter : INotificationFormatter
             lines.Add($"[View Build]({notification.BuildUrl})");
         }
 
-        return string.Join(Environment.NewLine, lines);
+        return string.Join(System.Environment.NewLine, lines);
     }
 
     public string GetContentType() => "text/markdown";

@@ -59,7 +59,7 @@ internal class Program
         {
             Console.Error.WriteLine($"❌ Fatal error: {ex.Message}");
             Console.Error.WriteLine(ex.StackTrace);
-            Environment.Exit(1);
+            System.Environment.Exit(1);
         }
     }
 
