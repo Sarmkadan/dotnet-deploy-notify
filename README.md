@@ -254,7 +254,7 @@ Measured on a single core (Apple M3 / AMD Ryzen 7 5800X equivalent), .NET 10, Re
 
 Retry backoff is configurable; default policy adds negligible CPU overhead (<0.1% per in-flight retry).
 
-## Ecosystem
+## Related Projects
 
 Part of a collection of .NET libraries and tools. See more at [github.com/sarmkadan](https://github.com/sarmkadan).
 
@@ -310,4 +310,4 @@ See [LICENSE](LICENSE) for details.
 
 ---
 
-Built by [Vladyslav Zaiets](https://github.com/sarmkadan)
+Built by [Vladyslav Zaiets](https://sarmkadan.com)
