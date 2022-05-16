@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -57,7 +58,7 @@ public static class DependencyInjection
 /// <summary>
 /// Configuration settings for the notification system
 /// </summary>
-public class NotificationConfig
+public sealed class NotificationConfig
 {
     /// <summary>Section name in appsettings.json</summary>
     public const string SectionName = "NotificationService";

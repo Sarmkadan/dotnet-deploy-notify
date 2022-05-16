@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace DotNetDeployNotify.Core.Models;
 /// <summary>
 /// Represents a deployment notification event in the system
 /// </summary>
-public class DeploymentNotification
+public sealed class DeploymentNotification
 {
     /// <summary>Unique identifier for this notification</summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();

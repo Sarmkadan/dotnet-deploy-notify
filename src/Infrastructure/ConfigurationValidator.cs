@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -30,7 +31,7 @@ public interface IConfigurationValidator
 /// <summary>
 /// Implementation of configuration validator
 /// </summary>
-public class ConfigurationValidator : IConfigurationValidator
+public sealed class ConfigurationValidator : IConfigurationValidator
 {
     private readonly ILogger<ConfigurationValidator> _logger;
 
@@ -48,7 +49,7 @@ public class ConfigurationValidator : IConfigurationValidator
         var errors = new List<string>();
         var warnings = new List<string>();
 
-        if (config == null)
+        if (config is null)
         {
             errors.Add("Configuration is null");
             return (false, warnings, errors);
@@ -111,7 +112,7 @@ public class ConfigurationValidator : IConfigurationValidator
         var errors = new List<string>();
         var warnings = new List<string>();
 
-        if (config == null)
+        if (config is null)
         {
             errors.Add("Configuration is null");
             return (false, warnings, errors);

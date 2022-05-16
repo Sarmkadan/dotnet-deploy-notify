@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -111,7 +112,7 @@ public class JsonSerializationHelper
     /// </summary>
     public Dictionary<string, object?> ObjectToDictionary<T>(T obj)
     {
-        if (obj == null)
+        if (obj is null)
             return new Dictionary<string, object?>();
 
         var json = JsonSerializer.Serialize(obj, _options);

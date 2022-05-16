@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace DotNetDeployNotify.Core.Models;
 /// <summary>
 /// Represents the result of a notification delivery attempt
 /// </summary>
-public class NotificationResult
+public sealed class NotificationResult
 {
     /// <summary>Unique identifier for this result record</summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
