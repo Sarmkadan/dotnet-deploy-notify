@@ -3,6 +3,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+#nullable enable
+
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
 using DotNetDeployNotify.Infrastructure;
