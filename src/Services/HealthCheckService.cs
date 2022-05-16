@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -208,7 +209,7 @@ public class HealthCheckService : IHealthCheckService
     public async Task<ChannelHealthStatus> CheckChannelHealthAsync(string configurationId)
     {
         var config = await _configRepository.GetByIdAsync(configurationId);
-        if (config == null)
+        if (config is null)
         {
             return new ChannelHealthStatus
             {

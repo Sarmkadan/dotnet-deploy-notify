@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -122,7 +123,7 @@ public class TelegramChannelStrategy : BaseChannelStrategy
 /// <summary>
 /// Channel strategy resolver
 /// </summary>
-public class ChannelStrategyResolver
+public sealed class ChannelStrategyResolver
 {
     private readonly Dictionary<NotificationChannel, IChannelStrategy> _strategies = new();
     private readonly ILogger<ChannelStrategyResolver> _logger;
@@ -167,7 +168,7 @@ public class ChannelStrategyResolver
 /// <summary>
 /// Channel adapter for backward compatibility
 /// </summary>
-public class ChannelAdapter
+public sealed class ChannelAdapter
 {
     private readonly ChannelStrategyResolver _resolver;
     private readonly WebhookPayloadBuilderFactory _payloadBuilderFactory;
@@ -191,7 +192,7 @@ public class ChannelAdapter
         ChannelConfiguration config)
     {
         var strategy = _resolver.GetStrategy(config.ChannelType);
-        if (strategy == null)
+        if (strategy is null)
         {
             _logger.LogError("No strategy available for channel: {Channel}", config.ChannelType);
             return false;

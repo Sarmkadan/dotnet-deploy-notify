@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace DotNetDeployNotify.Caching;
 /// <summary>
 /// Cache entry with expiration support
 /// </summary>
-public class CacheEntry<T>
+public sealed class CacheEntry<T>
 {
     public T? Value { get; set; }
     public DateTime ExpiresAt { get; set; }
@@ -33,7 +34,7 @@ public interface ICacheService
 /// <summary>
 /// Cache statistics for monitoring
 /// </summary>
-public class CacheStatistics
+public sealed class CacheStatistics
 {
     public int TotalItems { get; set; }
     public long Hits { get; set; }
@@ -46,7 +47,7 @@ public class CacheStatistics
 /// <summary>
 /// Default in-memory cache implementation
 /// </summary>
-public class MemoryCacheService : ICacheService
+public sealed class MemoryCacheService : ICacheService
 {
     private readonly Dictionary<string, object> _cache = new();
     private readonly ILogger<MemoryCacheService> _logger;
@@ -71,7 +72,7 @@ public class MemoryCacheService : ICacheService
             if (_cache.TryGetValue(key, out var entry))
             {
                 var cacheEntry = entry as CacheEntry<T>;
-                if (cacheEntry != null)
+                if (cacheEntry is not null)
                 {
                     if (cacheEntry.IsExpired)
                     {
@@ -193,7 +194,7 @@ public interface IExpirableEntry
 /// <summary>
 /// Distributed cache decorator for adding caching to services
 /// </summary>
-public class CachedRepository<T> where T : class
+public sealed class CachedRepository<T> where T : class
 {
     private readonly ILogger _logger;
     private readonly ICacheService _cacheService;
@@ -216,7 +217,7 @@ public class CachedRepository<T> where T : class
     {
         // Try to get from cache first
         var cached = _cacheService.Get<List<T>>(cacheKey);
-        if (cached != null)
+        if (cached is not null)
         {
             _logger.LogDebug("Returning {Count} items from cache: {CacheKey}", cached.Count, cacheKey);
             return cached;
@@ -242,7 +243,7 @@ public class CachedRepository<T> where T : class
 /// <summary>
 /// Cache key builder for consistent cache key generation
 /// </summary>
-public class CacheKeyBuilder
+public sealed class CacheKeyBuilder
 {
     private readonly List<string> _parts = new();
     private const string Separator = ":";
@@ -256,7 +257,7 @@ public class CacheKeyBuilder
 
     public CacheKeyBuilder Add(object? value)
     {
-        if (value != null)
+        if (value is not null)
             _parts.Add(value.ToString()!);
         return this;
     }
@@ -275,7 +276,7 @@ public class CacheKeyBuilder
 
     public static string Build(params object[] parts)
     {
-        return string.Join(Separator, parts.Where(p => p != null).Select(p => p.ToString()));
+        return string.Join(Separator, parts.Where(p => p is not null).Select(p => p.ToString()));
     }
 
     public override string ToString() => Build();
