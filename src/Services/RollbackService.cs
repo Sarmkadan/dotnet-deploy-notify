@@ -99,16 +99,31 @@ public class RollbackService : IRollbackService
                 request.ProjectName,
                 request.TargetVersion,
                 notificationResults.Count);
+
+            // Hotfix: Dispatch a separate notification for successful rollback completion
+            var completedNotification = BuildRollbackCompletionNotification(request, priorDeployment, BuildStatus.DeploymentSuccess);
+            var completedNotificationId = await _notificationService.CreateNotificationAsync(completedNotification);
+            await _notificationService.SendNotificationAsync(completedNotificationId, request.Channels);
         }
         catch (OperationCanceledException)
         {
             result.MarkAsCancelled();
             _logger.LogWarning("Rollback for {Project} was cancelled", request.ProjectName);
+
+            // Hotfix: Dispatch a notification for rollback cancellation
+            var cancelledNotification = BuildRollbackCompletionNotification(request, priorDeployment, BuildStatus.DeploymentFailed, $"Rollback of {request.ProjectName} cancelled.");
+            var cancelledNotificationId = await _notificationService.CreateNotificationAsync(cancelledNotification);
+            await _notificationService.SendNotificationAsync(cancelledNotificationId, request.Channels);
         }
         catch (Exception ex)
         {
             result.MarkAsFailed(ex.Message);
             _logger.LogError(ex, "Rollback failed for {Project} v{To}", request.ProjectName, request.TargetVersion);
+
+            // Hotfix: Dispatch a notification for rollback failure
+            var failedNotification = BuildRollbackCompletionNotification(request, priorDeployment, BuildStatus.DeploymentFailed, $"Rollback of {request.ProjectName} failed: {ex.Message}");
+            var failedNotificationId = await _notificationService.CreateNotificationAsync(failedNotification);
+            await _notificationService.SendNotificationAsync(failedNotificationId, request.Channels);
             throw;
         }
 
@@ -191,6 +206,42 @@ public class RollbackService : IRollbackService
             Version = request.TargetVersion,
             Status = BuildStatus.Deploying,
             Message = message,
+            TargetEnvironment = request.TargetEnvironment,
+            BranchName = priorDeployment?.BranchName ?? string.Empty,
+            CommitHash = priorDeployment?.CommitHash ?? string.Empty,
+            CommitAuthor = request.RequestedBy,
+            RepositoryUrl = priorDeployment?.RepositoryUrl ?? string.Empty,
+            BuildUrl = priorDeployment?.BuildUrl ?? string.Empty,
+            Channels = request.Channels,
+            Priority = request.Priority,
+            Metadata = new Dictionary<string, object>(request.Metadata)
+            {
+                ["RollbackFromVersion"] = request.CurrentVersion,
+                ["RollbackReason"] = request.Reason,
+                ["RollbackRequestId"] = request.Id
+            }
+        };
+    }
+
+    // Hotfix: Creates a notification for rollback completion or failure
+    private static DeploymentNotification BuildRollbackCompletionNotification(
+        RollbackRequest request,
+        DeploymentNotification? priorDeployment,
+        BuildStatus status,
+        string? message = null)
+    {
+        var defaultMessage = status == BuildStatus.DeploymentSuccess
+            ? $"Rollback of {request.ProjectName} from v{request.CurrentVersion} to v{request.TargetVersion} completed successfully."
+            : $"Rollback of {request.ProjectName} from v{request.CurrentVersion} to v{request.TargetVersion} failed.";
+
+        var notificationMessage = string.IsNullOrWhiteSpace(message) ? defaultMessage : message;
+
+        return new DeploymentNotification
+        {
+            ProjectName = request.ProjectName,
+            Version = request.TargetVersion,
+            Status = status,
+            Message = notificationMessage,
             TargetEnvironment = request.TargetEnvironment,
             BranchName = priorDeployment?.BranchName ?? string.Empty,
             CommitHash = priorDeployment?.CommitHash ?? string.Empty,
