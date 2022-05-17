@@ -140,7 +140,7 @@ public class NotificationProcessor : INotificationProcessor
 
         try
         {
-            var results = await _notificationService.SendPendingNotificationsAsync();
+            var results = await _notificationService.SendPendingNotificationsAsync().ConfigureAwait(false);
 
             result.TotalProcessed = results.Count;
             result.SuccessCount = results.Count(r => r.IsSuccessful);
@@ -180,7 +180,7 @@ public class NotificationProcessor : INotificationProcessor
 
         try
         {
-            var allResults = await _resultRepository.GetAllAsync(0, 1000);
+            var allResults = await _resultRepository.GetAllAsync(0, 1000).ConfigureAwait(false);
             var failedResults = allResults.Where(r => r.Status == DeliveryStatus.Failed).ToList();
 
             foreach (var failedResult in failedResults)
@@ -252,7 +252,7 @@ public class NotificationProcessor : INotificationProcessor
             {
                 _logger.LogDebug("Processing {Priority} priority notifications", priority);
 
-                var batchResult = await ProcessBatchAsync(50);
+                var batchResult = await ProcessBatchAsync(50).ConfigureAwait(false);
                 result.TotalProcessed += batchResult.TotalProcessed;
                 result.SuccessCount += batchResult.SuccessCount;
                 result.FailureCount += batchResult.FailureCount;
@@ -283,8 +283,8 @@ public class NotificationProcessor : INotificationProcessor
     {
         try
         {
-            var allResults = await _resultRepository.GetAllAsync(0, 10000);
-            var configs = await _configRepository.GetEnabledAsync();
+            var allResults = await _resultRepository.GetAllAsync(0, 10000).ConfigureAwait(false);
+            var configs = await _configRepository.GetEnabledAsync().ConfigureAwait(false);
 
             var stats = new ProcessingStatistics
             {

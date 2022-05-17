@@ -111,7 +111,7 @@ public sealed class InMemoryEventBus : IEventBus
             .Cast<IEventHandler<TEvent>>()
             .Select(handler => PublishToHandlerAsync(handler, @event));
 
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     public void Unsubscribe<TEvent>(IEventHandler<TEvent> handler) where TEvent : DomainEvent
@@ -134,7 +134,7 @@ public sealed class InMemoryEventBus : IEventBus
             _logger.LogDebug("Executing handler {HandlerType} for event {EventType}",
                 handler.GetType().Name, @event.GetType().Name);
 
-            await handler.HandleAsync(@event);
+            await handler.HandleAsync(@event).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -226,18 +226,18 @@ public sealed class NotificationObservable
     public async Task NotifyNotificationCreatedAsync(string notificationId, string projectName)
     {
         var tasks = _observers.Select(o => o.OnNotificationCreatedAsync(notificationId, projectName));
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     public async Task NotifyNotificationDeliveredAsync(string notificationId, string channel)
     {
         var tasks = _observers.Select(o => o.OnNotificationDeliveredAsync(notificationId, channel));
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 
     public async Task NotifyDeliveryFailedAsync(string notificationId, string channel, string error)
     {
         var tasks = _observers.Select(o => o.OnDeliveryFailedAsync(notificationId, channel, error));
-        await Task.WhenAll(tasks);
+        await Task.WhenAll(tasks).ConfigureAwait(false);
     }
 }

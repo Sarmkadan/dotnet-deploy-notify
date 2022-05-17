@@ -158,7 +158,7 @@ public sealed class CanaryHealthEvaluator : ICanaryHealthEvaluator
         var stableTask = CollectMetricsAsync(deployment.StableVersion, deployment.TargetEnvironment, cancellationToken);
         var canaryTask = CollectMetricsAsync(deployment.CanaryVersion, deployment.TargetEnvironment, cancellationToken);
 
-        await Task.WhenAll(stableTask, canaryTask);
+        await Task.WhenAll(stableTask, canaryTask).ConfigureAwait(false);
 
         var stableMetrics = stableTask.Result;
         var canaryMetrics = canaryTask.Result;

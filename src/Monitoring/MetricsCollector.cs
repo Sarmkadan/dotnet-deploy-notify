@@ -208,7 +208,7 @@ public class PerformanceMonitor
 
         try
         {
-            var result = await operation();
+            var result = await operation().ConfigureAwait(false);
             var duration = (int)(DateTime.UtcNow - startTime).TotalMilliseconds;
 
             _collector.RecordMetric($"{operationName}_duration_ms", duration);

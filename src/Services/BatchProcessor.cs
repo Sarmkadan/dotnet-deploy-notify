@@ -53,7 +53,7 @@ public class NotificationBatchProcessor : IBatchProcessor<DeploymentNotification
             try
             {
                 var batchTasks = batch.Select(item => ProcessSingleAsync(item));
-                var results = await Task.WhenAll(batchTasks);
+                var results = await Task.WhenAll(batchTasks).ConfigureAwait(false);
                 processed.AddRange(results);
 
                 _logger.LogDebug("Completed batch processing: {ProcessedCount}/{TotalCount}",
@@ -61,7 +61,7 @@ public class NotificationBatchProcessor : IBatchProcessor<DeploymentNotification
 
                 // Small delay between batches to avoid overwhelming the system
                 if (batches.IndexOf(batch) < batches.Count - 1)
-                    await Task.Delay(TimeSpan.FromMilliseconds(500));
+                    await Task.Delay(TimeSpan.FromMilliseconds(500)).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -76,7 +76,7 @@ public class NotificationBatchProcessor : IBatchProcessor<DeploymentNotification
     {
         try
         {
-            await _notificationService.SendNotificationAsync(notification.Id);
+            await _notificationService.SendNotificationAsync(notification.Id).ConfigureAwait(false);
             notification.MarkAsProcessed();
         }
         catch (Exception ex)
@@ -149,7 +149,7 @@ public class ResilientBatchProcessor<T>
             {
                 try
                 {
-                    await _processor(item);
+                    await _processor(item).ConfigureAwait(false);
                     result.SuccessCount++;
                 }
                 catch (Exception ex)
@@ -171,7 +171,7 @@ public class ResilientBatchProcessor<T>
 
             if (retryCount < _options.MaxRetries - 1)
             {
-                await Task.Delay(_options.DelayBetweenBatches);
+                await Task.Delay(_options.DelayBetweenBatches).ConfigureAwait(false);
             }
         }
 

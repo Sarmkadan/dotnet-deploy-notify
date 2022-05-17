@@ -85,7 +85,7 @@ public class NotificationService : INotificationService
             }
 
             // Store the notification
-            await _notificationRepository.CreateAsync(notification);
+            await _notificationRepository.CreateAsync(notification).ConfigureAwait(false);
 
             _logger.LogInformation(
                 "Notification created for {Project} v{Version}: {Id}",
@@ -109,12 +109,12 @@ public class NotificationService : INotificationService
     {
         _logger.LogInformation("Processing pending notifications");
 
-        var pendingNotifications = await _notificationRepository.GetPendingAsync();
+        var pendingNotifications = await _notificationRepository.GetPendingAsync().ConfigureAwait(false);
         var allResults = new List<NotificationResult>();
 
         foreach (var notification in pendingNotifications)
         {
-            var results = await SendNotificationAsync(notification.Id);
+            var results = await SendNotificationAsync(notification.Id).ConfigureAwait(false);
             allResults.AddRange(results);
         }
 
@@ -132,7 +132,7 @@ public class NotificationService : INotificationService
         try
         {
             // Retrieve the notification
-            var notification = await _notificationRepository.GetByIdAsync(notificationId);
+            var notification = await _notificationRepository.GetByIdAsync(notificationId).ConfigureAwait(false);
             if (notification is null)
             {
                 throw new NotificationException($"Notification {notificationId} not found");
@@ -149,7 +149,7 @@ public class NotificationService : INotificationService
             // Send to each channel
             foreach (var channel in channelsToSend)
             {
-                var configs = await _configRepository.GetByChannelAsync(channel);
+                var configs = await _configRepository.GetByChannelAsync(channel).ConfigureAwait(false);
                 if (!configs.Any())
                 {
                     _logger.LogWarning("No configuration found for channel {Channel}", channel);
@@ -169,10 +169,10 @@ public class NotificationService : INotificationService
                     }
 
                     // Send the webhook
-                    var result = await _dispatcher.SendToWebhookAsync(config, notification);
+                    var result = await _dispatcher.SendToWebhookAsync(config, notification).ConfigureAwait(false);
 
                     // Store the result
-                    await _resultRepository.CreateAsync(result);
+                    await _resultRepository.CreateAsync(result).ConfigureAwait(false);
                     results.Add(result);
 
                     notification.IncrementDeliveryAttempt();
@@ -181,7 +181,7 @@ public class NotificationService : INotificationService
 
             // Mark as processed
             notification.MarkAsProcessed();
-            await _notificationRepository.UpdateAsync(notification);
+            await _notificationRepository.UpdateAsync(notification).ConfigureAwait(false);
 
             _logger.LogInformation(
                 "Sent notification {Id} to {Channels}: {SuccessCount} succeeded, {FailureCount} failed",
@@ -206,7 +206,7 @@ public class NotificationService : INotificationService
     {
         try
         {
-            return await _notificationRepository.GetByProjectAsync(projectName, limit);
+            return await _notificationRepository.GetByProjectAsync(projectName, limit).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -222,7 +222,7 @@ public class NotificationService : INotificationService
     {
         try
         {
-            return await _resultRepository.GetByNotificationIdAsync(notificationId);
+            return await _resultRepository.GetByNotificationIdAsync(notificationId).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -238,19 +238,19 @@ public class NotificationService : INotificationService
     {
         _logger.LogInformation("Retrying failed deliveries for notification {Id}", notificationId);
 
-        var notification = await _notificationRepository.GetByIdAsync(notificationId);
+        var notification = await _notificationRepository.GetByIdAsync(notificationId).ConfigureAwait(false);
         if (notification is null)
         {
             throw new NotificationException($"Notification {notificationId} not found");
         }
 
-        var failedResults = await _resultRepository.GetFailedByNotificationIdAsync(notificationId);
+        var failedResults = await _resultRepository.GetFailedByNotificationIdAsync(notificationId).ConfigureAwait(false);
         var retryResults = new List<NotificationResult>();
 
         foreach (var failedResult in failedResults)
         {
             // Get the configuration
-            var config = await _configRepository.GetByIdAsync(failedResult.ConfigurationId);
+            var config = await _configRepository.GetByIdAsync(failedResult.ConfigurationId).ConfigureAwait(false);
             if (config is null)
             {
                 _logger.LogWarning("Configuration {Id} not found for retry", failedResult.ConfigurationId);
@@ -268,10 +268,10 @@ public class NotificationService : INotificationService
             }
 
             // Retry the delivery
-            var newResult = await _dispatcher.SendToWebhookAsync(config, notification);
+            var newResult = await _dispatcher.SendToWebhookAsync(config, notification).ConfigureAwait(false);
             newResult.AttemptNumber = failedResult.AttemptNumber + 1;
 
-            await _resultRepository.CreateAsync(newResult);
+            await _resultRepository.CreateAsync(newResult).ConfigureAwait(false);
             retryResults.Add(newResult);
 
             _logger.LogInformation(

@@ -38,7 +38,7 @@ public class NotificationProcessingWorker : BackgroundWorker
             try
             {
                 var startTime = DateTime.UtcNow;
-                var results = await _notificationService.SendPendingNotificationsAsync();
+                var results = await _notificationService.SendPendingNotificationsAsync().ConfigureAwait(false);
 
                 if (results.Any())
                 {
@@ -50,7 +50,7 @@ public class NotificationProcessingWorker : BackgroundWorker
                         results.Count, successCount, results.Count - successCount, duration.TotalMilliseconds);
                 }
 
-                await Task.Delay(_interval, stoppingToken);
+                await Task.Delay(_interval, stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -59,7 +59,7 @@ public class NotificationProcessingWorker : BackgroundWorker
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error processing notifications in background worker");
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken).ConfigureAwait(false);
             }
         }
 
@@ -85,7 +85,7 @@ public abstract class BackgroundWorker : BackgroundService
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         Logger.LogInformation("{WorkerName} starting...", GetType().Name);
-        await base.StartAsync(cancellationToken);
+        await base.StartAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public override async Task StopAsync(CancellationToken cancellationToken)
@@ -94,7 +94,7 @@ public abstract class BackgroundWorker : BackgroundService
         Logger.LogInformation("{WorkerName} stopping after {Uptime} seconds ({ExecutionCount} executions)",
             GetType().Name, uptime.TotalSeconds, ExecutionCount);
 
-        await base.StopAsync(cancellationToken);
+        await base.StopAsync(cancellationToken).ConfigureAwait(false);
     }
 }
 
@@ -126,7 +126,7 @@ public class HealthCheckWorker : BackgroundWorker
             try
             {
                 ExecutionCount++;
-                var health = await _healthCheckService.CheckSystemHealthAsync();
+                var health = await _healthCheckService.CheckSystemHealthAsync().ConfigureAwait(false);
 
                 if (!health.IsOperational)
                 {
@@ -134,7 +134,7 @@ public class HealthCheckWorker : BackgroundWorker
                         string.Join(", ", health.Errors));
                 }
 
-                await Task.Delay(_interval, stoppingToken);
+                await Task.Delay(_interval, stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
@@ -187,7 +187,7 @@ public class ScheduledTaskWorker : BackgroundWorker
                     try
                     {
                         _logger.LogDebug("Executing scheduled task: {TaskName}", task.Name);
-                        await task.ExecuteAsync();
+                        await task.ExecuteAsync().ConfigureAwait(false);
                         task.LastRun = DateTime.UtcNow;
                         ExecutionCount++;
                     }
@@ -197,7 +197,7 @@ public class ScheduledTaskWorker : BackgroundWorker
                     }
                 }
 
-                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken);
+                await Task.Delay(TimeSpan.FromSeconds(1), stoppingToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {

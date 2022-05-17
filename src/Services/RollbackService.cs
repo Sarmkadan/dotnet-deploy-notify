@@ -85,11 +85,11 @@ public class RollbackService : IRollbackService
         {
             cancellationToken.ThrowIfCancellationRequested();
 
-            var priorDeployment = await FindPriorDeploymentAsync(request, cancellationToken);
+            var priorDeployment = await FindPriorDeploymentAsync(request, cancellationToken).ConfigureAwait(false);
             var notification = BuildRollbackNotification(request, priorDeployment);
 
-            var notificationId = await _notificationService.CreateNotificationAsync(notification);
-            var notificationResults = await _notificationService.SendNotificationAsync(notificationId, request.Channels);
+            var notificationId = await _notificationService.CreateNotificationAsync(notification).ConfigureAwait(false);
+            var notificationResults = await _notificationService.SendNotificationAsync(notificationId, request.Channels).ConfigureAwait(false);
 
             result.NotificationResults.AddRange(notificationResults);
             result.MarkAsCompleted();
@@ -102,8 +102,8 @@ public class RollbackService : IRollbackService
 
             // Hotfix: Dispatch a separate notification for successful rollback completion
             var completedNotification = BuildRollbackCompletionNotification(request, priorDeployment, BuildStatus.DeploymentSuccess);
-            var completedNotificationId = await _notificationService.CreateNotificationAsync(completedNotification);
-            await _notificationService.SendNotificationAsync(completedNotificationId, request.Channels);
+            var completedNotificationId = await _notificationService.CreateNotificationAsync(completedNotification).ConfigureAwait(false);
+            await _notificationService.SendNotificationAsync(completedNotificationId, request.Channels).ConfigureAwait(false);
         }
         catch (OperationCanceledException)
         {
@@ -112,8 +112,8 @@ public class RollbackService : IRollbackService
 
             // Hotfix: Dispatch a notification for rollback cancellation
             var cancelledNotification = BuildRollbackCompletionNotification(request, priorDeployment, BuildStatus.DeploymentFailed, $"Rollback of {request.ProjectName} cancelled.");
-            var cancelledNotificationId = await _notificationService.CreateNotificationAsync(cancelledNotification);
-            await _notificationService.SendNotificationAsync(cancelledNotificationId, request.Channels);
+            var cancelledNotificationId = await _notificationService.CreateNotificationAsync(cancelledNotification).ConfigureAwait(false);
+            await _notificationService.SendNotificationAsync(cancelledNotificationId, request.Channels).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -122,8 +122,8 @@ public class RollbackService : IRollbackService
 
             // Hotfix: Dispatch a notification for rollback failure
             var failedNotification = BuildRollbackCompletionNotification(request, priorDeployment, BuildStatus.DeploymentFailed, $"Rollback of {request.ProjectName} failed: {ex.Message}");
-            var failedNotificationId = await _notificationService.CreateNotificationAsync(failedNotification);
-            await _notificationService.SendNotificationAsync(failedNotificationId, request.Channels);
+            var failedNotificationId = await _notificationService.CreateNotificationAsync(failedNotification).ConfigureAwait(false);
+            await _notificationService.SendNotificationAsync(failedNotificationId, request.Channels).ConfigureAwait(false);
             throw;
         }
 
@@ -187,7 +187,7 @@ public class RollbackService : IRollbackService
     private async Task<DeploymentNotification?> FindPriorDeploymentAsync(RollbackRequest request, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var history = await _notificationRepository.GetByProjectAsync(request.ProjectName, 100);
+        var history = await _notificationRepository.GetByProjectAsync(request.ProjectName, 100).ConfigureAwait(false);
         return history.FirstOrDefault(n =>
             n.Version == request.TargetVersion &&
             n.TargetEnvironment == request.TargetEnvironment &&

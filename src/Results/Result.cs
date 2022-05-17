@@ -172,7 +172,7 @@ public static class ResultExtensions
     {
         try
         {
-            var value = await func();
+            var value = await func().ConfigureAwait(false);
             return Result<T>.Ok(value);
         }
         catch (Exception ex)
@@ -204,7 +204,7 @@ public static class ResultExtensions
     {
         try
         {
-            await action();
+            await action().ConfigureAwait(false);
             return Result.Ok();
         }
         catch (Exception ex)

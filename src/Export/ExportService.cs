@@ -96,7 +96,7 @@ public sealed class ExportService : IExportService
                 _ => throw new ArgumentException($"Unknown format: {format}")
             };
 
-            await System.IO.File.WriteAllTextAsync(filePath, content);
+            await System.IO.File.WriteAllTextAsync(filePath, content).ConfigureAwait(false);
             _logger.LogInformation("Exported {Count} notifications to {FilePath}", notifications.Count, filePath);
         }
         catch (Exception ex)
