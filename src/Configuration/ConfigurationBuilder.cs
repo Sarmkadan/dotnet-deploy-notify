@@ -112,6 +112,12 @@ public sealed class ChannelConfigurationBuilder
         return this;
     }
 
+    public ChannelConfigurationBuilder UseSlackBlockKit(bool enable = true)
+    {
+        _config.UseSlackBlockKit = enable;
+        return this;
+    }
+
     public ChannelConfiguration Build()
     {
         if (string.IsNullOrWhiteSpace(_config.WebhookUrl))
