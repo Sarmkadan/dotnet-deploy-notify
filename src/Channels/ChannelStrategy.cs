@@ -43,7 +43,7 @@ public abstract class BaseChannelStrategy : IChannelStrategy
     {
         try
         {
-            var result = await WebhookClient.SendWebhookAsync(webhookUrl, payload);
+            var result = await WebhookClient.SendWebhookAsync(webhookUrl, payload).ConfigureAwait(false);
             return result.IsSuccessful;
         }
         catch (Exception ex)
@@ -72,7 +72,7 @@ public class SlackChannelStrategy : BaseChannelStrategy
         string payload)
     {
         Logger.LogDebug("Sending Slack notification for {ProjectName}", notification.ProjectName);
-        return await SendPayloadAsync(config.WebhookUrl, payload);
+        return await SendPayloadAsync(config.WebhookUrl, payload).ConfigureAwait(false);
     }
 }
 
@@ -94,7 +94,7 @@ public class DiscordChannelStrategy : BaseChannelStrategy
         string payload)
     {
         Logger.LogDebug("Sending Discord notification for {ProjectName}", notification.ProjectName);
-        return await SendPayloadAsync(config.WebhookUrl, payload);
+        return await SendPayloadAsync(config.WebhookUrl, payload).ConfigureAwait(false);
     }
 }
 
@@ -116,7 +116,7 @@ public class TelegramChannelStrategy : BaseChannelStrategy
         string payload)
     {
         Logger.LogDebug("Sending Telegram notification for {ProjectName}", notification.ProjectName);
-        return await SendPayloadAsync(config.WebhookUrl, payload);
+        return await SendPayloadAsync(config.WebhookUrl, payload).ConfigureAwait(false);
     }
 }
 
@@ -204,7 +204,7 @@ public sealed class ChannelAdapter
             var payload = payloadBuilder.BuildPayload(notification);
 
             _logger.LogDebug("Sending notification via {Channel}", config.ChannelType);
-            return await strategy.SendAsync(notification, config, payload);
+            return await strategy.SendAsync(notification, config, payload).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

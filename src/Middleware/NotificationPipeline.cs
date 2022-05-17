@@ -44,7 +44,7 @@ public class NotificationPipeline
             try
             {
                 _logger.LogDebug("Executing processor: {ProcessorType}", processor.GetType().Name);
-                await processor.ProcessAsync(context);
+                await processor.ProcessAsync(context).ConfigureAwait(false);
 
                 if (!context.IsValid)
                 {
@@ -192,7 +192,7 @@ public class FilterProcessor : INotificationProcessor
     public async Task ProcessAsync(PipelineContext context)
     {
         var notification = context.Notification;
-        var configs = await _configRepository.GetAllAsync();
+        var configs = await _configRepository.GetAllAsync().ConfigureAwait(false);
 
         // Filter channels based on configuration and notification priority
         var eligibleChannels = new List<NotificationChannel>();

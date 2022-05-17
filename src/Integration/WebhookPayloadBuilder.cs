@@ -228,7 +228,7 @@ public class WebhookClient
         try
         {
             var content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json");
-            var response = await _httpClient.PostAsync(webhookUrl, content);
+            var response = await _httpClient.PostAsync(webhookUrl, content).ConfigureAwait(false);
 
             result.IsSuccessful = response.IsSuccessStatusCode;
             result.StatusCode = (int)response.StatusCode;
@@ -236,7 +236,7 @@ public class WebhookClient
 
             if (!response.IsSuccessStatusCode)
             {
-                result.ErrorMessage = await response.Content.ReadAsStringAsync();
+                result.ErrorMessage = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 _logger.LogWarning("Webhook failed: {Url} returned {Status}", webhookUrl, response.StatusCode);
             }
             else

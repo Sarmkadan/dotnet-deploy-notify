@@ -129,7 +129,7 @@ public static class RequestContextExtensions
     public static async Task ExecuteInContextAsync(Func<RequestContext, Task> action)
     {
         using var scope = new RequestContextScope();
-        await action(scope.Context);
+        await action(scope.Context).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -147,7 +147,7 @@ public static class RequestContextExtensions
     public static async Task<T> ExecuteInContextAsync<T>(Func<RequestContext, Task<T>> func)
     {
         using var scope = new RequestContextScope();
-        return await func(scope.Context);
+        return await func(scope.Context).ConfigureAwait(false);
     }
 }
 

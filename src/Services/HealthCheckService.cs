@@ -165,7 +165,7 @@ public class HealthCheckService : IHealthCheckService
         try
         {
             // Check all channels
-            var channelStatuses = await CheckAllChannelsAsync();
+            var channelStatuses = await CheckAllChannelsAsync().ConfigureAwait(false);
             var operationalChannels = channelStatuses.Count(c => c.IsOperational);
             var totalChannels = channelStatuses.Count;
 
@@ -208,7 +208,7 @@ public class HealthCheckService : IHealthCheckService
     /// </summary>
     public async Task<ChannelHealthStatus> CheckChannelHealthAsync(string configurationId)
     {
-        var config = await _configRepository.GetByIdAsync(configurationId);
+        var config = await _configRepository.GetByIdAsync(configurationId).ConfigureAwait(false);
         if (config is null)
         {
             return new ChannelHealthStatus
@@ -236,7 +236,7 @@ public class HealthCheckService : IHealthCheckService
         try
         {
             // Test webhook connectivity
-            var isReachable = await _dispatcher.ValidateWebhookAsync(config.WebhookUrl, config.TimeoutMs);
+            var isReachable = await _dispatcher.ValidateWebhookAsync(config.WebhookUrl, config.TimeoutMs).ConfigureAwait(false);
 
             if (!isReachable)
             {
@@ -246,7 +246,7 @@ public class HealthCheckService : IHealthCheckService
             }
 
             // Get recent delivery statistics
-            var recentResults = await _resultRepository.GetByChannelAsync(config.ChannelType, 100);
+            var recentResults = await _resultRepository.GetByChannelAsync(config.ChannelType, 100).ConfigureAwait(false);
             if (recentResults.Any())
             {
                 var successCount = recentResults.Count(r => r.IsSuccessful);
@@ -285,12 +285,12 @@ public class HealthCheckService : IHealthCheckService
     /// </summary>
     public async Task<List<ChannelHealthStatus>> CheckAllChannelsAsync()
     {
-        var allConfigs = await _configRepository.GetAllAsync(0, 1000);
+        var allConfigs = await _configRepository.GetAllAsync(0, 1000).ConfigureAwait(false);
         var healthStatuses = new List<ChannelHealthStatus>();
 
         foreach (var config in allConfigs)
         {
-            var status = await CheckChannelHealthAsync(config.Id);
+            var status = await CheckChannelHealthAsync(config.Id).ConfigureAwait(false);
             healthStatuses.Add(status);
         }
 
@@ -310,7 +310,7 @@ public class HealthCheckService : IHealthCheckService
         };
 
         // Get statistics
-        var allResults = await _resultRepository.GetAllAsync(0, 10000);
+        var allResults = await _resultRepository.GetAllAsync(0, 10000).ConfigureAwait(false);
         if (allResults.Any())
         {
             report.TotalDeliveryAttempts = allResults.Count;

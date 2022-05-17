@@ -210,7 +210,7 @@ public class BatchNotificationService : IBatchNotificationService
             // Send each notification
             foreach (var notification in batch.Notifications)
             {
-                var results = await _notificationService.SendNotificationAsync(notification.Id, batch.Channels);
+                var results = await _notificationService.SendNotificationAsync(notification.Id, batch.Channels).ConfigureAwait(false);
                 allResults.AddRange(results);
 
                 batch.TotalDeliveryAttempts += batch.Channels.Count;

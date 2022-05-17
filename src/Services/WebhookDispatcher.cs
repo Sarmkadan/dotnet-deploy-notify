@@ -150,10 +150,10 @@ public class WebhookDispatcher : IWebhookDispatcher
             using var cts = new CancellationTokenSource(timeoutMs);
 
             // Send the POST request
-            var response = await _httpClient.PostAsync(webhookUrl, content, cts.Token);
+            var response = await _httpClient.PostAsync(webhookUrl, content, cts.Token).ConfigureAwait(false);
 
             result.HttpStatusCode = (int)response.StatusCode;
-            result.ResponseBody = await response.Content.ReadAsStringAsync();
+            result.ResponseBody = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
             if (response.IsSuccessStatusCode)
             {

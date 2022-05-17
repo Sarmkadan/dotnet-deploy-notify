@@ -153,7 +153,7 @@ public sealed class MemoryCacheService : ICacheService
             {
                 try
                 {
-                    await Task.Delay(TimeSpan.FromMinutes(1));
+                    await Task.Delay(TimeSpan.FromMinutes(1)).ConfigureAwait(false);
 
                     lock (_cache)
                     {
@@ -225,7 +225,7 @@ public sealed class CachedRepository<T> where T : class
 
         // Load from source
         _logger.LogDebug("Cache miss for {CacheKey}, loading from source", cacheKey);
-        var data = await _loadFunction();
+        var data = await _loadFunction().ConfigureAwait(false);
 
         // Store in cache
         _cacheService.Set(cacheKey, data, _cacheDuration);

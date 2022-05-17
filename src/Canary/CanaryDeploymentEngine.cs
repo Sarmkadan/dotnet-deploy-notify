@@ -133,7 +133,7 @@ public sealed class CanaryDeploymentEngine : ICanaryDeploymentService
         if (nextStep is null)
         {
             if (_options.AutoAdvanceOnSuccess)
-                return await PromoteAsync(deploymentId, cancellationToken);
+                return await PromoteAsync(deploymentId, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation(
                 "All rollout steps complete for {Project} v{Canary} — awaiting manual promotion",
@@ -252,7 +252,7 @@ public sealed class CanaryDeploymentEngine : ICanaryDeploymentService
             cancellationToken);
 
         if (_options.AutoRollbackOnFailure)
-            await TriggerRollbackAsync(deployment, reason, cancellationToken);
+            await TriggerRollbackAsync(deployment, reason, cancellationToken).ConfigureAwait(false);
 
         return deployment;
     }
@@ -263,7 +263,7 @@ public sealed class CanaryDeploymentEngine : ICanaryDeploymentService
         CancellationToken cancellationToken = default)
     {
         var deployment = GetOrThrow(deploymentId);
-        var result = await _healthEvaluator.EvaluateAsync(deployment, cancellationToken);
+        var result = await _healthEvaluator.EvaluateAsync(deployment, cancellationToken).ConfigureAwait(false);
 
         // Persist the latest metrics snapshots on the deployment object
         deployment.StableMetrics = result.StableMetrics;
@@ -277,7 +277,7 @@ public sealed class CanaryDeploymentEngine : ICanaryDeploymentService
                 deployment.CanaryVersion,
                 result.Reason);
 
-            await AbortAsync(deploymentId, $"Automatic rollback: {result.Reason}", cancellationToken);
+            await AbortAsync(deploymentId, $"Automatic rollback: {result.Reason}", cancellationToken).ConfigureAwait(false);
         }
         else if (!result.IsHealthy)
         {
@@ -397,8 +397,8 @@ public sealed class CanaryDeploymentEngine : ICanaryDeploymentService
                 }
             };
 
-            var notificationId = await _notificationService.CreateNotificationAsync(notification);
-            await _notificationService.SendNotificationAsync(notificationId, deployment.NotificationChannels);
+            var notificationId = await _notificationService.CreateNotificationAsync(notification).ConfigureAwait(false);
+            await _notificationService.SendNotificationAsync(notificationId, deployment.NotificationChannels).ConfigureAwait(false);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
@@ -435,7 +435,7 @@ public sealed class CanaryDeploymentEngine : ICanaryDeploymentService
                 }
             };
 
-            await _rollbackService.InitiateRollbackAsync(rollbackRequest, cancellationToken);
+            await _rollbackService.InitiateRollbackAsync(rollbackRequest, cancellationToken).ConfigureAwait(false);
 
             _logger.LogInformation(
                 "Auto-rollback initiated for {Project}: v{Canary} → v{Stable}",

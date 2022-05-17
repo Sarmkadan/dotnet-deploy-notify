@@ -104,8 +104,8 @@ public class RetryableHttpClient
                 _logger.LogDebug("POST request attempt {Attempt}/{MaxRetries}: {Url}",
                     attempt, _maxRetries, url);
 
-                var response = await _client.PostAsync(url, content);
-                var responseContent = await response.Content.ReadAsStringAsync();
+                var response = await _client.PostAsync(url, content).ConfigureAwait(false);
+                var responseContent = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
 
                 if (response.IsSuccessStatusCode)
                 {
@@ -154,7 +154,7 @@ public class RetryableHttpClient
             if (attempt < _maxRetries)
             {
                 var delay = _retryDelay.Multiply(Math.Pow(2, attempt - 1));
-                await Task.Delay(delay);
+                await Task.Delay(delay).ConfigureAwait(false);
             }
         }
 

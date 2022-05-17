@@ -113,8 +113,8 @@ public sealed class CommandHandler
             Priority = status == BuildStatus.Failed ? NotificationPriority.Critical : NotificationPriority.Normal
         };
 
-        var notificationId = await _notificationService.CreateNotificationAsync(notification);
-        var results = await _notificationService.SendPendingNotificationsAsync();
+        var notificationId = await _notificationService.CreateNotificationAsync(notification).ConfigureAwait(false);
+        var results = await _notificationService.SendPendingNotificationsAsync().ConfigureAwait(false);
 
         var successCount = results.Count(r => r.IsSuccessful);
         Console.WriteLine($"✅ Notification {notificationId} sent to {successCount}/{results.Count} channels");
@@ -137,7 +137,7 @@ public sealed class CommandHandler
 
         if (listType == "configs")
         {
-            var configs = await _configRepository.GetAllAsync();
+            var configs = await _configRepository.GetAllAsync().ConfigureAwait(false);
             if (configs.Count == 0)
             {
                 Console.WriteLine("No channel configurations found.");
@@ -183,7 +183,7 @@ public sealed class CommandHandler
 
         if (action == "list")
         {
-            var configs = await _configRepository.GetAllAsync();
+            var configs = await _configRepository.GetAllAsync().ConfigureAwait(false);
             Console.WriteLine($"Found {configs.Count} configurations");
             return 0;
         }
@@ -215,7 +215,7 @@ public sealed class CommandHandler
                 TimeoutMs = 10000
             };
 
-            await _configRepository.CreateAsync(config);
+            await _configRepository.CreateAsync(config).ConfigureAwait(false);
             Console.WriteLine($"✅ Configuration added: {config.DisplayName}");
             return 0;
         }
@@ -242,7 +242,7 @@ public sealed class CommandHandler
 
         try
         {
-            var configs = await _configRepository.GetAllAsync();
+            var configs = await _configRepository.GetAllAsync().ConfigureAwait(false);
             Console.WriteLine($"✅ Database: OK (found {configs.Count} configurations)");
 
             if (detailed)

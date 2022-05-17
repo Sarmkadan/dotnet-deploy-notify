@@ -46,7 +46,7 @@ public class RetryHelper
                 _logger.LogDebug("Executing operation (attempt {Attempt}/{MaxAttempts})",
                     attempt, policy.MaxAttempts);
 
-                return await operation();
+                return await operation().ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -61,7 +61,7 @@ public class RetryHelper
                 _logger.LogWarning("Operation failed (attempt {Attempt}), retrying in {Delay}ms",
                     attempt, delay.TotalMilliseconds);
 
-                await Task.Delay(delay);
+                await Task.Delay(delay).ConfigureAwait(false);
             }
         }
 
@@ -187,7 +187,7 @@ public class CircuitBreakerWithBackoff
 
         try
         {
-            var result = await operation();
+            var result = await operation().ConfigureAwait(false);
             OnSuccess();
             return result;
         }
