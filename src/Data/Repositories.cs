@@ -237,6 +237,13 @@ public sealed class ChannelConfigRepository : IChannelConfigRepository
         _logger = logger;
     }
 
+    /// <summary>Initializes the repository with pre-seeded channel configurations</summary>
+    public ChannelConfigRepository(ILogger<ChannelConfigRepository> logger, IEnumerable<ChannelConfiguration> initialConfigurations)
+    {
+        _logger = logger;
+        _configurations.AddRange(initialConfigurations);
+    }
+
     public Task CreateAsync(ChannelConfiguration config)
     {
         lock (_lockObject)

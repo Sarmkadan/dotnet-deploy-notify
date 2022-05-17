@@ -6,6 +6,7 @@
 
 using DotNetDeployNotify.Data;
 using DotNetDeployNotify.Services;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -19,7 +20,7 @@ public static class DependencyInjection
     /// <summary>
     /// Adds all notification services to the dependency injection container
     /// </summary>
-    public static IServiceCollection AddNotificationServices(this IServiceCollection services)
+    public static IServiceCollection AddNotificationServices(this IServiceCollection services, IConfiguration? configuration = null)
     {
         // Core services
         services.AddScoped<IValidationService, ValidationService>();
@@ -29,8 +30,26 @@ public static class DependencyInjection
 
         // Data access
         services.AddSingleton<INotificationRepository, NotificationRepository>();
-        services.AddSingleton<IChannelConfigRepository, ChannelConfigRepository>();
         services.AddSingleton<INotificationResultRepository, NotificationResultRepository>();
+
+        // Register channel config repository; seed environment-specific channels when config is provided
+        if (configuration != null)
+        {
+            var notifyConfig = new NotificationConfig();
+            configuration.GetSection(NotificationConfig.SectionName).Bind(notifyConfig);
+
+            var initialChannels = BuildChannelConfigsFromSettings(notifyConfig);
+
+            services.AddSingleton<IChannelConfigRepository>(sp =>
+            {
+                var logger = sp.GetRequiredService<ILogger<ChannelConfigRepository>>();
+                return new ChannelConfigRepository(logger, initialChannels);
+            });
+        }
+        else
+        {
+            services.AddSingleton<IChannelConfigRepository, ChannelConfigRepository>();
+        }
 
         // HTTP client for webhooks
         services.AddHttpClient<WebhookDispatcher>()
@@ -41,6 +60,39 @@ public static class DependencyInjection
             });
 
         return services;
+    }
+
+    private static List<DotNetDeployNotify.Core.Models.ChannelConfiguration> BuildChannelConfigsFromSettings(NotificationConfig config)
+    {
+        var channels = new List<DotNetDeployNotify.Core.Models.ChannelConfiguration>();
+
+        foreach (var (envName, envConfig) in config.EnvironmentChannels)
+        {
+            if (string.IsNullOrWhiteSpace(envConfig.WebhookUrl))
+                continue;
+
+            if (!Enum.TryParse<DotNetDeployNotify.Core.NotificationChannel>(envConfig.ChannelType, ignoreCase: true, out var channelType))
+                channelType = DotNetDeployNotify.Core.NotificationChannel.Slack;
+
+            var allowedEnvs = new List<DotNetDeployNotify.Core.Environment>();
+            if (Enum.TryParse<DotNetDeployNotify.Core.Environment>(envName, ignoreCase: true, out var parsedEnv))
+                allowedEnvs.Add(parsedEnv);
+
+            channels.Add(new DotNetDeployNotify.Core.Models.ChannelConfiguration
+            {
+                ChannelType = channelType,
+                WebhookUrl = envConfig.WebhookUrl,
+                TargetId = envConfig.TargetId,
+                DisplayName = string.IsNullOrWhiteSpace(envConfig.DisplayName)
+                    ? $"{envName}-{channelType}"
+                    : envConfig.DisplayName,
+                AllowedEnvironments = allowedEnvs,
+                MaxRetries = config.MaxRetries,
+                TimeoutMs = config.WebhookTimeoutMs
+            });
+        }
+
+        return channels;
     }
 
     /// <summary>
@@ -101,4 +153,28 @@ public sealed class NotificationConfig
 
     /// <summary>Days to retain delivery result history</summary>
     public int RetentionDays { get; set; } = 30;
+
+    /// <summary>
+    /// Per-environment channel mappings. Key is the environment name (e.g. "Production", "Staging").
+    /// When configured, notifications for an environment are routed only to the matching channel.
+    /// </summary>
+    public Dictionary<string, EnvironmentChannelConfig> EnvironmentChannels { get; set; } = new();
+}
+
+/// <summary>
+/// Configuration for a per-environment notification channel
+/// </summary>
+public sealed class EnvironmentChannelConfig
+{
+    /// <summary>Webhook URL for this environment's channel</summary>
+    public string WebhookUrl { get; set; } = string.Empty;
+
+    /// <summary>Channel type: Slack, Discord, Telegram, or Webhook (default: Slack)</summary>
+    public string ChannelType { get; set; } = "Slack";
+
+    /// <summary>Human-readable label for this channel in logs</summary>
+    public string DisplayName { get; set; } = string.Empty;
+
+    /// <summary>Platform-specific target ID (e.g. Telegram chat ID)</summary>
+    public string TargetId { get; set; } = string.Empty;
 }
