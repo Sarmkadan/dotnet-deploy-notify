@@ -83,6 +83,9 @@ public class DiscordWebhookPayloadBuilder : IWebhookPayloadBuilder
 {
     public string BuildPayload(DeploymentNotification notification)
     {
+        // Discord embed description is limited to 4096 characters
+        const int MaxEmbedDescriptionLength = 4096;
+
         var color = notification.Status switch
         {
             BuildStatus.Success => 3066993, // Green
@@ -93,6 +96,10 @@ public class DiscordWebhookPayloadBuilder : IWebhookPayloadBuilder
             _ => 9807270 // Gray
         };
 
+        var description = notification.Message;
+        if (!string.IsNullOrEmpty(description) && description.Length > MaxEmbedDescriptionLength)
+            description = description[..(MaxEmbedDescriptionLength - 3)] + "...";
+
         var payload = new
         {
             username = "Deploy Notify",
@@ -102,7 +109,7 @@ public class DiscordWebhookPayloadBuilder : IWebhookPayloadBuilder
                 new
                 {
                     title = notification.GetSummary(),
-                    description = notification.Message,
+                    description = description,
                     color,
                     fields = BuildDiscordFields(notification),
                     timestamp = notification.CreatedAt.ToString("O"),
