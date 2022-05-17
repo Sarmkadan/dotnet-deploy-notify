@@ -10,17 +10,29 @@ using DotNetDeployNotify.Integration;
 namespace DotNetDeployNotify.Channels;
 
 /// <summary>
-/// Strategy pattern for handling different notification channels
+/// Strategy pattern interface for sending deployment notifications through different channels
+/// (Slack, Telegram, Discord, Teams, email, generic webhook). Each implementation handles
+/// channel-specific payload formatting and delivery.
 /// </summary>
 public interface IChannelStrategy
 {
+    /// <summary>The notification channel this strategy handles.</summary>
     NotificationChannel Channel { get; }
+    /// <summary>
+    /// Sends a notification through this channel.
+    /// </summary>
+    /// <param name="notification">The deployment notification to send.</param>
+    /// <param name="config">Channel-specific configuration (webhook URL, credentials).</param>
+    /// <param name="payload">Pre-formatted payload string for the channel.</param>
+    /// <returns><c>true</c> if the notification was delivered successfully.</returns>
     Task<bool> SendAsync(DeploymentNotification notification, ChannelConfiguration config, string payload);
+    /// <summary>Returns whether this strategy can handle the specified channel type.</summary>
     bool CanHandle(NotificationChannel channel);
 }
 
 /// <summary>
-/// Base class for channel strategies
+/// Base class for channel strategies providing common webhook delivery infrastructure.
+/// Subclasses implement channel-specific payload formatting.
 /// </summary>
 public abstract class BaseChannelStrategy : IChannelStrategy
 {
