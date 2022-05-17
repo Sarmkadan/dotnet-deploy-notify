@@ -59,6 +59,12 @@ public sealed class ChannelConfiguration
     /// <summary>Additional formatting or template settings</summary>
     public Dictionary<string, string> Settings { get; set; } = new();
 
+    /// <summary>
+    /// When true, Slack notifications use Block Kit rich layouts instead of the legacy attachments format.
+    /// Set via configuration or the fluent builder. Defaults to false for backward compatibility.
+    /// </summary>
+    public bool UseSlackBlockKit { get; set; } = false;
+
     /// <summary>When this configuration was created</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
