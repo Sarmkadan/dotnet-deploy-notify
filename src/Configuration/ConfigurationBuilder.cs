@@ -118,6 +118,12 @@ public sealed class ChannelConfigurationBuilder
         return this;
     }
 
+    public ChannelConfigurationBuilder EnableEmojis(bool enable = true)
+    {
+        _config.EnableEmojis = enable;
+        return this;
+    }
+
     public ChannelConfiguration Build()
     {
         if (string.IsNullOrWhiteSpace(_config.WebhookUrl))
