@@ -6,6 +6,7 @@
 
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Formatting;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetDeployNotify.Services;
@@ -74,11 +75,12 @@ public class PayloadBuilder : IPayloadBuilder
     /// </summary>
     public string BuildTelegramMessage(DeploymentNotification notification, ChannelConfiguration config)
     {
-        var emoji = GetStatusEmoji(notification.Status);
+        var emoji = StatusEmoji.Get(notification.Status, config.EnableEmojis);
+        var titleEmoji = string.IsNullOrEmpty(emoji) ? "" : $"{emoji} ";
         var sb = new System.Text.StringBuilder();
 
-        sb.AppendLine($"{emoji} <b>{notification.ProjectName}</b> v{notification.Version}");
-        sb.AppendLine($"<b>Status:</b> {notification.Status}");
+        sb.AppendLine($"{titleEmoji}<b>{notification.ProjectName}</b> v{notification.Version}");
+        sb.AppendLine($"<b>Status:</b> {StatusEmoji.Format(notification.Status, config.EnableEmojis)}");
         sb.AppendLine($"<b>Environment:</b> {notification.TargetEnvironment}");
         sb.AppendLine($"<b>Branch:</b> <code>{notification.BranchName}</code>");
 
@@ -112,7 +114,8 @@ public class PayloadBuilder : IPayloadBuilder
             return BuildSlackBlockKitPayload(notification, config);
 
         var color = GetStatusColor(notification.Status);
-        var emoji = GetStatusEmoji(notification.Status);
+        var emoji = StatusEmoji.Get(notification.Status, config.EnableEmojis);
+        var titlePrefix = string.IsNullOrEmpty(emoji) ? "" : $"{emoji} ";
 
         var payload = new
         {
@@ -121,7 +124,7 @@ public class PayloadBuilder : IPayloadBuilder
                 new
                 {
                     color = color,
-                    title = $"{emoji} {notification.ProjectName} v{notification.Version}",
+                    title = $"{titlePrefix}{notification.ProjectName} v{notification.Version}",
                     title_link = config.IncludeBuildUrl ? notification.BuildUrl : null,
                     fields = BuildSlackFields(notification, config),
                     ts = ((DateTimeOffset)notification.CreatedAt).ToUnixTimeSeconds()
@@ -137,13 +140,14 @@ public class PayloadBuilder : IPayloadBuilder
     /// </summary>
     private object BuildSlackBlockKitPayload(DeploymentNotification notification, ChannelConfiguration config)
     {
-        var emoji = GetStatusEmoji(notification.Status);
+        var emoji = StatusEmoji.Get(notification.Status, config.EnableEmojis);
+        var titlePrefix = string.IsNullOrEmpty(emoji) ? "" : $"{emoji} ";
         var blocks = new List<object>
         {
             new
             {
                 type = "header",
-                text = new { type = "plain_text", text = $"{emoji} {notification.ProjectName} v{notification.Version}", emoji = true }
+                text = new { type = "plain_text", text = $"{titlePrefix}{notification.ProjectName} v{notification.Version}", emoji = true }
             },
             new { type = "divider" },
             new
@@ -151,7 +155,7 @@ public class PayloadBuilder : IPayloadBuilder
                 type = "section",
                 fields = new object[]
                 {
-                    new { type = "mrkdwn", text = $"*Status*\n{notification.Status}" },
+                    new { type = "mrkdwn", text = $"*Status*\n{StatusEmoji.Format(notification.Status, config.EnableEmojis)}" },
                     new { type = "mrkdwn", text = $"*Environment*\n{notification.TargetEnvironment}" },
                     new { type = "mrkdwn", text = $"*Branch*\n`{notification.BranchName}`" },
                     new { type = "mrkdwn", text = $"*Priority*\n{notification.Priority}" }
@@ -224,7 +228,8 @@ public class PayloadBuilder : IPayloadBuilder
         const int MaxEmbedDescriptionLength = 4096;
 
         var color = GetDiscordStatusColor(notification.Status);
-        var emoji = GetStatusEmoji(notification.Status);
+        var emoji = StatusEmoji.Get(notification.Status, config.EnableEmojis);
+        var titlePrefix = string.IsNullOrEmpty(emoji) ? "" : $"{emoji} ";
 
         var description = notification.Message;
         if (!string.IsNullOrEmpty(description) && description.Length > MaxEmbedDescriptionLength)
@@ -232,7 +237,7 @@ public class PayloadBuilder : IPayloadBuilder
 
         var embed = new
         {
-            title = $"{emoji} {notification.ProjectName} v{notification.Version}",
+            title = $"{titlePrefix}{notification.ProjectName} v{notification.Version}",
             description = description,
             color = color,
             fields = BuildDiscordFields(notification, config),
@@ -250,7 +255,7 @@ public class PayloadBuilder : IPayloadBuilder
     {
         var fields = new List<object>
         {
-            new { title = "Status", value = notification.Status.ToString(), @short = true },
+            new { title = "Status", value = StatusEmoji.Format(notification.Status, config.EnableEmojis), @short = true },
             new { title = "Environment", value = notification.TargetEnvironment.ToString(), @short = true },
             new { title = "Branch", value = notification.BranchName, @short = true },
             new { title = "Priority", value = notification.Priority.ToString(), @short = true }
@@ -277,7 +282,7 @@ public class PayloadBuilder : IPayloadBuilder
     {
         var fields = new List<object>
         {
-            new { name = "Status", value = notification.Status.ToString(), inline = true },
+            new { name = "Status", value = StatusEmoji.Format(notification.Status, config.EnableEmojis), inline = true },
             new { name = "Environment", value = notification.TargetEnvironment.ToString(), inline = true },
             new { name = "Branch", value = $"`{notification.BranchName}`", inline = true }
         };
@@ -295,22 +300,6 @@ public class PayloadBuilder : IPayloadBuilder
 
         return fields.ToArray();
     }
-
-    /// <summary>
-    /// Gets a status emoji representation
-    /// </summary>
-    private static string GetStatusEmoji(BuildStatus status) => status switch
-    {
-        BuildStatus.Success => "✅",
-        BuildStatus.SuccessWithWarnings => "⚠️",
-        BuildStatus.Failed => "❌",
-        BuildStatus.DeploymentSuccess => "🚀",
-        BuildStatus.DeploymentFailed => "💥",
-        BuildStatus.Deploying => "🔄",
-        BuildStatus.InProgress => "⏳",
-        BuildStatus.Cancelled => "🛑",
-        _ => "ℹ️"
-    };
 
     /// <summary>
     /// Gets a Slack color code for status
