@@ -1,9 +1,9 @@
-[![Build](https://github.com/sarmkadan/dotnet-deploy-notify/actions/workflows/build.yml/badge.svg)](https://github.com/sarmkadan/dotnet-deploy-notify/actions/workflows/build.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
-[![NuGet](https://img.shields.io/nuget/v/Zaiets.dotnet.deploy.notify.svg)](https://www.nuget.org/packages/Zaiets.dotnet.deploy.notify/)
-
 # DotNetDeployNotify
+
+![CI](https://github.com/sarmkadan/dotnet-deploy-notify/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/github/license/sarmkadan/dotnet-deploy-notify)
+![.NET](https://img.shields.io/badge/.NET-10.0-512BD4)
+[![NuGet](https://img.shields.io/nuget/v/Zaiets.dotnet.deploy.notify.svg)](https://www.nuget.org/packages/Zaiets.dotnet.deploy.notify/)
 
 A comprehensive deployment notification pipeline for .NET applications. Send build status updates to Telegram, Slack, Discord, and custom webhooks with full support for retries, validation, metrics, and batch processing.
 
