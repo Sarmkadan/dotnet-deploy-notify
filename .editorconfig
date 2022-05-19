@@ -61,7 +61,7 @@ csharp_style_namespace_declarations = file_scoped:suggestion
 csharp_style_prefer_compound_assignment = true:suggestion
 
 # File header
-file_header_template = Copyright (c) 2026 Red Rocket Software. All rights reserved.
+file_header_template = Copyright (c) 2026 Vladyslav Zaiets. All rights reserved.
 
 # Indentation
 indent_size = 4
