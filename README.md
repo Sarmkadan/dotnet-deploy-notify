@@ -9,6 +9,24 @@ A comprehensive deployment notification pipeline for .NET applications. Send bui
 
 ## Features
 
+**Deployment History**
+- Full deployment history per project and environment
+- Success rate statistics and duration analytics
+- Rollback detection and rollback-specific history
+- Last-successful-deployment lookup
+
+**Rollback Notifications**
+- Channel-specific rollback alert formatting (Slack, Discord, Telegram)
+- Rollback reason and requestor tracking
+- Rollback notification history for audit
+
+**Custom Template Engine**
+- Named template registry with `ICustomTemplateEngine`
+- `{{Variable}}` substitution for all notification fields
+- Pipe filters: `upper`, `lower`, `trim`, `truncate`
+- Conditional blocks: `{{#if Variable == "value"}}...{{/if}}`
+- Custom variable injection per render call
+
 **Multi-Channel Support**
 - Telegram messaging
 - Slack webhooks
@@ -164,6 +182,111 @@ Use `TemplateService.RenderTemplate()` with built-in variables:
 | `{{Branch}}` | Source branch name |
 | `{{CommitHashShort}}` | Abbreviated commit SHA |
 | `{{CommitAuthor}}` | Commit author name |
+
+### Deployment History Tracking
+
+`IDeploymentHistoryService` records every deployment and lets you query history:
+
+```csharp
+// Record from a notification
+await historyService.RecordFromNotificationAsync(notification);
+
+// Query project history (most-recent first)
+var entries = await historyService.GetProjectHistoryAsync("MyApp", limit: 20);
+
+// Statistics for a project
+var stats = await historyService.GetStatisticsAsync("MyApp");
+Console.WriteLine($"Success rate: {stats.SuccessRate:P0}");
+
+// Last successful deployment
+var last = await historyService.GetLastSuccessfulDeploymentAsync("MyApp");
+
+// Rollback-only entries
+var rollbacks = await historyService.GetRollbackEntriesAsync("MyApp");
+```
+
+`DeploymentHistoryEntry` fields: `ProjectName`, `Version`, `Environment`, `Status`, `Branch`, `CommitHash`, `DurationMs`, `IsRollback`, `DeployedAt`.
+
+`DeploymentStatistics` fields: `TotalDeployments`, `SuccessfulDeployments`, `FailedDeployments`, `SuccessRate`, `AverageDurationMs`, `TotalRollbacks`.
+
+---
+
+### Rollback Notifications
+
+`IRollbackNotificationService` sends channel-aware rollback alerts with channel-specific formatting:
+
+```csharp
+var request = new RollbackRequest
+{
+    ProjectName    = "MyApp",
+    TargetVersion  = "1.4.2",
+    CurrentVersion = "1.5.0",
+    Environment    = Environment.Production,
+    Reason         = "Latency spike after deploy",
+    RequestedBy    = "ops-team",
+    Channels       = new[] { NotificationChannel.Slack, NotificationChannel.Discord }
+};
+
+var results = await rollbackService.SendRollbackNotificationAsync(request);
+// results: list of NotificationResult, one per channel
+
+// Full rollback notification history
+var history = rollbackService.GetNotificationHistory();
+```
+
+Messages are formatted per channel:
+- **Slack** — uses `*bold*` and emoji
+- **Discord** — uses `**bold**` embeds  
+- **Telegram** — uses `<b>HTML bold</b>`
+
+---
+
+### Custom Template Engine
+
+`ICustomTemplateEngine` provides a registry-based templating system beyond the built-in `TemplateService`:
+
+```csharp
+// Register a named template
+engine.RegisterTemplate("deploy-alert",
+    "🚀 *{{ProjectName}}* `{{Version}}` → {{Environment | upper}}\n" +
+    "Branch: {{Branch}}\n" +
+    "{{#if Status == \"Success\"}}✅ All good!{{/if}}");
+
+// Render with a notification
+var message = engine.Render("deploy-alert", notification);
+
+// Render a one-off template string directly
+var msg = engine.RenderTemplate(
+    "Deploy {{ProjectName | upper}} v{{Version}}",
+    notification,
+    customVars: new Dictionary<string, string> { ["Region"] = "eu-west-1" });
+
+// List registered templates
+var names = engine.GetRegisteredTemplateNames();
+
+// Remove a template
+engine.UnregisterTemplate("deploy-alert");
+```
+
+**Built-in variables** (mapped from `DeploymentNotification`):
+
+| Variable | Source |
+|---|---|
+| `{{ProjectName}}` | `notification.ProjectName` |
+| `{{Version}}` | `notification.Version` |
+| `{{Status}}` | `notification.Status.ToString()` |
+| `{{Environment}}` | `notification.TargetEnvironment.ToString()` |
+| `{{Branch}}` | `notification.Branch` |
+| `{{CommitHash}}` | `notification.CommitHash` |
+| `{{CommitHashShort}}` | First 7 chars of commit hash |
+| `{{CommitAuthor}}` | `notification.CommitAuthor` |
+| `{{Message}}` | `notification.Message` |
+
+**Filters**: `upper`, `lower`, `trim`, `truncate` (truncates to 50 chars).
+
+**Conditionals**: `{{#if Variable == "value"}}...{{/if}}` — case-insensitive string comparison.
+
+---
 
 ### Extending
 

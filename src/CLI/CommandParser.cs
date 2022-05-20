@@ -329,6 +329,40 @@ public sealed class CommandParser
                 new() { Name = "detailed", ShortName = "d", Description = "Show detailed info", IsFlag = true }
             }
         });
+
+        RegisterCommand(new CommandDefinition
+        {
+            Name = "history",
+            Description = "Show deployment history and statistics for a project",
+            Parameters = new List<ParameterDefinition>
+            {
+                new() { Name = "project", Description = "Project name", IsRequired = true }
+            },
+            Options = new List<OptionDefinition>
+            {
+                new() { Name = "limit", ShortName = "l", Description = "Number of entries to show (default: 20)" },
+                new() { Name = "stats", ShortName = "s", Description = "Show aggregated statistics", IsFlag = true }
+            }
+        });
+
+        RegisterCommand(new CommandDefinition
+        {
+            Name = "rollback",
+            Description = "Initiate a rollback and dispatch notifications",
+            Parameters = new List<ParameterDefinition>
+            {
+                new() { Name = "project",        Description = "Project name",          IsRequired = true },
+                new() { Name = "target-version", Description = "Version to roll back to", IsRequired = true }
+            },
+            Options = new List<OptionDefinition>
+            {
+                new() { Name = "current-version", Description = "Currently deployed version" },
+                new() { Name = "environment",     ShortName = "e", Description = "Target environment (default: Production)" },
+                new() { Name = "channels",        ShortName = "c", Description = "Comma-separated channels (default: Slack)" },
+                new() { Name = "reason",          ShortName = "r", Description = "Reason for rollback" },
+                new() { Name = "requested-by",    Description = "User initiating the rollback" }
+            }
+        });
     }
 
     private ParsedCommand CreateHelpCommand()
