@@ -185,6 +185,18 @@ public class TemplateService : ITemplateService
                 "Duration: {{Duration}} seconds\n" +
                 "Message: {{Message}}\n" +
                 "Build: {{BuildUrl}}"
+            },
+            {
+                "SuccessNotification",
+                "✅ {{ProjectName}} v{{Version}} deployed successfully to {{Environment}}\n" +
+                "Branch: {{Branch}} | Commit: {{CommitHashShort}} by {{CommitAuthor}}"
+            },
+            {
+                "FailedNotification",
+                "❌ {{ProjectName}} v{{Version}} deployment FAILED on {{Environment}}\n" +
+                "Branch: {{Branch}}\n" +
+                "{{Message}}\n" +
+                "Build: {{BuildUrl}}"
             }
         };
     }

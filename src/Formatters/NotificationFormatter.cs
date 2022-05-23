@@ -98,7 +98,7 @@ public sealed class TextNotificationFormatter : INotificationFormatter
 
     private string PadRight(string input, int length)
     {
-        return (input ?? "").Length > length ? input.Substring(0, length) : (input ?? "").PadRight(length);
+        return (input ?? "").Length > length ? (input ?? "").Substring(0, length) : (input ?? "").PadRight(length);
     }
 
     private string WrapText(string text, int lineLength)
