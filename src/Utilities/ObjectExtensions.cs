@@ -42,7 +42,7 @@ public static class ObjectExtensions
     {
         if (obj is not null)
             action(obj);
-        return obj;
+        return obj!;
     }
 
     /// <summary>
