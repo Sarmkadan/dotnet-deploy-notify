@@ -66,9 +66,9 @@ public sealed class DeploymentNotification
     public int DeliveryAttempts { get; set; }
 
     /// <summary>
-    /// Validates the notification data for required fields
+    /// Validates the notification data for required fields.
     /// </summary>
-    /// <returns>True if valid, false otherwise</returns>
+    /// <returns>True if the notification is valid, false otherwise.</returns>
     public bool IsValid()
     {
         return !string.IsNullOrWhiteSpace(ProjectName) &&
@@ -78,16 +78,16 @@ public sealed class DeploymentNotification
     }
 
     /// <summary>
-    /// Gets a formatted summary of the notification
+    /// Gets a formatted summary of the notification.
     /// </summary>
-    /// <returns>String representation of the notification</returns>
+    /// <returns>A string representation of the notification summary.</returns>
     public string GetSummary()
     {
         return $"[{Status}] {ProjectName} v{Version} - {TargetEnvironment} ({BranchName})";
     }
 
     /// <summary>
-    /// Increments the delivery attempt counter
+    /// Increments the delivery attempt counter.
     /// </summary>
     public void IncrementDeliveryAttempt()
     {
@@ -95,7 +95,7 @@ public sealed class DeploymentNotification
     }
 
     /// <summary>
-    /// Marks the notification as processed
+    /// Marks the notification as processed.
     /// </summary>
     public void MarkAsProcessed()
     {
@@ -103,8 +103,11 @@ public sealed class DeploymentNotification
     }
 
     /// <summary>
-    /// Gets metadata value by key with type conversion
+    /// Gets metadata value by key with type conversion.
     /// </summary>
+    /// <typeparam name="T">The type to convert the metadata value to.</typeparam>
+    /// <param name="key">The metadata key.</param>
+    /// <returns>The typed metadata value if found and convertible, otherwise the default value.</returns>
     public T? GetMetadata<T>(string key)
     {
         if (Metadata.TryGetValue(key, out var value) && value is T typedValue)
@@ -115,8 +118,10 @@ public sealed class DeploymentNotification
     }
 
     /// <summary>
-    /// Sets metadata value by key
+    /// Sets metadata value by key.
     /// </summary>
+    /// <param name="key">The metadata key.</param>
+    /// <param name="value">The metadata value.</param>
     public void SetMetadata(string key, object value)
     {
         Metadata[key] = value;
