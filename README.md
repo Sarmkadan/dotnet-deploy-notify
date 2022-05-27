@@ -31,16 +31,50 @@ await notifier.CreateNotificationAsync(new DeploymentNotification
 await notifier.SendPendingNotificationsAsync();
 ```
 
-## Configuration (`appsettings.json`)
+## Configuration
+
+The application uses `IOptions` for configuration, bound to the `DotnetDeployNotify` section in `appsettings.json`.
 
 ```json
 {
-  "NotificationService": {
-    "EnvironmentChannels": {
-      "Production": {
-        "WebhookUrl": "https://hooks.slack.com/services/...",
-        "ChannelType": "Slack"
+  "DotnetDeployNotify": {
+    "Notification": {
+      "MaxRetries": 3,
+      "WebhookTimeoutMs": 10000,
+      "RetryDelayMs": 5000,
+      "AutoProcessNotifications": true,
+      "ProcessingIntervalSeconds": 30,
+      "StorageType": "InMemory",
+      "LogLevel": "Information",
+      "IncludeCommitDetails": true,
+      "IncludeBuildUrl": true,
+      "DefaultPriority": "Normal",
+      "EnableAuditLogging": true,
+      "RetentionDays": 30,
+      "EnvironmentChannels": {
+        "Production": {
+          "WebhookUrl": "https://hooks.slack.com/services/...",
+          "ChannelType": "Slack",
+          "DisplayName": "Production Alerts",
+          "TargetId": "prod-channel-id"
+        }
       }
+    },
+    "Canary": {
+      "Enabled": true,
+      "AutoRollbackOnFailure": true,
+      "AutoAdvanceOnSuccess": false,
+      "LinearStepCount": 5,
+      "StepSoakDuration": "00:10:00",
+      "MaxDeploymentDuration": "04:00:00",
+      "Thresholds": {
+        "MaxErrorRatePercent": 1.0,
+        "MaxP95LatencyMs": 1000,
+        "MaxP99LatencyMs": 2000,
+        "ErrorRateMultiplier": 2.0,
+        "LatencyDegradationPercent": 20.0
+      },
+      "AlertPriority": "High"
     }
   }
 }
