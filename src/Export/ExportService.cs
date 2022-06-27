@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -22,7 +23,7 @@ public interface IExportService
 /// <summary>
 /// Default export service implementation
 /// </summary>
-public class ExportService : IExportService
+public sealed class ExportService : IExportService
 {
     private readonly ILogger<ExportService> _logger;
 
@@ -109,7 +110,7 @@ public class ExportService : IExportService
 /// <summary>
 /// Report generator for notifications
 /// </summary>
-public class NotificationReportGenerator
+public sealed class NotificationReportGenerator
 {
     private readonly ILogger<NotificationReportGenerator> _logger;
 
@@ -123,7 +124,7 @@ public class NotificationReportGenerator
     /// </summary>
     public NotificationReport GenerateReport(List<DeploymentNotification> notifications)
     {
-        if (notifications == null || notifications.Count == 0)
+        if (notifications is null || notifications.Count == 0)
             return new NotificationReport();
 
         var report = new NotificationReport
@@ -195,7 +196,7 @@ public class NotificationReportGenerator
 /// <summary>
 /// Report containing aggregated notification statistics
 /// </summary>
-public class NotificationReport
+public sealed class NotificationReport
 {
     public int TotalNotifications { get; set; }
     public int SuccessfulCount { get; set; }

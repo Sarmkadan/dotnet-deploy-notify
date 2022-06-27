@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -15,7 +16,7 @@ public static class CollectionExtensions
     /// </summary>
     public static void AddIfNotExists<T>(this ICollection<T> collection, T item)
     {
-        if (collection != null && !collection.Contains(item))
+        if (collection is not null && !collection.Contains(item))
             collection.Add(item);
     }
 
@@ -24,7 +25,7 @@ public static class CollectionExtensions
     /// </summary>
     public static void AddRange<T>(this ICollection<T> collection, IEnumerable<T> items)
     {
-        if (collection != null && items != null)
+        if (collection is not null && items is not null)
         {
             foreach (var item in items)
                 collection.Add(item);
@@ -36,7 +37,7 @@ public static class CollectionExtensions
     /// </summary>
     public static int RemoveWhere<T>(this ICollection<T> collection, Func<T, bool> predicate)
     {
-        if (collection == null)
+        if (collection is null)
             return 0;
 
         var itemsToRemove = collection.Where(predicate).ToList();
@@ -56,7 +57,7 @@ public static class CollectionExtensions
     /// </summary>
     public static IEnumerable<List<T>> Chunk<T>(this IEnumerable<T> source, int chunkSize)
     {
-        if (source == null || chunkSize <= 0)
+        if (source is null || chunkSize <= 0)
             yield break;
 
         var chunk = new List<T>();
@@ -114,7 +115,7 @@ public static class CollectionExtensions
     /// </summary>
     public static T? GetAtIndexOrDefault<T>(this IList<T> list, int index)
     {
-        if (list == null || index < 0 || index >= list.Count)
+        if (list is null || index < 0 || index >= list.Count)
             return default;
 
         return list[index];
@@ -125,7 +126,7 @@ public static class CollectionExtensions
     /// </summary>
     public static bool IsNullOrEmpty<T>(this IEnumerable<T>? collection)
     {
-        return collection == null || !collection.Any();
+        return collection is null || !collection.Any();
     }
 
     /// <summary>
@@ -141,7 +142,7 @@ public static class CollectionExtensions
     /// </summary>
     public static string ToCommaSeparatedString<T>(this IEnumerable<T> source, string separator = ", ")
     {
-        if (source == null)
+        if (source is null)
             return string.Empty;
 
         return string.Join(separator, source.Select(x => x?.ToString() ?? ""));
@@ -152,7 +153,7 @@ public static class CollectionExtensions
     /// </summary>
     public static T? GetRandom<T>(this IList<T> source)
     {
-        if (source == null || source.Count == 0)
+        if (source is null || source.Count == 0)
             return default;
 
         var random = new Random();
@@ -164,7 +165,7 @@ public static class CollectionExtensions
     /// </summary>
     public static void Shuffle<T>(this IList<T> list)
     {
-        if (list == null || list.Count <= 1)
+        if (list is null || list.Count <= 1)
             return;
 
         var random = new Random();
@@ -207,7 +208,7 @@ public static class CollectionExtensions
             yield return item;
 
             var children = childSelector(item);
-            if (children != null)
+            if (children is not null)
             {
                 foreach (var child in children.Flatten(childSelector))
                     yield return child;

@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -127,8 +128,8 @@ public class RequestLogger : IRequestLogger
     {
         lock (_lockObject)
         {
-            var entry = _logs.FirstOrDefault(l => l.WebhookUrl == webhookUrl && l.ResponseStatusCode == null);
-            if (entry != null)
+            var entry = _logs.FirstOrDefault(l => l.WebhookUrl == webhookUrl && l.ResponseStatusCode is null);
+            if (entry is not null)
             {
                 entry.ResponseStatusCode = statusCode;
                 entry.ResponseBody = responseBody;
@@ -159,7 +160,7 @@ public class RequestLogger : IRequestLogger
 
             _logs.Add(entry);
 
-            if (exception != null)
+            if (exception is not null)
             {
                 _logger.LogWarning(
                     exception,

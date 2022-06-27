@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -103,7 +104,7 @@ public interface INotificationResultRepository
 /// <summary>
 /// In-memory implementation of notification repository
 /// </summary>
-public class NotificationRepository : INotificationRepository
+public sealed class NotificationRepository : INotificationRepository
 {
     private readonly List<DeploymentNotification> _notifications = new();
     private readonly ILogger<NotificationRepository> _logger;
@@ -163,7 +164,7 @@ public class NotificationRepository : INotificationRepository
         lock (_lockObject)
         {
             var existing = _notifications.FirstOrDefault(n => n.Id == notification.Id);
-            if (existing == null)
+            if (existing is null)
                 throw new RepositoryException("Notification not found", "Update", notification.Id);
 
             var index = _notifications.IndexOf(existing);
@@ -178,7 +179,7 @@ public class NotificationRepository : INotificationRepository
         lock (_lockObject)
         {
             var notification = _notifications.FirstOrDefault(n => n.Id == id);
-            if (notification == null)
+            if (notification is null)
                 throw new RepositoryException("Notification not found", "Delete", id);
 
             _notifications.Remove(notification);
@@ -224,7 +225,7 @@ public class NotificationRepository : INotificationRepository
 /// <summary>
 /// In-memory implementation of channel config repository
 /// </summary>
-public class ChannelConfigRepository : IChannelConfigRepository
+public sealed class ChannelConfigRepository : IChannelConfigRepository
 {
     private readonly List<ChannelConfiguration> _configurations = new();
     private readonly ILogger<ChannelConfigRepository> _logger;
@@ -279,7 +280,7 @@ public class ChannelConfigRepository : IChannelConfigRepository
         lock (_lockObject)
         {
             var existing = _configurations.FirstOrDefault(c => c.Id == config.Id);
-            if (existing == null)
+            if (existing is null)
                 throw new RepositoryException("Configuration not found", "Update", config.Id);
 
             var index = _configurations.IndexOf(existing);
@@ -295,7 +296,7 @@ public class ChannelConfigRepository : IChannelConfigRepository
         lock (_lockObject)
         {
             var config = _configurations.FirstOrDefault(c => c.Id == id);
-            if (config == null)
+            if (config is null)
                 throw new RepositoryException("Configuration not found", "Delete", id);
 
             _configurations.Remove(config);
@@ -321,7 +322,7 @@ public class ChannelConfigRepository : IChannelConfigRepository
 /// <summary>
 /// In-memory implementation of notification result repository
 /// </summary>
-public class NotificationResultRepository : INotificationResultRepository
+public sealed class NotificationResultRepository : INotificationResultRepository
 {
     private readonly List<NotificationResult> _results = new();
     private readonly ILogger<NotificationResultRepository> _logger;
@@ -406,7 +407,7 @@ public class NotificationResultRepository : INotificationResultRepository
         lock (_lockObject)
         {
             var existing = _results.FirstOrDefault(r => r.Id == result.Id);
-            if (existing == null)
+            if (existing is null)
                 throw new RepositoryException("Result not found", "Update", result.Id);
 
             var index = _results.IndexOf(existing);

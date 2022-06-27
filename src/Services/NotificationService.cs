@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -128,7 +129,7 @@ public class NotificationService : INotificationService
         {
             // Retrieve the notification
             var notification = await _notificationRepository.GetByIdAsync(notificationId);
-            if (notification == null)
+            if (notification is null)
             {
                 throw new NotificationException($"Notification {notificationId} not found");
             }
@@ -234,7 +235,7 @@ public class NotificationService : INotificationService
         _logger.LogInformation("Retrying failed deliveries for notification {Id}", notificationId);
 
         var notification = await _notificationRepository.GetByIdAsync(notificationId);
-        if (notification == null)
+        if (notification is null)
         {
             throw new NotificationException($"Notification {notificationId} not found");
         }
@@ -246,7 +247,7 @@ public class NotificationService : INotificationService
         {
             // Get the configuration
             var config = await _configRepository.GetByIdAsync(failedResult.ConfigurationId);
-            if (config == null)
+            if (config is null)
             {
                 _logger.LogWarning("Configuration {Id} not found for retry", failedResult.ConfigurationId);
                 continue;

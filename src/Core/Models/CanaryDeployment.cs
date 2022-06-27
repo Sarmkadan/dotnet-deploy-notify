@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -71,7 +72,7 @@ public enum RolloutStepStatus
 /// <summary>
 /// Represents a canary deployment with traffic-splitting configuration and full lifecycle tracking
 /// </summary>
-public class CanaryDeployment
+public sealed class CanaryDeployment
 {
     /// <summary>Unique identifier for this canary deployment</summary>
     public string Id { get; init; } = Guid.NewGuid().ToString();
@@ -201,7 +202,7 @@ public record TrafficSplit
 /// <summary>
 /// Health signal snapshot for one deployment version at a point in time
 /// </summary>
-public class CanaryMetrics
+public sealed class CanaryMetrics
 {
     /// <summary>Percentage of requests that resulted in an error response (4xx/5xx), range 0–100</summary>
     public double ErrorRatePercent { get; set; }
@@ -225,7 +226,7 @@ public class CanaryMetrics
 /// <summary>
 /// A discrete traffic-shift step within the rollout plan
 /// </summary>
-public class CanaryRolloutStep
+public sealed class CanaryRolloutStep
 {
     /// <summary>1-based sequence number of this step within the plan</summary>
     public int StepNumber { get; init; }

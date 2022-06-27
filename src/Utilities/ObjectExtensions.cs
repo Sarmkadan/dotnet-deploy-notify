@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -23,7 +24,7 @@ public static class ObjectExtensions
     /// </summary>
     public static bool IsNull(this object? obj)
     {
-        return obj == null;
+        return obj is null;
     }
 
     /// <summary>
@@ -31,7 +32,7 @@ public static class ObjectExtensions
     /// </summary>
     public static bool IsNotNull(this object? obj)
     {
-        return obj != null;
+        return obj is not null;
     }
 
     /// <summary>
@@ -39,7 +40,7 @@ public static class ObjectExtensions
     /// </summary>
     public static T IfNotNull<T>(this T? obj, Action<T> action) where T : class
     {
-        if (obj != null)
+        if (obj is not null)
             action(obj);
         return obj;
     }
@@ -49,7 +50,7 @@ public static class ObjectExtensions
     /// </summary>
     public static TResult? Map<T, TResult>(this T? obj, Func<T, TResult> mapper) where T : class
     {
-        return obj != null ? mapper(obj) : default;
+        return obj is not null ? mapper(obj) : default;
     }
 
     /// <summary>
@@ -57,7 +58,7 @@ public static class ObjectExtensions
     /// </summary>
     public static T? ShallowCopy<T>(this T obj) where T : class
     {
-        if (obj == null)
+        if (obj is null)
             return null;
 
         var type = obj.GetType();
@@ -65,7 +66,7 @@ public static class ObjectExtensions
             return obj;
 
         var objCopy = Activator.CreateInstance(type);
-        if (objCopy == null)
+        if (objCopy is null)
             return null;
 
         var properties = type.GetProperties();
@@ -181,6 +182,6 @@ public static class ObjectExtensions
     /// </summary>
     public static bool Validate<T>(this T obj, Func<T, bool> validator) where T : class
     {
-        return obj != null && validator(obj);
+        return obj is not null && validator(obj);
     }
 }

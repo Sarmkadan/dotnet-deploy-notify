@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -29,7 +30,7 @@ public enum RollbackStatus
 /// <summary>
 /// Represents a one-click rollback request for a deployment
 /// </summary>
-public class RollbackRequest
+public sealed class RollbackRequest
 {
     /// <summary>Unique identifier for this rollback request</summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -84,7 +85,7 @@ public class RollbackRequest
 /// <summary>
 /// Represents the outcome of a deployment rollback operation
 /// </summary>
-public class RollbackResult
+public sealed class RollbackResult
 {
     /// <summary>Unique identifier for this rollback result</summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
