@@ -82,6 +82,16 @@ public class WebhookDispatcher : IWebhookDispatcher
                 config.CustomHeaders,
                 config.TimeoutMs);
 
+            // Treat 401 Unauthorized as a hard failure — credentials are invalid and retrying won't help
+            if (result.HttpStatusCode == 401)
+            {
+                throw new NotificationDeliveryException(
+                    $"Authentication failed (401 Unauthorized) for {config.ChannelType}: " +
+                    "the token or webhook URL may have been revoked. Verify your credentials.",
+                    config.ChannelType,
+                    401);
+            }
+
             stopwatch.Stop();
             result.DurationMs = stopwatch.ElapsedMilliseconds;
             result.ConfigurationId = config.Id;
