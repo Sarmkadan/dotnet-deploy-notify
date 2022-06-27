@@ -132,13 +132,20 @@ public class PayloadBuilder : IPayloadBuilder
     /// </summary>
     public object BuildDiscordPayload(DeploymentNotification notification, ChannelConfiguration config)
     {
+        // Discord embed description is limited to 4096 characters
+        const int MaxEmbedDescriptionLength = 4096;
+
         var color = GetDiscordStatusColor(notification.Status);
         var emoji = GetStatusEmoji(notification.Status);
+
+        var description = notification.Message;
+        if (!string.IsNullOrEmpty(description) && description.Length > MaxEmbedDescriptionLength)
+            description = description[..(MaxEmbedDescriptionLength - 3)] + "...";
 
         var embed = new
         {
             title = $"{emoji} {notification.ProjectName} v{notification.Version}",
-            description = notification.Message,
+            description = description,
             color = color,
             fields = BuildDiscordFields(notification, config),
             url = config.IncludeBuildUrl ? notification.BuildUrl : null,
