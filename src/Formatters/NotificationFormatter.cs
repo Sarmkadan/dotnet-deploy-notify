@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -21,7 +22,7 @@ public interface INotificationFormatter
 /// <summary>
 /// Formats notifications as JSON
 /// </summary>
-public class JsonNotificationFormatter : INotificationFormatter
+public sealed class JsonNotificationFormatter : INotificationFormatter
 {
     private readonly JsonSerializerOptions _options = new()
     {
@@ -53,7 +54,7 @@ public class JsonNotificationFormatter : INotificationFormatter
 /// <summary>
 /// Formats notifications as human-readable text
 /// </summary>
-public class TextNotificationFormatter : INotificationFormatter
+public sealed class TextNotificationFormatter : INotificationFormatter
 {
     public string Format(DeploymentNotification notification)
     {
@@ -128,7 +129,7 @@ public class TextNotificationFormatter : INotificationFormatter
 /// <summary>
 /// Formats notifications as CSV
 /// </summary>
-public class CsvNotificationFormatter : INotificationFormatter
+public sealed class CsvNotificationFormatter : INotificationFormatter
 {
     public string Format(DeploymentNotification notification)
     {
@@ -168,7 +169,7 @@ public class CsvNotificationFormatter : INotificationFormatter
 /// <summary>
 /// Formats notifications as Markdown
 /// </summary>
-public class MarkdownNotificationFormatter : INotificationFormatter
+public sealed class MarkdownNotificationFormatter : INotificationFormatter
 {
     public string Format(DeploymentNotification notification)
     {
@@ -210,7 +211,7 @@ public class MarkdownNotificationFormatter : INotificationFormatter
 /// <summary>
 /// Factory for creating notification formatters
 /// </summary>
-public class NotificationFormatterFactory
+public sealed class NotificationFormatterFactory
 {
     public static INotificationFormatter CreateFormatter(string formatType)
     {

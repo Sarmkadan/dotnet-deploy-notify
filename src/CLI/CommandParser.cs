@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -10,7 +11,7 @@ namespace DotNetDeployNotify.CLI;
 /// <summary>
 /// Parses command-line arguments with support for subcommands, options, and flags
 /// </summary>
-public class CommandParser
+public sealed class CommandParser
 {
     private readonly Dictionary<string, CommandDefinition> _commands = new();
     private readonly ILogger<CommandParser> _logger;
@@ -38,7 +39,7 @@ public class CommandParser
     /// </summary>
     public ParsedCommand Parse(string[] args)
     {
-        if (args == null || args.Length == 0)
+        if (args is null || args.Length == 0)
             return CreateHelpCommand();
 
         var commandName = args[0].ToLowerInvariant();
@@ -118,7 +119,7 @@ public class CommandParser
         var optionValue = parts.Length > 1 ? parts[1] : null;
 
         var option = definition.Options.FirstOrDefault(o => o.Name == optionName);
-        if (option == null)
+        if (option is null)
         {
             command.Success = false;
             command.Error = $"Unknown option: --{optionName}";
@@ -131,13 +132,13 @@ public class CommandParser
         }
         else
         {
-            if (optionValue == null && index + 1 < args.Count)
+            if (optionValue is null && index + 1 < args.Count)
             {
                 index++;
                 optionValue = args[index];
             }
 
-            if (optionValue == null)
+            if (optionValue is null)
             {
                 command.Success = false;
                 command.Error = $"Option --{optionName} requires a value";
@@ -157,7 +158,7 @@ public class CommandParser
         var optionChar = arg.Substring(1, 1);
         var option = definition.Options.FirstOrDefault(o => o.ShortName == optionChar);
 
-        if (option == null)
+        if (option is null)
         {
             command.Success = false;
             command.Error = $"Unknown option: -{optionChar}";
@@ -171,13 +172,13 @@ public class CommandParser
         else
         {
             var optionValue = arg.Length > 2 ? arg.Substring(2) : null;
-            if (optionValue == null && index + 1 < args.Count)
+            if (optionValue is null && index + 1 < args.Count)
             {
                 index++;
                 optionValue = args[index];
             }
 
-            if (optionValue == null)
+            if (optionValue is null)
             {
                 command.Success = false;
                 command.Error = $"Option -{optionChar} requires a value";
@@ -257,7 +258,7 @@ public class CommandParser
             sb.AppendLine("OPTIONS:");
             foreach (var opt in definition.Options)
             {
-                var shortOpt = opt.ShortName != null ? $"-{opt.ShortName}, " : "";
+                var shortOpt = opt.ShortName is not null ? $"-{opt.ShortName}, " : "";
                 sb.AppendLine($"  {shortOpt}--{opt.Name,-15} {opt.Description}");
             }
         }
@@ -354,7 +355,7 @@ public class CommandParser
 /// <summary>
 /// Represents a parsed command with extracted parameters and options
 /// </summary>
-public class ParsedCommand
+public sealed class ParsedCommand
 {
     public string CommandName { get; set; } = string.Empty;
     public bool Success { get; set; }
@@ -371,7 +372,7 @@ public class ParsedCommand
 /// <summary>
 /// Defines the structure of a CLI command
 /// </summary>
-public class CommandDefinition
+public sealed class CommandDefinition
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -382,7 +383,7 @@ public class CommandDefinition
 /// <summary>
 /// Defines a command parameter
 /// </summary>
-public class ParameterDefinition
+public sealed class ParameterDefinition
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -392,7 +393,7 @@ public class ParameterDefinition
 /// <summary>
 /// Defines a command option or flag
 /// </summary>
-public class OptionDefinition
+public sealed class OptionDefinition
 {
     public string Name { get; set; } = string.Empty;
     public string? ShortName { get; set; }

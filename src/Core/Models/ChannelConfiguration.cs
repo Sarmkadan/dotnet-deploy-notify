@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace DotNetDeployNotify.Core.Models;
 /// <summary>
 /// Configuration settings for a specific notification channel
 /// </summary>
-public class ChannelConfiguration
+public sealed class ChannelConfiguration
 {
     /// <summary>Unique identifier for this channel configuration</summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
