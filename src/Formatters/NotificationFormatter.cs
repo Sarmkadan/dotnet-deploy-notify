@@ -7,6 +7,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Formatting;
 
 namespace DotNetDeployNotify.Formatters;
 
@@ -56,14 +57,18 @@ public sealed class JsonNotificationFormatter : INotificationFormatter
 /// </summary>
 public sealed class TextNotificationFormatter : INotificationFormatter
 {
+    /// <summary>When true, a status emoji is prepended to the Status line. Defaults to true.</summary>
+    public bool EnableEmojis { get; init; } = true;
+
     public string Format(DeploymentNotification notification)
     {
+        var statusLabel = StatusEmoji.Format(notification.Status, EnableEmojis);
         var lines = new List<string>
         {
             "╔════════════════════════════════════════════════════════════════╗",
             "║                  DEPLOYMENT NOTIFICATION                       ║",
             "╠════════════════════════════════════════════════════════════════╣",
-            $"║ Status:          {PadRight(notification.Status.ToString(), 40)} ║",
+            $"║ Status:          {PadRight(statusLabel, 40)} ║",
             $"║ Project:         {PadRight(notification.ProjectName, 40)} ║",
             $"║ Version:         {PadRight(notification.Version, 40)} ║",
             $"║ Environment:     {PadRight(notification.TargetEnvironment.ToString(), 40)} ║",
@@ -171,8 +176,12 @@ public sealed class CsvNotificationFormatter : INotificationFormatter
 /// </summary>
 public sealed class MarkdownNotificationFormatter : INotificationFormatter
 {
+    /// <summary>When true, a status emoji is prepended to the Status field. Defaults to true.</summary>
+    public bool EnableEmojis { get; init; } = true;
+
     public string Format(DeploymentNotification notification)
     {
+        var statusLabel = StatusEmoji.Format(notification.Status, EnableEmojis);
         var lines = new List<string>
         {
             "# Deployment Notification",
@@ -183,7 +192,7 @@ public sealed class MarkdownNotificationFormatter : INotificationFormatter
             "|-------|-------|",
             $"| Project | `{notification.ProjectName}` |",
             $"| Version | `{notification.Version}` |",
-            $"| Status | **{notification.Status}** |",
+            $"| Status | **{statusLabel}** |",
             $"| Environment | `{notification.TargetEnvironment}` |",
             $"| Branch | `{notification.BranchName}` |",
             $"| Author | `{notification.CommitAuthor}` |",
