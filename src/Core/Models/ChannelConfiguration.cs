@@ -65,6 +65,9 @@ public sealed class ChannelConfiguration
     /// </summary>
     public bool UseSlackBlockKit { get; set; } = false;
 
+    /// <summary>Whether to include emoji status indicators in notification messages. Defaults to true.</summary>
+    public bool EnableEmojis { get; set; } = true;
+
     /// <summary>When this configuration was created</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
