@@ -188,10 +188,118 @@ Edit `appsettings.json`:
     "AutoProcessNotifications": true,
     "ProcessingIntervalSeconds": 30,
     "EnableAuditLogging": true,
-    "RetentionDays": 30
+    "RetentionDays": 30,
+    "EnvironmentChannels": {
+      "Production": {
+        "WebhookUrl": "https://hooks.slack.com/services/...",
+        "ChannelType": "Slack",
+        "DisplayName": "production-alerts"
+      },
+      "Staging": {
+        "WebhookUrl": "https://hooks.slack.com/services/...",
+        "ChannelType": "Slack",
+        "DisplayName": "staging-notifications"
+      }
+    }
   }
 }
 ```
+
+### Full Configuration Reference
+
+#### `NotificationService` section
+
+| Key | Type | Default | Description |
+|-----|------|---------|-------------|
+| `MaxRetries` | `int` | `3` | Maximum delivery retry attempts per channel |
+| `WebhookTimeoutMs` | `int` | `10000` | HTTP request timeout in milliseconds |
+| `RetryDelayMs` | `int` | `5000` | Base delay between retries (ms); doubles with each attempt |
+| `AutoProcessNotifications` | `bool` | `true` | Automatically process pending notifications in the background |
+| `ProcessingIntervalSeconds` | `int` | `30` | How often the background worker polls for pending notifications |
+| `StorageType` | `string` | `"InMemory"` | Storage backend; `"InMemory"` is the only built-in option |
+| `StoragePath` | `string` | `"./data"` | Path for file-based storage (future use) |
+| `LogLevel` | `string` | `"Information"` | Log verbosity: `Trace`, `Debug`, `Information`, `Warning`, `Error` |
+| `IncludeCommitDetails` | `bool` | `true` | Include commit hash and author in notification messages |
+| `IncludeBuildUrl` | `bool` | `true` | Include a link to the CI build in notification messages |
+| `DefaultPriority` | `string` | `"Normal"` | Default notification priority: `Low`, `Normal`, `High`, `Critical` |
+| `EnableAuditLogging` | `bool` | `true` | Write an audit log entry for every delivery attempt |
+| `RetentionDays` | `int` | `30` | Days to keep delivery result history before pruning |
+
+#### `NotificationService:EnvironmentChannels` (per-environment routing)
+
+Map environment names to dedicated webhook channels so production alerts go to a high-visibility channel while dev/staging noise stays separate.
+
+| Sub-key | Type | Default | Description |
+|---------|------|---------|-------------|
+| `WebhookUrl` | `string` | — | Incoming webhook URL for this environment |
+| `ChannelType` | `string` | `"Slack"` | Target platform: `Slack`, `Discord`, `Telegram`, `Webhook` |
+| `DisplayName` | `string` | `"<env>-<type>"` | Label shown in logs for this channel |
+| `TargetId` | `string` | — | Platform-specific target (e.g. Telegram chat ID) |
+
+Environment keys match the `Environment` enum values: `Development`, `Staging`, `Production`, `Testing`, `PreProduction`.
+
+### Slack quickstart
+
+**Step 1 — Create an incoming webhook**
+
+Go to [api.slack.com/apps](https://api.slack.com/apps), create an app, enable *Incoming Webhooks*, and copy the webhook URL.
+
+**Step 2 — Install the package**
+
+```bash
+dotnet add package Zaiets.dotnet.deploy.notify
+```
+
+**Step 3 — Register services**
+
+```csharp
+// Program.cs
+builder.Services.AddNotificationServices(builder.Configuration);
+```
+
+**Step 4 — Add configuration**
+
+```json
+// appsettings.json
+{
+  "NotificationService": {
+    "EnvironmentChannels": {
+      "Production": {
+        "WebhookUrl": "https://hooks.slack.com/services/T.../B.../...",
+        "ChannelType": "Slack",
+        "DisplayName": "prod-deploys"
+      }
+    }
+  }
+}
+```
+
+**Step 5 — Send a notification**
+
+```csharp
+var notifier = app.Services.GetRequiredService<INotificationService>();
+await notifier.CreateNotificationAsync(new DeploymentNotification
+{
+    ProjectName = "MyApi",
+    Version     = "3.0.1",
+    Status      = BuildStatus.DeploymentSuccess,
+    TargetEnvironment = Environment.Production,
+    BranchName  = "main",
+    CommitHash  = Environment.GetEnvironmentVariable("GIT_SHA") ?? string.Empty
+});
+await notifier.SendPendingNotificationsAsync();
+```
+
+**Optional — enable Block Kit rich layout**
+
+```csharp
+var config = ChannelConfigurationBuilder.ForSlack()
+    .WithWebhook("https://hooks.slack.com/services/...")
+    .UseSlackBlockKit()
+    .Build();
+```
+
+Or via `appsettings.json` when using code-based channel registration, set `UseSlackBlockKit: true` on the `ChannelConfiguration` object before adding it to the repository.
 
 ### Architecture
 
