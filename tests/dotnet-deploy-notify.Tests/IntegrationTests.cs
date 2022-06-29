@@ -1,5 +1,6 @@
 #nullable enable
 using DotNetDeployNotify.Core;
+using DotNetDeployNotify.Core.Exceptions;
 using DotNetDeployNotify.Core.Models;
 using DotNetDeployNotify.Data;
 using DotNetDeployNotify.Services;
@@ -8,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using NSubstitute;
 using System.Net;
 using Xunit;
+using Environment = DotNetDeployNotify.Core.Environment;
 
 namespace DotNetDeployNotify.Tests;
 
@@ -66,7 +68,6 @@ public class IntegrationTests
             .Returns(new NotificationResult
             {
                 Status = DeliveryStatus.Delivered,
-                IsSuccessful = true,
                 HttpStatusCode = 200,
                 Channel = NotificationChannel.Slack
             });
@@ -138,7 +139,7 @@ public class IntegrationTests
         mockConfigRepository.GetByChannelAsync(NotificationChannel.Discord).Returns(new List<ChannelConfiguration> { discordConfig });
 
         mockDispatcher.SendToWebhookAsync(Arg.Any<ChannelConfiguration>(), Arg.Any<DeploymentNotification>())
-            .Returns(new NotificationResult { Status = DeliveryStatus.Delivered, IsSuccessful = true, HttpStatusCode = 200 });
+            .Returns(new NotificationResult { Status = DeliveryStatus.Delivered, HttpStatusCode = 200 });
 
         // Act
         var notificationId = await notificationService.CreateNotificationAsync(notification);
@@ -215,7 +216,6 @@ public class IntegrationTests
             ConfigurationId = "config-id",
             AttemptNumber = 1,
             Status = DeliveryStatus.Failed,
-            IsSuccessful = false
         };
 
         var slackConfig = new ChannelConfiguration
@@ -235,7 +235,7 @@ public class IntegrationTests
             .Returns(new List<NotificationResult> { failedResult });
         mockConfigRepository.GetByIdAsync("config-id").Returns(slackConfig);
         mockDispatcher.SendToWebhookAsync(Arg.Any<ChannelConfiguration>(), Arg.Any<DeploymentNotification>())
-            .Returns(new NotificationResult { Status = DeliveryStatus.Delivered, IsSuccessful = true, HttpStatusCode = 200, AttemptNumber = 2 });
+            .Returns(new NotificationResult { Status = DeliveryStatus.Delivered, HttpStatusCode = 200, AttemptNumber = 2 });
         mockResultRepository.CreateAsync(Arg.Any<NotificationResult>()).Returns(Task.CompletedTask);
 
         // Act
@@ -357,7 +357,6 @@ public class IntegrationTests
         var successResult = new NotificationResult
         {
             Status = DeliveryStatus.Delivered,
-            IsSuccessful = true,
             HttpStatusCode = 200,
             DurationMs = 150
         };
@@ -416,7 +415,7 @@ public class IntegrationTests
         mockConfigRepository.GetByChannelAsync(NotificationChannel.Slack).Returns(new List<ChannelConfiguration> { config });
 
         mockDispatcher.SendToWebhookAsync(Arg.Any<ChannelConfiguration>(), Arg.Any<DeploymentNotification>())
-            .Returns(new NotificationResult { Status = DeliveryStatus.Delivered, IsSuccessful = true, HttpStatusCode = 200 });
+            .Returns(new NotificationResult { Status = DeliveryStatus.Delivered, HttpStatusCode = 200 });
 
         // Act
         var tasks = Enumerable.Range(0, 5)
@@ -493,7 +492,7 @@ public class IntegrationTests
         mockConfigRepository.GetByChannelAsync(NotificationChannel.Discord).Returns(new List<ChannelConfiguration>()); // No Discord config
 
         mockDispatcher.SendToWebhookAsync(Arg.Any<ChannelConfiguration>(), Arg.Any<DeploymentNotification>())
-            .Returns(new NotificationResult { Status = DeliveryStatus.Delivered, IsSuccessful = true, HttpStatusCode = 200 });
+            .Returns(new NotificationResult { Status = DeliveryStatus.Delivered, HttpStatusCode = 200 });
 
         // Act
         var notificationId = await notificationService.CreateNotificationAsync(notification);

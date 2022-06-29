@@ -6,6 +6,7 @@ using DotNetDeployNotify.Services;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Xunit;
 
 namespace DotNetDeployNotify.Tests;
@@ -484,7 +485,6 @@ public class NotificationProcessorTests
             Id = Guid.NewGuid().ToString(),
             NotificationId = Guid.NewGuid().ToString(),
             Status = DeliveryStatus.Delivered,
-            IsSuccessful = true,
             DurationMs = durationMs,
             HttpStatusCode = 200,
             Channel = NotificationChannel.Slack
@@ -498,7 +498,6 @@ public class NotificationProcessorTests
             Id = Guid.NewGuid().ToString(),
             NotificationId = Guid.NewGuid().ToString(),
             Status = DeliveryStatus.Failed,
-            IsSuccessful = false,
             DurationMs = durationMs,
             HttpStatusCode = 500,
             Channel = NotificationChannel.Slack
@@ -512,7 +511,6 @@ public class NotificationProcessorTests
             Id = Guid.NewGuid().ToString(),
             NotificationId = Guid.NewGuid().ToString(),
             Status = DeliveryStatus.Skipped,
-            IsSuccessful = false,
             DurationMs = 0,
             Channel = NotificationChannel.Slack
         };

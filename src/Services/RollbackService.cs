@@ -111,7 +111,7 @@ public class RollbackService : IRollbackService
             _logger.LogWarning("Rollback for {Project} was cancelled", request.ProjectName);
 
             // Hotfix: Dispatch a notification for rollback cancellation
-            var cancelledNotification = BuildRollbackCompletionNotification(request, priorDeployment, BuildStatus.DeploymentFailed, $"Rollback of {request.ProjectName} cancelled.");
+            var cancelledNotification = BuildRollbackCompletionNotification(request, null, BuildStatus.DeploymentFailed, $"Rollback of {request.ProjectName} cancelled.");
             var cancelledNotificationId = await _notificationService.CreateNotificationAsync(cancelledNotification);
             await _notificationService.SendNotificationAsync(cancelledNotificationId, request.Channels);
         }
@@ -121,7 +121,7 @@ public class RollbackService : IRollbackService
             _logger.LogError(ex, "Rollback failed for {Project} v{To}", request.ProjectName, request.TargetVersion);
 
             // Hotfix: Dispatch a notification for rollback failure
-            var failedNotification = BuildRollbackCompletionNotification(request, priorDeployment, BuildStatus.DeploymentFailed, $"Rollback of {request.ProjectName} failed: {ex.Message}");
+            var failedNotification = BuildRollbackCompletionNotification(request, null, BuildStatus.DeploymentFailed, $"Rollback of {request.ProjectName} failed: {ex.Message}");
             var failedNotificationId = await _notificationService.CreateNotificationAsync(failedNotification);
             await _notificationService.SendNotificationAsync(failedNotificationId, request.Channels);
             throw;

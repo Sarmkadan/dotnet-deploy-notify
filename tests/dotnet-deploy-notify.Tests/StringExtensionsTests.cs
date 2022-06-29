@@ -6,6 +6,7 @@
 
 using DotNetDeployNotify.Utilities;
 using FluentAssertions;
+using Xunit;
 
 namespace DotNetDeployNotify.Tests;
 

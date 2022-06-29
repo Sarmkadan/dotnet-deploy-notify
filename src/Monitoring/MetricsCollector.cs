@@ -244,7 +244,7 @@ public class PerformanceMonitor
 
             return result;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             _collector.IncrementCounter($"{operationName}_error", 1);
             throw;

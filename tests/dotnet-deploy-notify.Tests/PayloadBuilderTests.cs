@@ -1,5 +1,6 @@
 #nullable enable
 using DotNetDeployNotify.Core;
+using Environment = DotNetDeployNotify.Core.Environment;
 using DotNetDeployNotify.Core.Models;
 using DotNetDeployNotify.Services;
 using FluentAssertions;

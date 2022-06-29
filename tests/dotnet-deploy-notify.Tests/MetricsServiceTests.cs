@@ -209,7 +209,7 @@ public class MetricsServiceTests
         var metrics = await _metricsService.GetMetricsAsync();
 
         // Assert
-        metrics.Timestamp.Should().BeSameOrAfter(DateTime.UtcNow.AddSeconds(-1));
+        metrics.Timestamp.Should().BeOnOrAfter(DateTime.UtcNow.AddSeconds(-1));
     }
 
     #endregion

@@ -183,6 +183,7 @@ public static class CollectionExtensions
     /// Groups collection and returns dictionary with counts
     /// </summary>
     public static Dictionary<TKey, int> CountBy<T, TKey>(this IEnumerable<T> source, Func<T, TKey> keySelector)
+        where TKey : notnull
     {
         var result = new Dictionary<TKey, int>();
 
