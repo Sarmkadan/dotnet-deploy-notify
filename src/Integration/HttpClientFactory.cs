@@ -284,7 +284,7 @@ public class CircuitBreaker
     /// </summary>
     private class NullLogger : ILogger
     {
-        public IDisposable BeginScope<TState>(TState state) => new NoOpDisposable();
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => new NoOpDisposable();
         public bool IsEnabled(LogLevel logLevel) => false;
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) { }
 

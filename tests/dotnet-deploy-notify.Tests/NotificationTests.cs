@@ -9,6 +9,7 @@ using DotNetDeployNotify.Core.Models;
 using DotNetDeployNotify.Services;
 using FluentAssertions;
 using Moq;
+using Xunit;
 using Environment = DotNetDeployNotify.Core.Environment;
 
 namespace DotNetDeployNotify.Tests;
