@@ -17,13 +17,30 @@ namespace DotNetDeployNotify.Services;
 /// </summary>
 public interface IWebhookDispatcher
 {
-    /// <summary>Sends a notification to a webhook endpoint</summary>
+    /// <summary>
+    /// Sends a notification to a webhook endpoint.
+    /// </summary>
+    /// <param name="config">The channel configuration.</param>
+    /// <param name="notification">The deployment notification to send.</param>
+    /// <returns>The result of the delivery attempt.</returns>
     Task<NotificationResult> SendToWebhookAsync(ChannelConfiguration config, DeploymentNotification notification);
 
-    /// <summary>Sends raw payload to a webhook URL</summary>
+    /// <summary>
+    /// Sends raw payload to a webhook URL.
+    /// </summary>
+    /// <param name="webhookUrl">The URL of the webhook.</param>
+    /// <param name="payload">The payload to send.</param>
+    /// <param name="headers">Custom HTTP headers.</param>
+    /// <param name="timeoutMs">Timeout in milliseconds.</param>
+    /// <returns>The result of the delivery attempt.</returns>
     Task<NotificationResult> SendPayloadAsync(string webhookUrl, WebhookPayload payload, Dictionary<string, string> headers, int timeoutMs);
 
-    /// <summary>Validates webhook connectivity</summary>
+    /// <summary>
+    /// Validates webhook connectivity.
+    /// </summary>
+    /// <param name="webhookUrl">The URL to test.</param>
+    /// <param name="timeoutMs">Timeout in milliseconds.</param>
+    /// <returns>True if the webhook is reachable, false otherwise.</returns>
     Task<bool> ValidateWebhookAsync(string webhookUrl, int timeoutMs);
 }
 
