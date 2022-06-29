@@ -46,6 +46,13 @@ await notifier.SendPendingNotificationsAsync();
 }
 ```
 
+## Examples
+
+For more practical usage scenarios, check out the [examples](./examples) directory:
+- [BasicUsage.cs](./examples/BasicUsage.cs)
+- [AdvancedUsage.cs](./examples/AdvancedUsage.cs)
+- [IntegrationExample.cs](./examples/IntegrationExample.cs)
+
 ## License
 
 MIT © 2026 Vladyslav Zaiets
