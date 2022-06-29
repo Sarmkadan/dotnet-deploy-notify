@@ -28,6 +28,15 @@ public static class DependencyInjection
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IWebhookDispatcher, WebhookDispatcher>();
 
+        // Deployment history tracking
+        services.AddSingleton<IDeploymentHistoryService, DeploymentHistoryService>();
+
+        // Rollback notifications
+        services.AddScoped<IRollbackNotificationService, RollbackNotificationService>();
+
+        // Custom template engine
+        services.AddSingleton<ICustomTemplateEngine, CustomTemplateEngine>();
+
         // Data access
         services.AddSingleton<INotificationRepository, NotificationRepository>();
         services.AddSingleton<INotificationResultRepository, NotificationResultRepository>();

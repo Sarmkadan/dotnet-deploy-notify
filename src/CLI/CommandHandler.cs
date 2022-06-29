@@ -4,7 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
+using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Data;
 using DotNetDeployNotify.Services;
 
 namespace DotNetDeployNotify.CLI;
@@ -16,15 +18,21 @@ public sealed class CommandHandler
 {
     private readonly INotificationService _notificationService;
     private readonly IChannelConfigRepository _configRepository;
+    private readonly IDeploymentHistoryService _historyService;
+    private readonly IRollbackNotificationService _rollbackNotificationService;
     private readonly ILogger<CommandHandler> _logger;
 
     public CommandHandler(
         INotificationService notificationService,
         IChannelConfigRepository configRepository,
+        IDeploymentHistoryService historyService,
+        IRollbackNotificationService rollbackNotificationService,
         ILogger<CommandHandler> logger)
     {
         _notificationService = notificationService;
         _configRepository = configRepository;
+        _historyService = historyService;
+        _rollbackNotificationService = rollbackNotificationService;
         _logger = logger;
     }
 
@@ -53,6 +61,8 @@ public sealed class CommandHandler
                 "list" => await HandleListCommandAsync(command),
                 "config" => await HandleConfigCommandAsync(command),
                 "health" => await HandleHealthCommandAsync(command),
+                "history" => await HandleHistoryCommandAsync(command),
+                "rollback" => await HandleRollbackCommandAsync(command),
                 _ => throw new InvalidOperationException($"Command handler not found: {command.CommandName}")
             };
         }
@@ -280,5 +290,106 @@ public sealed class CommandHandler
         }
 
         return channels.Any() ? channels : new List<NotificationChannel> { NotificationChannel.Slack };
+    }
+
+    /// <summary>
+    /// Handles the 'history' command to show deployment history and statistics
+    /// </summary>
+    private async Task<int> HandleHistoryCommandAsync(ParsedCommand command)
+    {
+        var projectName = command.GetParameter("project");
+        if (string.IsNullOrWhiteSpace(projectName))
+        {
+            Console.Error.WriteLine("❌ Missing required parameter: project");
+            return 1;
+        }
+
+        var limitStr = command.GetOption("limit") ?? "20";
+        if (!int.TryParse(limitStr, out var limit) || limit <= 0)
+            limit = 20;
+
+        var showStats = command.HasOption("stats");
+
+        var history = await _historyService.GetProjectHistoryAsync(projectName, limit);
+
+        Console.WriteLine($"Deployment History — {projectName}");
+        Console.WriteLine("───────────────────────────────────────────────────");
+
+        if (history.Count == 0)
+        {
+            Console.WriteLine("No deployment history found.");
+            return 0;
+        }
+
+        foreach (var entry in history)
+        {
+            var icon = entry.IsSuccessful ? "✅" : "❌";
+            var rollbackTag = entry.IsRollback ? " [ROLLBACK]" : string.Empty;
+            Console.WriteLine($"  {icon} v{entry.Version}{rollbackTag}  {entry.FinalStatus}  {entry.TargetEnvironment}  {entry.DeployedAt:yyyy-MM-dd HH:mm} UTC");
+            if (!string.IsNullOrWhiteSpace(entry.CommitAuthor))
+                Console.WriteLine($"     By: {entry.CommitAuthor}  Commit: {entry.CommitHash[..Math.Min(7, entry.CommitHash.Length)]}");
+        }
+
+        if (showStats)
+        {
+            var stats = await _historyService.GetStatisticsAsync(projectName);
+            Console.WriteLine();
+            Console.WriteLine("Statistics:");
+            Console.WriteLine($"  Total:       {stats.TotalDeployments}");
+            Console.WriteLine($"  Successful:  {stats.SuccessfulDeployments}");
+            Console.WriteLine($"  Failed:      {stats.FailedDeployments}");
+            Console.WriteLine($"  Rollbacks:   {stats.RollbackCount}");
+            Console.WriteLine($"  Success rate:{stats.SuccessRate:F1}%");
+            if (stats.AverageDurationSeconds.HasValue)
+                Console.WriteLine($"  Avg duration:{stats.AverageDurationSeconds:F0}s");
+        }
+
+        return 0;
+    }
+
+    /// <summary>
+    /// Handles the 'rollback' command to initiate a rollback and send notifications
+    /// </summary>
+    private async Task<int> HandleRollbackCommandAsync(ParsedCommand command)
+    {
+        var projectName    = command.GetParameter("project");
+        var targetVersion  = command.GetParameter("target-version");
+        var currentVersion = command.GetOption("current-version");
+
+        if (string.IsNullOrWhiteSpace(projectName) || string.IsNullOrWhiteSpace(targetVersion))
+        {
+            Console.Error.WriteLine("❌ Missing required parameters: project and target-version");
+            return 1;
+        }
+
+        var environmentStr = command.GetOption("environment") ?? "Production";
+        if (!Enum.TryParse<DotNetDeployNotify.Core.Environment>(environmentStr, true, out var environment))
+        {
+            Console.Error.WriteLine($"❌ Invalid environment: {environmentStr}");
+            return 1;
+        }
+
+        var channelsStr = command.GetOption("channels") ?? "Slack";
+        var channels = ParseChannels(channelsStr);
+
+        var request = new RollbackRequest
+        {
+            ProjectName = projectName,
+            TargetVersion = targetVersion,
+            CurrentVersion = currentVersion ?? "unknown",
+            TargetEnvironment = environment,
+            RequestedBy = command.GetOption("requested-by") ?? "cli-user",
+            Reason = command.GetOption("reason") ?? string.Empty,
+            Channels = channels,
+            Priority = NotificationPriority.High
+        };
+
+        Console.WriteLine($"🔄 Initiating rollback: {projectName} → v{targetVersion} [{environment}]");
+
+        var results = await _rollbackNotificationService.NotifyRollbackInitiatedAsync(request);
+        var successCount = results.Count(r => r.IsSuccessful);
+
+        Console.WriteLine($"✅ Rollback notification dispatched to {successCount}/{results.Count} channels");
+        return successCount > 0 || !results.Any() ? 0 : 1;
     }
 }
