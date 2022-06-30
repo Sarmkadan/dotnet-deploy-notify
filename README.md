@@ -53,6 +53,16 @@ For more practical usage scenarios, check out the [examples](./examples) directo
 - [AdvancedUsage.cs](./examples/AdvancedUsage.cs)
 - [IntegrationExample.cs](./examples/IntegrationExample.cs)
 
+## Docker Usage
+
+To run the application using Docker Compose:
+
+```bash
+docker-compose up -d
+```
+
+This will start the application along with Redis and PostgreSQL instances.
+
 ## License
 
 MIT © 2026 Vladyslav Zaiets
