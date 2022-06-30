@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
+
+<PropertyGroup>
+  <TargetFramework>net10.0</TargetFramework>
+  <ImplicitUsings>enable</ImplicitUsings>
+  <Nullable>enable</Nullable>
+  <IsPackable>false</IsPackable>
+  <IsTestProject>false</IsTestProject>
+  <GenerateRuntimeConfigurationFiles>true</GenerateRuntimeConfigurationFiles>
+  <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+  <AppendRuntimeIdentifierToOutputPath>false</AppendRuntimeIdentifierToOutputPath>
+</PropertyGroup>
+
+<ItemGroup>
+  <PackageReference Include="BenchmarkDotNet" Version="0.13.12" />
+  <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
+  <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.0" />
+  <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="9.0.0" />
+</ItemGroup>
+
+<ItemGroup>
+  <ProjectReference Include="..\dotnet-deploy-notify.csproj" />
+</ItemGroup>
+
+<ItemGroup>
+  <None Update="BenchmarkResults.md">
+    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+  </None>
+</ItemGroup>
+
+<ItemGroup>
+  <Folder Include="Benchmarks\" />
+</ItemGroup>
+
+</Project>
