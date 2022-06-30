@@ -7,11 +7,11 @@
     <OutputType>Exe</OutputType>
     <RootNamespace>DotNetDeployNotify</RootNamespace>
     <AssemblyName>DotNetDeployNotify</AssemblyName>
-    <PackageId>Zaiets.dotnet.deploy.notify</PackageId>
-    <Version>2.0.2</Version>
+    <PackageId>dotnet-deploy-notify</PackageId>
+    <Version>1.0.0</Version>
     <Authors>Vladyslav Zaiets</Authors>
-    <Description>Deployment notification pipeline for .NET - build status to Telegram/Slack/Discord webhooks</Description>
-    <PackageTags>dotnet deployment notify webhooks telegram slack discord</PackageTags>
+    <Description>A notification tool for .NET deployment processes.</Description>
+    <PackageTags>dotnet, deployment, notification, webhook, devops</PackageTags>
     <PackageProjectUrl>https://github.com/sarmkadan/dotnet-deploy-notify</PackageProjectUrl>
     <RepositoryUrl>https://github.com/sarmkadan/dotnet-deploy-notify</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
