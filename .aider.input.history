@@ -1,0 +1,312 @@
+
+# 2026-07-03 10:15:09.079037
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:15:09.079088
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:16:20.065901
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:16:20.065943
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:17:29.017756
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:17:29.017798
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:20:13.784309
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:20:13.784351
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:21:23.644675
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:21:23.644840
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:22:32.575986
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
+
+# 2026-07-03 10:22:32.576035
++Improve error handling in sarmkadan/dotnet-deploy-notify.
++Work in: /home/redrocket/task-factory/workdir/dotnet-deploy-notify
++
++1. Review the main service classes for error handling gaps
++2. Add custom exception types in an Exceptions/ folder:
++   - DotnetDeployNotifyException (base)
++   - ConfigurationException
++   - ValidationException (if applicable)
++3. Add proper try-catch blocks where external calls happen (HTTP, DB, file I/O)
++4. Add guard clauses (ArgumentNullException) to public methods missing them
++5. Do NOT over-engineer - only add where genuinely needed
++
++Commit as: "fix: improve error handling with custom exceptions"
++
++Git config:
++  git config user.name "Vladyslav Zaiets"
++  git config user.email "rutova2@gmail.com"
++
++CRITICAL RULES:
++- Do NOT add Co-Authored-By headers
++- Do NOT mention AI, Claude, GPT, Copilot, generated, automated anywhere in code or commits
++- Do NOT mention Red Rocket or Amdaris anywhere
++- Write natural commit messages
++- Push to main when done
