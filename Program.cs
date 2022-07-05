@@ -28,30 +28,23 @@ internal sealed class Program
         try
         {
             // Build configuration
-            var configuration = new ConfigurationBuilder()
-                .SetBasePath(Directory.GetCurrentDirectory())
-                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-                .AddEnvironmentVariables()
-                .Build();
+            var configuration = BuildConfiguration();
 
             // Setup dependency injection
             var services = new ServiceCollection();
 
             services.AddLogging(logging =>
-                {
-                    logging.ClearProviders();
-                    logging.AddConsole();
-                    logging.SetMinimumLevel(LogLevel.Information);
-                })
-                .AddNotificationServices(configuration);
+            {
+                logging.ClearProviders();
+                logging.AddConsole();
+                logging.SetMinimumLevel(LogLevel.Information);
+            })
+            .AddNotificationServices(configuration);
 
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
 
-            logger.LogInformation("═══════════════════════════════════════════════════════");
-            logger.LogInformation("🚀 {AppName} v{Version} - Deployment Notification Service",
-                AppConstants.AppName, AppConstants.Version);
-            logger.LogInformation("═══════════════════════════════════════════════════════");
+            DisplayApplicationHeader(logger);
 
             // Run the application
             await RunApplicationAsync(serviceProvider, logger, args);
@@ -62,6 +55,29 @@ internal sealed class Program
             Console.Error.WriteLine(ex.StackTrace);
             System.Environment.Exit(1);
         }
+    }
+
+    /// <summary>
+    /// Builds the application configuration from multiple sources
+    /// </summary>
+    private static IConfigurationRoot BuildConfiguration()
+    {
+        return new ConfigurationBuilder()
+            .SetBasePath(Directory.GetCurrentDirectory())
+            .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+            .AddEnvironmentVariables()
+            .Build();
+    }
+
+    /// <summary>
+    /// Displays the application header with version information
+    /// </summary>
+    private static void DisplayApplicationHeader(ILogger<Program> logger)
+    {
+        logger.LogInformation("═══════════════════════════════════════════════════════");
+        logger.LogInformation("🚀 {AppName} v{Version} - Deployment Notification Service",
+            AppConstants.AppName, AppConstants.Version);
+        logger.LogInformation("═══════════════════════════════════════════════════════");
     }
 
     /// <summary>
@@ -93,7 +109,27 @@ internal sealed class Program
         logger.LogInformation("📝 Setting up sample channel configurations...");
 
         // Example Telegram configuration
-        var telegramConfig = new ChannelConfiguration
+        var telegramConfig = CreateTelegramConfiguration();
+        await configRepository.CreateAsync(telegramConfig);
+        logger.LogInformation("✅ Telegram configuration created");
+
+        // Example Slack configuration
+        var slackConfig = CreateSlackConfiguration();
+        await configRepository.CreateAsync(slackConfig);
+        logger.LogInformation("✅ Slack configuration created");
+
+        // Example Discord configuration
+        var discordConfig = CreateDiscordConfiguration();
+        await configRepository.CreateAsync(discordConfig);
+        logger.LogInformation("✅ Discord configuration created\n");
+    }
+
+    /// <summary>
+    /// Creates a Telegram channel configuration
+    /// </summary>
+    private static ChannelConfiguration CreateTelegramConfiguration()
+    {
+        return new ChannelConfiguration
         {
             DisplayName = "Telegram - DevOps Channel",
             ChannelType = NotificationChannel.Telegram,
@@ -117,12 +153,14 @@ internal sealed class Program
             MaxRetries = 3,
             TimeoutMs = 10000
         };
+    }
 
-        await configRepository.CreateAsync(telegramConfig);
-        logger.LogInformation("✅ Telegram configuration created");
-
-        // Example Slack configuration
-        var slackConfig = new ChannelConfiguration
+    /// <summary>
+    /// Creates a Slack channel configuration
+    /// </summary>
+    private static ChannelConfiguration CreateSlackConfiguration()
+    {
+        return new ChannelConfiguration
         {
             DisplayName = "Slack - Deployments",
             ChannelType = NotificationChannel.Slack,
@@ -140,12 +178,14 @@ internal sealed class Program
             MaxRetries = 3,
             TimeoutMs = 10000
         };
+    }
 
-        await configRepository.CreateAsync(slackConfig);
-        logger.LogInformation("✅ Slack configuration created");
-
-        // Example Discord configuration
-        var discordConfig = new ChannelConfiguration
+    /// <summary>
+    /// Creates a Discord channel configuration
+    /// </summary>
+    private static ChannelConfiguration CreateDiscordConfiguration()
+    {
+        return new ChannelConfiguration
         {
             DisplayName = "Discord - Build Status",
             ChannelType = NotificationChannel.Discord,
@@ -161,9 +201,6 @@ internal sealed class Program
             MaxRetries = 2,
             TimeoutMs = 8000
         };
-
-        await configRepository.CreateAsync(discordConfig);
-        logger.LogInformation("✅ Discord configuration created\n");
     }
 
     /// <summary>
@@ -176,7 +213,34 @@ internal sealed class Program
         logger.LogInformation("📤 Creating and processing demo notifications...\n");
 
         // Demo notification 1: Successful deployment
-        var successNotification = new DeploymentNotification
+        var successNotification = CreateSuccessNotification();
+        var id1 = await notificationService.CreateNotificationAsync(successNotification);
+        logger.LogInformation("✅ Created notification: {NotificationId}\n", id1);
+
+        // Demo notification 2: Failed build
+        var failedNotification = CreateFailedNotification();
+        var id2 = await notificationService.CreateNotificationAsync(failedNotification);
+        logger.LogInformation("✅ Created notification: {NotificationId}\n", id2);
+
+        // Demo notification 3: Staging deployment
+        var stagingNotification = CreateStagingNotification();
+        var id3 = await notificationService.CreateNotificationAsync(stagingNotification);
+        logger.LogInformation("✅ Created notification: {NotificationId}\n", id3);
+
+        // Process pending notifications
+        logger.LogInformation("🔄 Processing pending notifications...\n");
+        var results = await notificationService.SendPendingNotificationsAsync();
+
+        // Display results
+        DisplayNotificationResults(results, logger);
+    }
+
+    /// <summary>
+    /// Creates a successful deployment notification
+    /// </summary>
+    private static DeploymentNotification CreateSuccessNotification()
+    {
+        return new DeploymentNotification
         {
             ProjectName = "MyApp.Api",
             Version = "2.5.0",
@@ -196,12 +260,14 @@ internal sealed class Program
             },
             Priority = NotificationPriority.High
         };
+    }
 
-        var id1 = await notificationService.CreateNotificationAsync(successNotification);
-        logger.LogInformation("✅ Created notification: {NotificationId}\n", id1);
-
-        // Demo notification 2: Failed build
-        var failedNotification = new DeploymentNotification
+    /// <summary>
+    /// Creates a failed build notification
+    /// </summary>
+    private static DeploymentNotification CreateFailedNotification()
+    {
+        return new DeploymentNotification
         {
             ProjectName = "MyApp.Tests",
             Version = "1.0.0",
@@ -221,12 +287,14 @@ internal sealed class Program
             },
             Priority = NotificationPriority.Critical
         };
+    }
 
-        var id2 = await notificationService.CreateNotificationAsync(failedNotification);
-        logger.LogInformation("✅ Created notification: {NotificationId}\n", id2);
-
-        // Demo notification 3: Staging deployment
-        var stagingNotification = new DeploymentNotification
+    /// <summary>
+    /// Creates a staging deployment notification
+    /// </summary>
+    private static DeploymentNotification CreateStagingNotification()
+    {
+        return new DeploymentNotification
         {
             ProjectName = "MyApp.Web",
             Version = "1.4.2",
@@ -247,14 +315,13 @@ internal sealed class Program
             },
             Priority = NotificationPriority.High
         };
+    }
 
-        var id3 = await notificationService.CreateNotificationAsync(stagingNotification);
-        logger.LogInformation("✅ Created notification: {NotificationId}\n", id3);
-
-        // Process pending notifications
-        logger.LogInformation("🔄 Processing pending notifications...\n");
-        var results = await notificationService.SendPendingNotificationsAsync();
-
+    /// <summary>
+    /// Displays the notification results summary
+    /// </summary>
+    private static void DisplayNotificationResults(List<NotificationResult> results, ILogger<Program> logger)
+    {
         // Display results
         logger.LogInformation("📊 Delivery Results:");
         logger.LogInformation("────────────────────────────────────────────");
@@ -269,11 +336,11 @@ internal sealed class Program
 
             if (!result.IsSuccessful && !string.IsNullOrWhiteSpace(result.ErrorMessage))
             {
-                logger.LogWarning("   Error: {ErrorMessage}", result.ErrorMessage);
+                logger.LogWarning(" Error: {ErrorMessage}", result.ErrorMessage);
             }
         }
 
-        logger.LogInformation("────────────────────────────────────────────\n");
+        logger.LogInformation("────────────────────────────────────────────");
 
         var successCount = results.Count(r => r.IsSuccessful);
         var failureCount = results.Count(r => !r.IsSuccessful);
