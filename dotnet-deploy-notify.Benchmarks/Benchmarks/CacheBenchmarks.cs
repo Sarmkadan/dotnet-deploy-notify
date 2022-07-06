@@ -4,12 +4,18 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DotNetDeployNotify.Benchmarks.Benchmarks;
 
+/// <summary>
+/// Benchmark class for cache operations.
+/// </summary>
 [MemoryDiagnoser]
 public class CacheBenchmarks
 {
     private MemoryCacheService _cacheService;
     private CacheKeyBuilder _keyBuilder;
 
+    /// <summary>
+    /// Initializes the cache service and key builder.
+    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
@@ -17,6 +23,10 @@ public class CacheBenchmarks
         _keyBuilder = new CacheKeyBuilder();
     }
 
+    /// <summary>
+    /// Builds a cache key by adding project, version, and branch parts.
+    /// </summary>
+    /// <returns>A cache key string.</returns>
     [Benchmark]
     public string BuildKey()
     {
@@ -27,6 +37,9 @@ public class CacheBenchmarks
             .Build();
     }
 
+    /// <summary>
+    /// Sets and gets a value in the cache.
+    /// </summary>
     [Benchmark]
     public void CacheSetAndGet()
     {
