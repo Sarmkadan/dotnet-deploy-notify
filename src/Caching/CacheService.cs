@@ -11,10 +11,24 @@ namespace DotNetDeployNotify.Caching;
 /// </summary>
 public sealed class CacheEntry<T>
 {
+    /// <summary>
+    /// Gets or sets the cached value.
+    /// </summary>
     public T? Value { get; set; }
+
+    /// <summary>
+    /// Gets or sets the expiration time.
+    /// </summary>
     public DateTime ExpiresAt { get; set; }
+
+    /// <summary>
+    /// Gets or sets the creation time. Defaults to UTC now.
+    /// </summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
+    /// <summary>
+    /// Gets a value indicating whether the entry is expired.
+    /// </summary>
     public bool IsExpired => DateTime.UtcNow > ExpiresAt;
 }
 
@@ -23,11 +37,43 @@ public sealed class CacheEntry<T>
 /// </summary>
 public interface ICacheService
 {
+    /// <summary>
+    /// Gets a value from the cache.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="key">The cache key.</param>
+    /// <returns>The cached value, or the default value if not found or expired.</returns>
     T? Get<T>(string key);
+
+    /// <summary>
+    /// Sets a value in the cache.
+    /// </summary>
+    /// <typeparam name="T">The type of the value.</typeparam>
+    /// <param name="key">The cache key.</param>
+    /// <param name="value">The value to cache.</param>
+    /// <param name="ttl">The time-to-live. Defaults to 5 minutes.</param>
     void Set<T>(string key, T value, TimeSpan? ttl = null);
+
+    /// <summary>
+    /// Removes a value from the cache.
+    /// </summary>
+    /// <param name="key">The cache key.</param>
     void Remove(string key);
+
+    /// <summary>
+    /// Clears the cache.
+    /// </summary>
     void Clear();
+
+    /// <summary>
+    /// Gets the number of items in the cache.
+    /// </summary>
     int Count { get; }
+
+    /// <summary>
+    /// Gets cache statistics.
+    /// </summary>
+    /// <returns>The cache statistics.</returns>
     CacheStatistics GetStatistics();
 }
 
@@ -36,11 +82,29 @@ public interface ICacheService
 /// </summary>
 public sealed class CacheStatistics
 {
+    /// <summary>
+    /// Gets or sets the total number of items in the cache.
+    /// </summary>
     public int TotalItems { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total number of hits.
+    /// </summary>
     public long Hits { get; set; }
+
+    /// <summary>
+    /// Gets or sets the total number of misses.
+    /// </summary>
     public long Misses { get; set; }
+
+    /// <summary>
+    /// Gets or sets the last cleanup time.
+    /// </summary>
     public DateTime LastCleanup { get; set; }
 
+    /// <summary>
+    /// Gets the hit rate in percent.
+    /// </summary>
     public double HitRate => (Hits + Misses) > 0 ? (double)Hits / (Hits + Misses) * 100 : 0;
 }
 
