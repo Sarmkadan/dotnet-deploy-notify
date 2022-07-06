@@ -15,18 +15,31 @@ namespace DotNetDeployNotify.Infrastructure;
 public interface IRequestLogger
 {
     /// <summary>Logs an outgoing webhook request</summary>
+    /// <param name="webhookUrl">The URL of the webhook.</param>
+    /// <param name="payload">The request payload.</param>
+    /// <param name="headers">The request headers.</param>
     void LogWebhookRequest(string webhookUrl, string payload, Dictionary<string, string> headers);
 
     /// <summary>Logs an incoming webhook response</summary>
+    /// <param name="webhookUrl">The URL of the webhook.</param>
+    /// <param name="statusCode">The HTTP status code.</param>
+    /// <param name="responseBody">The response body.</param>
+    /// <param name="durationMs">The request duration in milliseconds.</param>
     void LogWebhookResponse(string webhookUrl, int statusCode, string responseBody, long durationMs);
 
     /// <summary>Logs an HTTP error</summary>
+    /// <param name="webhookUrl">The URL of the webhook.</param>
+    /// <param name="errorMessage">The error message.</param>
+    /// <param name="exception">The optional exception.</param>
     void LogWebhookError(string webhookUrl, string errorMessage, Exception? exception = null);
 
     /// <summary>Gets request/response history</summary>
+    /// <param name="limit">The maximum number of entries to return.</param>
+    /// <returns>A list of request log entries.</returns>
     List<RequestLogEntry> GetRequestHistory(int limit = 100);
 
     /// <summary>Clears old request logs</summary>
+    /// <param name="olderThan">The date threshold to clear logs older than.</param>
     void ClearOldLogs(DateTime olderThan);
 }
 

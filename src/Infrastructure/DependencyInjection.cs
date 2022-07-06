@@ -20,8 +20,11 @@ namespace DotNetDeployNotify.Infrastructure;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Adds all notification services to the dependency injection container
+    /// Adds all notification services to the dependency injection container.
     /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The application configuration.</param>
+    /// <returns>The service collection.</returns>
     public static IServiceCollection AddNotificationServices(this IServiceCollection services, IConfiguration configuration)
     {
         // Core services
@@ -106,8 +109,10 @@ public static class DependencyInjection
     }
 
     /// <summary>
-    /// Adds logging configuration
+    /// Adds logging configuration.
     /// </summary>
+    /// <param name="logging">The logging builder.</param>
+    /// <returns>The logging builder.</returns>
     public static ILoggingBuilder AddDeployNotifyLogging(this ILoggingBuilder logging)
     {
         logging.ClearProviders();

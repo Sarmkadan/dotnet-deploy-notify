@@ -18,6 +18,12 @@ public class NotificationProcessingWorker : BackgroundWorker
     private readonly ILogger<NotificationProcessingWorker> _logger;
     private readonly TimeSpan _interval;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NotificationProcessingWorker"/> class.
+    /// </summary>
+    /// <param name="notificationService">The notification service to process pending notifications.</param>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="interval">The interval at which to process notifications. Defaults to 30 seconds.</param>
     public NotificationProcessingWorker(
         INotificationService notificationService,
         ILogger<NotificationProcessingWorker> logger,
@@ -82,12 +88,20 @@ public abstract class BackgroundWorker : BackgroundService
         StartTime = DateTime.UtcNow;
     }
 
+    /// <summary>
+    /// Starts the background worker.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     public override async Task StartAsync(CancellationToken cancellationToken)
     {
         Logger.LogInformation("{WorkerName} starting...", GetType().Name);
         await base.StartAsync(cancellationToken);
     }
 
+    /// <summary>
+    /// Stops the background worker.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token that can be used by other objects or threads to receive notice of cancellation.</param>
     public override async Task StopAsync(CancellationToken cancellationToken)
     {
         var uptime = DateTime.UtcNow - StartTime;
@@ -107,6 +121,12 @@ public class HealthCheckWorker : BackgroundWorker
     private readonly ILogger<HealthCheckWorker> _logger;
     private readonly TimeSpan _interval;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="HealthCheckWorker"/> class.
+    /// </summary>
+    /// <param name="healthCheckService">The service used to check system health.</param>
+    /// <param name="logger">The logger instance.</param>
+    /// <param name="interval">The interval at which to run health checks. Defaults to 5 minutes.</param>
     public HealthCheckWorker(
         IHealthCheckService healthCheckService,
         ILogger<HealthCheckWorker> logger,
@@ -158,11 +178,19 @@ public class ScheduledTaskWorker : BackgroundWorker
     private readonly List<ScheduledTask> _tasks = new();
     private readonly ILogger<ScheduledTaskWorker> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ScheduledTaskWorker"/> class.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
     public ScheduledTaskWorker(ILogger<ScheduledTaskWorker> logger) : base(logger)
     {
         _logger = logger;
     }
 
+    /// <summary>
+    /// Registers a new scheduled task.
+    /// </summary>
+    /// <param name="task">The task to register.</param>
     public void RegisterTask(ScheduledTask task)
     {
         _tasks.Add(task);
@@ -218,15 +246,32 @@ public class ScheduledTaskWorker : BackgroundWorker
 /// </summary>
 public abstract class ScheduledTask
 {
+    /// <summary>
+    /// Gets or sets the name of the task.
+    /// </summary>
     public string Name { get; set; } = string.Empty;
+    /// <summary>
+    /// Gets or sets the interval at which the task should run.
+    /// </summary>
     public TimeSpan Interval { get; set; } = TimeSpan.FromMinutes(1);
+    /// <summary>
+    /// Gets or sets the date and time when the task was last run.
+    /// </summary>
     public DateTime LastRun { get; set; }
 
+    /// <summary>
+    /// Checks if the task should be run based on its last run time and interval.
+    /// </summary>
+    /// <returns>True if the task should run, otherwise false.</returns>
     public bool ShouldRun()
     {
         return DateTime.UtcNow - LastRun >= Interval;
     }
 
+    /// <summary>
+    /// Executes the task.
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public abstract Task ExecuteAsync();
 }
 
@@ -237,6 +282,10 @@ public class CleanupExpiredNotificationsTask : ScheduledTask
 {
     private readonly ILogger<CleanupExpiredNotificationsTask> _logger;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CleanupExpiredNotificationsTask"/> class.
+    /// </summary>
+    /// <param name="logger">The logger instance.</param>
     public CleanupExpiredNotificationsTask(ILogger<CleanupExpiredNotificationsTask> logger)
     {
         _logger = logger;
@@ -244,6 +293,10 @@ public class CleanupExpiredNotificationsTask : ScheduledTask
         Interval = TimeSpan.FromHours(1);
     }
 
+    /// <summary>
+    /// Executes the task to clean up expired notifications.
+    /// </summary>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public override Task ExecuteAsync()
     {
         _logger.LogDebug("Cleaning up expired notifications");
