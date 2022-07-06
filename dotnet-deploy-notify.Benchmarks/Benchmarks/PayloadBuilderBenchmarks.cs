@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DotNetDeployNotify.Benchmarks.Benchmarks;
 
+/// <summary>
+/// Benchmark class for PayloadBuilder performance.
+/// </summary>
 [MemoryDiagnoser]
 public class PayloadBuilderBenchmarks
 {
@@ -14,6 +17,9 @@ public class PayloadBuilderBenchmarks
     private DeploymentNotification _notification;
     private ChannelConfiguration _config;
 
+    /// <summary>
+    /// Initializes the benchmark setup.
+    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
@@ -35,6 +41,10 @@ public class PayloadBuilderBenchmarks
         };
     }
 
+    /// <summary>
+    /// Builds a WebhookPayload instance using the PayloadBuilder.
+    /// </summary>
+    /// <returns>A WebhookPayload instance.</returns>
     [Benchmark]
     public WebhookPayload BuildPayload()
     {
