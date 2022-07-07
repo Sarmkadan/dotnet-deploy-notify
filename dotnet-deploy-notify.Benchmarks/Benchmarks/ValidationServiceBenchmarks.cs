@@ -5,12 +5,18 @@ using DotNetDeployNotify.Core.Models;
 
 namespace DotNetDeployNotify.Benchmarks.Benchmarks;
 
+/// <summary>
+/// Benchmark class for ValidationService.
+/// </summary>
 [MemoryDiagnoser]
 public class ValidationServiceBenchmarks
 {
     private ValidationService _validationService;
     private DeploymentNotification _notification;
 
+    /// <summary>
+    /// Initializes the benchmark by setting up the ValidationService and a DeploymentNotification instance.
+    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
@@ -28,6 +34,9 @@ public class ValidationServiceBenchmarks
         };
     }
 
+    /// <summary>
+    /// Validates a DeploymentNotification instance using the ValidationService.
+    /// </summary>
     [Benchmark]
     public void ValidateNotification()
     {
