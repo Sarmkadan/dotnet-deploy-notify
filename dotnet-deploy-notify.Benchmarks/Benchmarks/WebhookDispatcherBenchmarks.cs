@@ -7,6 +7,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 namespace DotNetDeployNotify.Benchmarks.Benchmarks;
 
+/// <summary>
+/// Benchmark class for WebhookDispatcher.
+/// </summary>
 [MemoryDiagnoser]
 public class WebhookDispatcherBenchmarks
 {
@@ -14,6 +17,9 @@ public class WebhookDispatcherBenchmarks
     private DeploymentNotification _notification;
     private ChannelConfiguration _config;
 
+    /// <summary>
+    /// Sets up the benchmark by creating a new WebhookDispatcher instance and a DeploymentNotification instance.
+    /// </summary>
     [GlobalSetup]
     public void Setup()
     {
@@ -38,6 +44,10 @@ public class WebhookDispatcherBenchmarks
         };
     }
 
+    /// <summary>
+    /// Sends a DeploymentNotification to a webhook using the WebhookDispatcher instance.
+    /// </summary>
+    /// <returns>A NotificationResult containing the result of the webhook send operation.</returns>
     [Benchmark]
     public async Task<NotificationResult> SendToWebhook()
     {
