@@ -8,10 +8,14 @@ using DotNetDeployNotify.Results;
 using FluentAssertions;
 using Xunit;
 
-namespace DotNetDeployNotify.Tests;
-
+/// <summary>
+/// Tests for the Result class.
+/// </summary>
 public class ResultTests
 {
+    /// <summary>
+    /// Verifies that a successful result with a value is correctly represented.
+    /// </summary>
     [Fact]
     public void Ok_WithValue_IsSuccessTrueAndContainsValue()
     {
@@ -24,6 +28,9 @@ public class ResultTests
         result.Error.Should().BeNull();
     }
 
+    /// <summary>
+    /// Verifies that a failed result with an error message is correctly represented.
+    /// </summary>
     [Fact]
     public void Fail_WithErrorMessage_IsSuccessFalseAndStoresError()
     {
@@ -36,6 +43,9 @@ public class ResultTests
         result.Value.Should().BeNull();
     }
 
+    /// <summary>
+    /// Verifies that a failed result with multiple errors is correctly represented.
+    /// </summary>
     [Fact]
     public void Fail_WithMultipleErrors_JoinsAllErrorsIntoSingleMessage()
     {
@@ -52,6 +62,9 @@ public class ResultTests
         result.Errors.Should().HaveCount(2);
     }
 
+    /// <summary>
+    /// Verifies that mapping a successful result to a new type works correctly.
+    /// </summary>
     [Fact]
     public void Map_OnSuccessResult_TransformsValueToNewType()
     {
@@ -66,6 +79,9 @@ public class ResultTests
         mapped.Value.Should().Be(50);
     }
 
+    /// <summary>
+    /// Verifies that mapping a failed result does not invoke the mapper.
+    /// </summary>
     [Fact]
     public void Map_OnFailureResult_PropagatesErrorWithoutInvokingMapper()
     {
@@ -82,6 +98,9 @@ public class ResultTests
         mapperInvoked.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Verifies that getting the value of a failed result returns the provided default.
+    /// </summary>
     [Fact]
     public void GetValueOrDefault_OnFailure_ReturnsProvidedDefault()
     {
@@ -95,6 +114,9 @@ public class ResultTests
         value.Should().Be("fallback");
     }
 
+    /// <summary>
+    /// Verifies that the Try method returns a failed result when the provided function throws an exception.
+    /// </summary>
     [Fact]
     public void Try_WhenFunctionThrows_ReturnsFailureWithExceptionMessage()
     {
@@ -107,6 +129,9 @@ public class ResultTests
         result.Error.Should().Be("channel unavailable");
     }
 
+    /// <summary>
+    /// Verifies that the Try method returns a successful result when the provided function succeeds.
+    /// </summary>
     [Fact]
     public void Try_WhenFunctionSucceeds_ReturnsSuccessWithReturnValue()
     {
