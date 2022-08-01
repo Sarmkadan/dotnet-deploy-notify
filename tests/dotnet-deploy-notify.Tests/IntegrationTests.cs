@@ -13,10 +13,19 @@ using Environment = DotNetDeployNotify.Core.Environment;
 
 namespace DotNetDeployNotify.Tests;
 
+/// <summary>
+/// Contains integration tests that verify the end-to-end functionality of the deployment notification system.
+/// These tests exercise the complete workflow from notification creation to delivery across various channels,
+/// ensuring all components work together correctly.
+/// </summary>
 public class IntegrationTests
 {
     #region NotificationService Integration Tests
 
+    /// <summary>
+    /// Tests the complete end-to-end workflow of creating and sending a deployment notification.
+    /// Verifies that notifications can be created, stored, and successfully delivered to configured channels.
+    /// </summary>
     [Fact]
     public async Task NotificationService_CreateAndSendNotification_EndToEndWorkflow()
     {
@@ -82,6 +91,10 @@ public class IntegrationTests
         sendResults[0].IsSuccessful.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that notifications are delivered to all configured channels when multiple channels are specified.
+    /// Verifies that the system correctly identifies and sends to each enabled notification channel.
+    /// </summary>
     [Fact]
     public async Task NotificationService_SendToMultipleChannels_DeliverToAllConfiguredChannels()
     {
@@ -150,6 +163,10 @@ public class IntegrationTests
         results.Should().AllSatisfy(r => r.IsSuccessful.Should().BeTrue());
     }
 
+    /// <summary>
+    /// Tests that validation failures are properly handled when creating notifications.
+    /// Verifies that invalid notifications throw appropriate exceptions and don't proceed to delivery.
+    /// </summary>
     [Fact]
     public async Task NotificationService_WithValidationFailure_ThrowsException()
     {
@@ -179,6 +196,10 @@ public class IntegrationTests
             () => notificationService.CreateNotificationAsync(invalidNotification));
     }
 
+    /// <summary>
+    /// Tests the retry mechanism for failed notification deliveries.
+    /// Verifies that failed deliveries are properly tracked, retried, and updated with new attempt information.
+    /// </summary>
     [Fact]
     public async Task NotificationService_RetryFailedDeliveries_UpdatesResultsAndIncrementAttempts()
     {
@@ -250,6 +271,10 @@ public class IntegrationTests
 
     #region WebhookDispatcher Integration Tests
 
+    /// <summary>
+    /// Tests the webhook dispatcher component with a valid payload structure.
+    /// Verifies that the dispatcher can build payloads correctly for different notification types.
+    /// </summary>
     [Fact]
     public async Task WebhookDispatcher_WithValidPayload_SendsSuccessfully()
     {
@@ -298,6 +323,10 @@ public class IntegrationTests
 
     #region README Use Case Integration Test
 
+    /// <summary>
+    /// Tests the main use case scenario described in the README documentation.
+    /// Demonstrates a complete deployment notification workflow sending to multiple channels (Slack and Telegram).
+    /// </summary>
     [Fact]
     public async Task MainUseCase_SendDeploymentNotificationToMultipleChannels_CompleteFlow()
     {
@@ -379,6 +408,10 @@ public class IntegrationTests
 
     #region Concurrency and Edge Cases Tests
 
+    /// <summary>
+    /// Tests concurrent processing of multiple notifications to ensure thread safety.
+    /// Verifies that the system can handle multiple simultaneous notification requests without conflicts.
+    /// </summary>
     [Fact]
     public async Task MultipleNotifications_ProcessConcurrently_AllDeliveredSuccessfully()
     {
@@ -442,6 +475,10 @@ public class IntegrationTests
         tasks.Should().AllSatisfy(t => t.IsCompletedSuccessfully.Should().BeTrue());
     }
 
+    /// <summary>
+    /// Tests channel filtering behavior when some channels are not configured.
+    /// Verifies that the system only sends to channels that have valid webhook configurations.
+    /// </summary>
     [Fact]
     public async Task NotificationWithChannelFiltering_SkipsNotConfiguredChannels()
     {
