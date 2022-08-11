@@ -8,11 +8,20 @@ using Xunit;
 
 namespace DotNetDeployNotify.Tests;
 
+/// <summary>
+/// Test class for verifying the functionality of the MetricsService class.
+/// This test suite verifies that metrics are correctly recorded and retrieved
+/// for notifications, delivery attempts, validation failures, and configuration changes.
+/// </summary>
 public class MetricsServiceTests
 {
     private readonly MetricsService _metricsService;
     private readonly ILogger<MetricsService> _mockLogger;
 
+    /// <summary>
+    /// Initializes a new instance of the MetricsServiceTests class.
+    /// Sets up a new MetricsService instance with a mocked logger for each test.
+    /// </summary>
     public MetricsServiceTests()
     {
         _mockLogger = Substitute.For<ILogger<MetricsService>>();
@@ -21,6 +30,9 @@ public class MetricsServiceTests
 
     #region RecordNotificationCreated Tests
 
+    /// <summary>
+    /// Tests that recording a notification creation increments the notification count.
+    /// </summary>
     [Fact]
     public void RecordNotificationCreated_IncrementsNotificationCount()
     {
@@ -33,6 +45,9 @@ public class MetricsServiceTests
         metrics.NotificationsCreated.Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that multiple calls to RecordNotificationCreated accurately count the total notifications.
+    /// </summary>
     [Fact]
     public void RecordNotificationCreated_WithMultipleCalls_CountsAccurately()
     {
@@ -51,6 +66,9 @@ public class MetricsServiceTests
 
     #region RecordDeliveryAttempt Tests
 
+    /// <summary>
+    /// Tests that recording successful delivery attempts increments both success and attempt counts.
+    /// </summary>
     [Fact]
     public void RecordDeliveryAttempt_WithSuccessfulDelivery_IncrementsSuccessCount()
     {
@@ -64,6 +82,9 @@ public class MetricsServiceTests
         metrics.DeliveryAttempts.Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that recording failed delivery attempts increments both failure and attempt counts.
+    /// </summary>
     [Fact]
     public void RecordDeliveryAttempt_WithFailedDelivery_IncrementsFailureCount()
     {
@@ -77,6 +98,9 @@ public class MetricsServiceTests
         metrics.DeliveryAttempts.Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that recording mixed success and failure delivery attempts counts both correctly.
+    /// </summary>
     [Fact]
     public void RecordDeliveryAttempt_WithMixedResults_CountsBothSuccessAndFailure()
     {
@@ -92,6 +116,9 @@ public class MetricsServiceTests
         metrics.DeliveryAttempts.Should().Be(3);
     }
 
+    /// <summary>
+    /// Tests that recording delivery attempts tracks the duration metrics correctly.
+    /// </summary>
     [Fact]
     public void RecordDeliveryAttempt_TracksDeliveryDuration()
     {
@@ -107,6 +134,9 @@ public class MetricsServiceTests
         metrics.MaxDeliveryTimeMs.Should().Be(300);
     }
 
+    /// <summary>
+    /// Tests that recording delivery attempts with different channels tracks metrics per channel.
+    /// </summary>
     [Fact]
     public void RecordDeliveryAttempt_WithDifferentChannels_TracksPerChannel()
     {
@@ -127,6 +157,9 @@ public class MetricsServiceTests
 
     #region RecordValidationFailure Tests
 
+    /// <summary>
+    /// Tests that recording validation failures increments the validation failure count.
+    /// </summary>
     [Fact]
     public void RecordValidationFailure_IncrementsValidationFailureCount()
     {
@@ -139,6 +172,9 @@ public class MetricsServiceTests
         metrics.ValidationFailures.Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that multiple calls to RecordValidationFailure accurately count the total failures.
+    /// </summary>
     [Fact]
     public void RecordValidationFailure_WithMultipleCalls_CountsAccurately()
     {
@@ -157,6 +193,9 @@ public class MetricsServiceTests
 
     #region RecordConfigurationChange Tests
 
+    /// <summary>
+    /// Tests that recording configuration changes increments the configuration change count.
+    /// </summary>
     [Fact]
     public void RecordConfigurationChange_IncrementsConfigurationChangeCount()
     {
@@ -173,6 +212,9 @@ public class MetricsServiceTests
 
     #region GetMetricsAsync Tests
 
+    /// <summary>
+    /// Tests that getting metrics when no activity has occurred returns zero values for all metrics.
+    /// </summary>
     [Fact]
     public async Task GetMetricsAsync_WithNoActivity_ReturnsZeroMetrics()
     {
@@ -186,6 +228,9 @@ public class MetricsServiceTests
         metrics.FailedDeliveries.Should().Be(0);
     }
 
+    /// <summary>
+    /// Tests that getting metrics returns a current snapshot of all recorded activities.
+    /// </summary>
     [Fact]
     public async Task GetMetricsAsync_ReturnsCurrentSnapshot()
     {
@@ -202,6 +247,9 @@ public class MetricsServiceTests
         metrics.SuccessfulDeliveries.Should().Be(1);
     }
 
+    /// <summary>
+    /// Tests that the metrics snapshot includes a timestamp that is recent.
+    /// </summary>
     [Fact]
     public async Task GetMetricsAsync_HasTimestamp()
     {
@@ -216,6 +264,9 @@ public class MetricsServiceTests
 
     #region GetMetricsByPeriodAsync Tests
 
+    /// <summary>
+    /// Tests that getting metrics for a time period that includes activity returns the correct counts.
+    /// </summary>
     [Fact]
     public async Task GetMetricsByPeriodAsync_WithPeriodIncludingActivity_ReturnsActivity()
     {
@@ -232,6 +283,9 @@ public class MetricsServiceTests
         metrics.DeliveryAttempts.Should().Be(1);
     }
 
+    /// <summary>
+    /// Tests that getting metrics for a time period that excludes activity returns zero counts.
+    /// </summary>
     [Fact]
     public async Task GetMetricsByPeriodAsync_WithPeriodExcludingActivity_ReturnsZero()
     {
@@ -250,6 +304,9 @@ public class MetricsServiceTests
 
     #region GetChannelMetricsAsync Tests
 
+    /// <summary>
+    /// Tests that getting channel metrics for Slack returns the correct delivery attempt counts.
+    /// </summary>
     [Fact]
     public async Task GetChannelMetricsAsync_WithSlackActivity_ReturnsSlackMetrics()
     {
@@ -266,6 +323,9 @@ public class MetricsServiceTests
         metrics.SuccessfulDeliveries.Should().Be(2);
     }
 
+    /// <summary>
+    /// Tests that getting channel metrics for a channel with no activity returns empty metrics.
+    /// </summary>
     [Fact]
     public async Task GetChannelMetricsAsync_WithNoActivity_ReturnsEmptyMetrics()
     {
@@ -277,6 +337,9 @@ public class MetricsServiceTests
         metrics.DeliveryAttempts.Should().Be(0);
     }
 
+    /// <summary>
+    /// Tests that getting channel metrics calculates the success rate correctly for mixed results.
+    /// </summary>
     [Fact]
     public async Task GetChannelMetricsAsync_WithMixedSuccessAndFailure_CalculatesSuccessRate()
     {
@@ -300,6 +363,9 @@ public class MetricsServiceTests
 
     #region MetricsSnapshot Tests
 
+    /// <summary>
+    /// Tests that calculating the success rate for a metrics snapshot with zero attempts returns zero.
+    /// </summary>
     [Fact]
     public void MetricsSnapshot_GetSuccessRate_WithZeroAttempts_ReturnsZero()
     {
@@ -317,6 +383,9 @@ public class MetricsServiceTests
         rate.Should().Be(0);
     }
 
+    /// <summary>
+    /// Tests that calculating the success rate for a metrics snapshot returns the correct percentage.
+    /// </summary>
     [Fact]
     public void MetricsSnapshot_GetSuccessRate_CalculatesCorrectly()
     {
@@ -334,6 +403,9 @@ public class MetricsServiceTests
         rate.Should().Be(80.0);
     }
 
+    /// <summary>
+    /// Tests that calculating the failure rate for a metrics snapshot returns the correct percentage.
+    /// </summary>
     [Fact]
     public void MetricsSnapshot_GetFailureRate_CalculatesCorrectly()
     {
@@ -355,6 +427,9 @@ public class MetricsServiceTests
 
     #region ChannelMetrics Tests
 
+    /// <summary>
+    /// Tests that calculating the success rate for channel metrics returns the correct percentage.
+    /// </summary>
     [Fact]
     public void ChannelMetrics_GetSuccessRate_CalculatesCorrectly()
     {
@@ -372,6 +447,9 @@ public class MetricsServiceTests
         rate.Should().Be(80.0);
     }
 
+    /// <summary>
+    /// Tests that getting the summary string for channel metrics returns a properly formatted string.
+    /// </summary>
     [Fact]
     public void ChannelMetrics_GetSummary_ReturnsFormattedString()
     {
@@ -399,6 +477,9 @@ public class MetricsServiceTests
 
     #region Concurrency Tests
 
+    /// <summary>
+    /// Tests that recording delivery attempts with concurrent calls handles thread safety correctly.
+    /// </summary>
     [Fact]
     public async Task RecordDeliveryAttempt_WithConcurrentCalls_HandlesThreadSafety()
     {
@@ -419,6 +500,9 @@ public class MetricsServiceTests
         metrics.DeliveryAttempts.Should().Be(100);
     }
 
+    /// <summary>
+    /// Tests that getting metrics while recording metrics returns consistent data.
+    /// </summary>
     [Fact]
     public async Task GetMetricsAsync_WhileRecordingMetrics_ReturnsConsistentData()
     {
