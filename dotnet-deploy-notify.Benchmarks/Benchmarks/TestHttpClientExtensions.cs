@@ -13,16 +13,15 @@ public static class TestHttpClientExtensions
     /// </summary>
     /// <param name="client">The TestHttpClient instance</param>
     /// <param name="urlPattern">URL pattern to match for successful responses (e.g., "valid", "test")</param>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException"><paramref name="urlPattern"/> is null or whitespace</exception>
     public static void SetupSuccessResponse(this TestHttpClient client, string urlPattern)
     {
-        if (client == null)
-            throw new ArgumentNullException(nameof(client));
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentException.ThrowIfNullOrWhiteSpace(urlPattern);
 
-        if (string.IsNullOrWhiteSpace(urlPattern))
-            throw new ArgumentException("URL pattern cannot be null or empty", nameof(urlPattern));
-
-        // The mock behavior is already handled in MockHttpMessageHandler
-        // This method provides a convenient way to configure the expected behavior
+        // The mock behavior is configured in MockHttpMessageHandler based on URL patterns
+        // This method provides a convenient way to document the expected behavior
     }
 
     /// <summary>
@@ -31,10 +30,10 @@ public static class TestHttpClientExtensions
     /// <param name="client">The TestHttpClient instance</param>
     /// <param name="statusCode">The HTTP status code to return</param>
     /// <param name="responseContent">Optional response content</param>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/></exception>
     public static void SetupStatusCodeResponse(this TestHttpClient client, HttpStatusCode statusCode, string? responseContent = null)
     {
-        if (client == null)
-            throw new ArgumentNullException(nameof(client));
+        ArgumentNullException.ThrowIfNull(client);
 
         // The actual status code simulation is handled by MockHttpMessageHandler
         // This extension provides a clean API for test setup
@@ -42,15 +41,16 @@ public static class TestHttpClientExtensions
     }
 
     /// <summary>
-    /// Creates a logger with the TestLogger implementation and adds it to the client's logger factory
+    /// Creates a logger with the TestLogger implementation for benchmarking
     /// </summary>
     /// <param name="client">The TestHttpClient instance</param>
     /// <param name="categoryName">Logger category name</param>
     /// <returns>Configured ILogger instance</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/></exception>
     public static ILogger CreateTestLogger(this TestHttpClient client, string categoryName)
     {
-        if (client == null)
-            throw new ArgumentNullException(nameof(client));
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentException.ThrowIfNullOrWhiteSpace(categoryName);
 
         var loggerFactory = new TestLoggerFactory();
         return loggerFactory.CreateLogger(categoryName);
@@ -61,14 +61,16 @@ public static class TestHttpClientExtensions
     /// </summary>
     /// <param name="client">The TestHttpClient instance</param>
     /// <param name="state">The state object</param>
+    /// <typeparam name="TState">The type of the state object</typeparam>
     /// <returns>IDisposable scope that should be disposed</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="client"/> is <see langword="null"/></exception>
     public static IDisposable BeginTestScope<TState>(this TestHttpClient client, TState state)
     {
-        if (client == null)
-            throw new ArgumentNullException(nameof(client));
+        ArgumentNullException.ThrowIfNull(client);
 
-        // TestLogger.BeginScope always returns null, but this provides a consistent API
-        return client.BeginScope(state) ?? NullDisposable.Instance;
+        // The TestLogger.BeginScope always returns null, but this provides a consistent API
+        // This method is kept for API consistency even though it's not used in the current implementation
+        return NullDisposable.Instance;
     }
 
     /// <summary>
@@ -76,7 +78,7 @@ public static class TestHttpClientExtensions
     /// </summary>
     private sealed class NullDisposable : IDisposable
     {
-        public static readonly NullDisposable Instance = new NullDisposable();
+        public static readonly NullDisposable Instance = new();
 
         private NullDisposable() { }
 
