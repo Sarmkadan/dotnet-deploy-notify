@@ -41,9 +41,19 @@ public static class ServiceExtensionsJsonExtensions
             Type = "ServiceExtensions",
             Namespace = typeof(ServiceExtensions).Namespace ?? "DotNetDeployNotify.Infrastructure",
             Assembly = typeof(ServiceExtensions).Assembly.GetName().Name ?? "DotNetDeployNotify",
-            Methods = new[] { "IsCritical", "IsProduction", "SupportsStatus", "SupportsEnvironment",
-                            "GetDescription", "MergeMetadata", "Clone", "ToCompactString",
-                            "GetSeverityLevel", "ShouldRetry", "GetRetryDelay" }
+            Methods = [
+                "IsCritical",
+                "IsProduction",
+                "SupportsStatus",
+                "SupportsEnvironment",
+                "GetDescription",
+                "MergeMetadata",
+                "Clone",
+                "ToCompactString",
+                "GetSeverityLevel",
+                "ShouldRetry",
+                "GetRetryDelay"
+            ]
         };
         return JsonSerializer.Serialize(metadata, options);
     }
@@ -53,8 +63,11 @@ public static class ServiceExtensionsJsonExtensions
     /// </summary>
     /// <param name="json">JSON string to deserialize</param>
     /// <returns>ServiceExtensions metadata or null if deserialization fails</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
     public static ServiceExtensionsMetadata? FromJson(string json)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         try
         {
             return JsonSerializer.Deserialize<ServiceExtensionsMetadata>(json, _jsonOptions);
@@ -71,8 +84,11 @@ public static class ServiceExtensionsJsonExtensions
     /// <param name="json">JSON string to deserialize</param>
     /// <param name="value">Output value, null if deserialization fails</param>
     /// <returns>True if deserialization succeeds, false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
     public static bool TryFromJson(string json, out ServiceExtensionsMetadata? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         try
         {
             value = JsonSerializer.Deserialize<ServiceExtensionsMetadata>(json, _jsonOptions);
@@ -90,9 +106,24 @@ public static class ServiceExtensionsJsonExtensions
     /// </summary>
     public sealed class ServiceExtensionsMetadata
     {
+        /// <summary>
+        /// Gets or sets the type identifier
+        /// </summary>
         public string? Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the namespace
+        /// </summary>
         public string? Namespace { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assembly name
+        /// </summary>
         public string? Assembly { get; set; }
+
+        /// <summary>
+        /// Gets or sets the array of method names
+        /// </summary>
         public string[]? Methods { get; set; }
     }
 }
