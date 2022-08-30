@@ -16,13 +16,10 @@ public static class RollbackServiceExtensions
 {
     /// <summary>
     /// Adds deployment rollback services to the dependency injection container.
-    /// Call this alongside <see cref="DependencyInjection.AddNotificationServices"/> during setup.
     /// </summary>
-    /// <param name="services">The service collection to register services into</param>
-    /// <returns>The same service collection for fluent chaining</returns>
+    /// <param name="services">The service collection to register services into.</param>
+    /// <returns>The same service collection for fluent chaining.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> is <see langword="null"/>.</exception>
     public static IServiceCollection AddRollbackServices(this IServiceCollection services)
-    {
-        services.AddScoped<IRollbackService, RollbackService>();
-        return services;
-    }
+        => services.AddScoped<IRollbackService, RollbackService>();
 }
