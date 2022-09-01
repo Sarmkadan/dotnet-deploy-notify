@@ -69,7 +69,7 @@ public static class CanaryDeploymentEngineExtensions
                 deploymentId,
                 activeStep.SoakDuration);
 
-            var advancedDeployment = await engine.AdvanceRolloutAsync(deploymentId, cancellationToken);
+            await engine.AdvanceRolloutAsync(deploymentId, cancellationToken);
             return true;
         }
 
@@ -143,7 +143,7 @@ public static class CanaryDeploymentEngineExtensions
             deployment.ProjectName,
             deployment.CanaryVersion);
 
-        var promotedDeployment = await engine.PromoteAsync(deploymentId, cancellationToken);
+        await engine.PromoteAsync(deploymentId, cancellationToken);
         return true;
     }
 
@@ -182,9 +182,7 @@ public static class CanaryDeploymentEngineExtensions
         }
 
         logger?.LogWarning("Aborting canary deployment {DeploymentId} for {ProjectName}", deploymentId, deployment.ProjectName);
-
-        var abortedDeployment = await engine.AbortAsync(deploymentId, "Manual abort via extension method", cancellationToken);
-        return abortedDeployment;
+        return await engine.AbortAsync(deploymentId, "Manual abort via extension method", cancellationToken);
     }
 
     /// <summary>
@@ -206,12 +204,10 @@ public static class CanaryDeploymentEngineExtensions
 
         var deployment = await engine.GetDeploymentAsync(deploymentId);
 
-        if (deployment is null)
-        {
-            logger?.LogWarning("Deployment {DeploymentId} not found", deploymentId);
-            return null;
-        }
-
-        return deployment.CurrentSplit.CanaryPercent / 100.0;
+        return deployment is null
+            ? null
+            : deployment.CurrentSplit.CanaryPercent is >= 0 and <= 100
+                ? deployment.CurrentSplit.CanaryPercent / 100.0
+                : null;
     }
 }
