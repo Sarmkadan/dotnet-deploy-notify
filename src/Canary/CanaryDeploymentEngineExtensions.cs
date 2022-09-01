@@ -1,8 +1,9 @@
 #nullable enable
+
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// =============================================================================
 
 using DotNetDeployNotify.Core.Models;
 using Microsoft.Extensions.Logging;
@@ -18,12 +19,15 @@ public static class CanaryDeploymentEngineExtensions
     /// Attempts to advance the canary deployment to the next rollout step if the current step's soak duration has elapsed.
     /// This method combines health evaluation and step advancement into a single operation for convenience.
     /// </summary>
-    /// <param name="engine">The canary deployment engine instance</param>
-    /// <param name="deploymentId">Identifier of the deployment to advance</param>
-    /// <param name="healthEvaluator">Health evaluator for canary metrics</param>
-    /// <param name="logger">Optional logger for diagnostic information</param>
-    /// <param name="cancellationToken">Token to cancel the operation</param>
-    /// <returns>True if the deployment was advanced; false otherwise</returns>
+    /// <param name="engine">The canary deployment engine instance.</param>
+    /// <param name="deploymentId">Identifier of the deployment to advance.</param>
+    /// <param name="healthEvaluator">Health evaluator for canary metrics.</param>
+    /// <param name="logger">Optional logger for diagnostic information.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>True if the deployment was advanced; false otherwise.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="healthEvaluator"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="deploymentId"/> is <see langword="null"/> or whitespace.</exception>
     public static async Task<bool> TryAdvanceRolloutAsync(
         this CanaryDeploymentEngine engine,
         string deploymentId,
@@ -31,6 +35,10 @@ public static class CanaryDeploymentEngineExtensions
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentNullException.ThrowIfNull(healthEvaluator);
+        ArgumentException.ThrowIfNullOrWhiteSpace(deploymentId);
+
         var deployment = await engine.GetDeploymentAsync(deploymentId, cancellationToken);
 
         if (deployment is null)
@@ -41,8 +49,7 @@ public static class CanaryDeploymentEngineExtensions
 
         if (deployment.Status != CanaryStatus.Active)
         {
-            logger?.LogDebug("Deployment {DeploymentId} is not in Active state (current: {Status})",
-                deploymentId, deployment.Status);
+            logger?.LogDebug("Deployment {DeploymentId} is not in Active state (current: {Status})", deploymentId, deployment.Status);
             return false;
         }
 
@@ -91,17 +98,22 @@ public static class CanaryDeploymentEngineExtensions
     /// Promotes the canary deployment if all rollout steps have completed successfully.
     /// This method checks the deployment state and only promotes if the rollout is complete.
     /// </summary>
-    /// <param name="engine">The canary deployment engine instance</param>
-    /// <param name="deploymentId">Identifier of the deployment to promote</param>
-    /// <param name="logger">Optional logger for diagnostic information</param>
-    /// <param name="cancellationToken">Token to cancel the operation</param>
-    /// <returns>True if the deployment was promoted; false otherwise</returns>
+    /// <param name="engine">The canary deployment engine instance.</param>
+    /// <param name="deploymentId">Identifier of the deployment to promote.</param>
+    /// <param name="logger">Optional logger for diagnostic information.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>True if the deployment was promoted; false otherwise.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="deploymentId"/> is <see langword="null"/> or whitespace.</exception>
     public static async Task<bool> TryPromoteAsync(
         this CanaryDeploymentEngine engine,
         string deploymentId,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentException.ThrowIfNullOrWhiteSpace(deploymentId);
+
         var deployment = await engine.GetDeploymentAsync(deploymentId, cancellationToken);
 
         if (deployment is null)
@@ -112,8 +124,7 @@ public static class CanaryDeploymentEngineExtensions
 
         if (deployment.IsTerminal)
         {
-            logger?.LogDebug("Deployment {DeploymentId} is already in terminal state: {Status}",
-                deploymentId, deployment.Status);
+            logger?.LogDebug("Deployment {DeploymentId} is already in terminal state: {Status}", deploymentId, deployment.Status);
             return false;
         }
 
@@ -140,17 +151,22 @@ public static class CanaryDeploymentEngineExtensions
     /// Aborts the canary deployment if it is still active and returns the aborted deployment.
     /// This method provides a convenience wrapper around AbortAsync with a default reason.
     /// </summary>
-    /// <param name="engine">The canary deployment engine instance</param>
-    /// <param name="deploymentId">Identifier of the deployment to abort</param>
-    /// <param name="logger">Optional logger for diagnostic information</param>
-    /// <param name="cancellationToken">Token to cancel the operation</param>
-    /// <returns>The aborted deployment if successful; null otherwise</returns>
+    /// <param name="engine">The canary deployment engine instance.</param>
+    /// <param name="deploymentId">Identifier of the deployment to abort.</param>
+    /// <param name="logger">Optional logger for diagnostic information.</param>
+    /// <param name="cancellationToken">Token to cancel the operation.</param>
+    /// <returns>The aborted deployment if successful; null otherwise.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="deploymentId"/> is <see langword="null"/> or whitespace.</exception>
     public static async Task<CanaryDeployment?> TryAbortAsync(
         this CanaryDeploymentEngine engine,
         string deploymentId,
         ILogger? logger = null,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentException.ThrowIfNullOrWhiteSpace(deploymentId);
+
         var deployment = await engine.GetDeploymentAsync(deploymentId, cancellationToken);
 
         if (deployment is null)
@@ -161,14 +177,11 @@ public static class CanaryDeploymentEngineExtensions
 
         if (deployment.IsTerminal)
         {
-            logger?.LogDebug("Deployment {DeploymentId} is already in terminal state: {Status}",
-                deploymentId, deployment.Status);
+            logger?.LogDebug("Deployment {DeploymentId} is already in terminal state: {Status}", deploymentId, deployment.Status);
             return deployment;
         }
 
-        logger?.LogWarning("Aborting canary deployment {DeploymentId} for {ProjectName}",
-            deploymentId,
-            deployment.ProjectName);
+        logger?.LogWarning("Aborting canary deployment {DeploymentId} for {ProjectName}", deploymentId, deployment.ProjectName);
 
         var abortedDeployment = await engine.AbortAsync(deploymentId, "Manual abort via extension method", cancellationToken);
         return abortedDeployment;
@@ -177,15 +190,20 @@ public static class CanaryDeploymentEngineExtensions
     /// <summary>
     /// Gets the current canary percentage as a normalized value between 0.0 and 1.0.
     /// </summary>
-    /// <param name="engine">The canary deployment engine instance</param>
-    /// <param name="deploymentId">Identifier of the deployment to query</param>
-    /// <param name="logger">Optional logger for diagnostic information</param>
-    /// <returns>A normalized value between 0.0 and 1.0 representing the canary percentage, or null if deployment not found</returns>
+    /// <param name="engine">The canary deployment engine instance.</param>
+    /// <param name="deploymentId">Identifier of the deployment to query.</param>
+    /// <param name="logger">Optional logger for diagnostic information.</param>
+    /// <returns>A normalized value between 0.0 and 1.0 representing the canary percentage, or null if deployment not found.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="engine"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="deploymentId"/> is <see langword="null"/> or whitespace.</exception>
     public static async Task<double?> GetCanaryPercentageNormalizedAsync(
         this CanaryDeploymentEngine engine,
         string deploymentId,
         ILogger? logger = null)
     {
+        ArgumentNullException.ThrowIfNull(engine);
+        ArgumentException.ThrowIfNullOrWhiteSpace(deploymentId);
+
         var deployment = await engine.GetDeploymentAsync(deploymentId);
 
         if (deployment is null)

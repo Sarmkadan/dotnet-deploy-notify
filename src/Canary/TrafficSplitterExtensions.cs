@@ -18,13 +18,18 @@ public static class TrafficSplitterExtensions
     /// <summary>
     /// Creates a canary deployment with a linear rollout strategy.
     /// </summary>
-    /// <param name="splitter">The traffic splitter instance</param>
-    /// <param name="projectName">Name of the project being deployed</param>
-    /// <param name="canaryVersion">Version identifier for the canary</param>
-    /// <param name="stableVersion">Version identifier for the stable baseline</param>
-    /// <param name="targetEnvironment">Environment where deployment occurs</param>
-    /// <param name="stepCount">Number of steps in the linear rollout (default: 5)</param>
-    /// <returns>A configured canary deployment ready for evaluation</returns>
+    /// <param name="splitter">The traffic splitter instance.</param>
+    /// <param name="projectName">Name of the project being deployed.</param>
+    /// <param name="canaryVersion">Version identifier for the canary.</param>
+    /// <param name="stableVersion">Version identifier for the stable baseline.</param>
+    /// <param name="targetEnvironment">Environment where deployment occurs.</param>
+    /// <param name="stepCount">Number of steps in the linear rollout (default: 5).</param>
+    /// <returns>A configured canary deployment ready for evaluation.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="splitter"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="projectName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="canaryVersion"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stableVersion"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="stepCount"/> is less than 1.</exception>
     public static CanaryDeployment CreateLinearCanaryDeployment(
         this TrafficSplitter splitter,
         string projectName,
@@ -33,6 +38,16 @@ public static class TrafficSplitterExtensions
         Environment targetEnvironment,
         int stepCount = 5)
     {
+        ArgumentNullException.ThrowIfNull(splitter);
+        ArgumentNullException.ThrowIfNull(projectName);
+        ArgumentNullException.ThrowIfNull(canaryVersion);
+        ArgumentNullException.ThrowIfNull(stableVersion);
+
+        if (stepCount < 1)
+        {
+            throw new ArgumentOutOfRangeException(nameof(stepCount), stepCount, "Step count must be at least 1.");
+        }
+
         var rolloutPlan = splitter.GenerateRolloutPlan(CanaryStrategy.Linear);
 
         return new CanaryDeployment
@@ -50,12 +65,16 @@ public static class TrafficSplitterExtensions
     /// <summary>
     /// Creates a canary deployment with an exponential rollout strategy.
     /// </summary>
-    /// <param name="splitter">The traffic splitter instance</param>
-    /// <param name="projectName">Name of the project being deployed</param>
-    /// <param name="canaryVersion">Version identifier for the canary</param>
-    /// <param name="stableVersion">Version identifier for the stable baseline</param>
-    /// <param name="targetEnvironment">Environment where deployment occurs</param>
-    /// <returns>A configured canary deployment with exponential rollout plan</returns>
+    /// <param name="splitter">The traffic splitter instance.</param>
+    /// <param name="projectName">Name of the project being deployed.</param>
+    /// <param name="canaryVersion">Version identifier for the canary.</param>
+    /// <param name="stableVersion">Version identifier for the stable baseline.</param>
+    /// <param name="targetEnvironment">Environment where deployment occurs.</param>
+    /// <returns>A configured canary deployment with exponential rollout plan.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="splitter"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="projectName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="canaryVersion"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stableVersion"/> is <see langword="null"/>.</exception>
     public static CanaryDeployment CreateExponentialCanaryDeployment(
         this TrafficSplitter splitter,
         string projectName,
@@ -63,6 +82,11 @@ public static class TrafficSplitterExtensions
         string stableVersion,
         Environment targetEnvironment)
     {
+        ArgumentNullException.ThrowIfNull(splitter);
+        ArgumentNullException.ThrowIfNull(projectName);
+        ArgumentNullException.ThrowIfNull(canaryVersion);
+        ArgumentNullException.ThrowIfNull(stableVersion);
+
         var rolloutPlan = splitter.GenerateRolloutPlan(CanaryStrategy.Exponential);
 
         return new CanaryDeployment
@@ -80,17 +104,24 @@ public static class TrafficSplitterExtensions
     /// <summary>
     /// Determines if the current canary deployment should proceed to the next rollout step.
     /// </summary>
-    /// <param name="splitter">The traffic splitter instance</param>
-    /// <param name="deployment">The canary deployment to evaluate</param>
-    /// <param name="healthEvaluator">Health evaluator for canary metrics</param>
-    /// <param name="logger">Optional logger for diagnostic information</param>
-    /// <returns>True if deployment should proceed to next step; false otherwise</returns>
+    /// <param name="splitter">The traffic splitter instance.</param>
+    /// <param name="deployment">The canary deployment to evaluate.</param>
+    /// <param name="healthEvaluator">Health evaluator for canary metrics.</param>
+    /// <param name="logger">Optional logger for diagnostic information.</param>
+    /// <returns>True if deployment should proceed to next step; false otherwise.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="splitter"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="healthEvaluator"/> is <see langword="null"/>.</exception>
     public static async Task<bool> ShouldProceedToNextStepAsync(
         this TrafficSplitter splitter,
         CanaryDeployment deployment,
         CanaryHealthEvaluator healthEvaluator,
         ILogger? logger = null)
     {
+        ArgumentNullException.ThrowIfNull(splitter);
+        ArgumentNullException.ThrowIfNull(deployment);
+        ArgumentNullException.ThrowIfNull(healthEvaluator);
+
         if (deployment.RolloutPlan.Count == 0)
         {
             logger?.LogWarning("No rollout plan available for {Project}", deployment.ProjectName);
@@ -146,23 +177,32 @@ public static class TrafficSplitterExtensions
     /// <summary>
     /// Gets the current canary percentage as a normalized value between 0.0 and 1.0.
     /// </summary>
-    /// <param name="splitter">The traffic splitter instance</param>
-    /// <param name="split">The traffic split to normalize</param>
-    /// <returns>A normalized value between 0.0 and 1.0 representing the canary percentage</returns>
+    /// <param name="splitter">The traffic splitter instance.</param>
+    /// <param name="split">The traffic split to normalize.</param>
+    /// <returns>A normalized value between 0.0 and 1.0 representing the canary percentage.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="splitter"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="split"/> is <see langword="null"/>.</exception>
     public static double GetCanaryPercentageNormalized(this TrafficSplitter splitter, TrafficSplit split)
     {
+        ArgumentNullException.ThrowIfNull(splitter);
+        ArgumentNullException.ThrowIfNull(split);
+
         return split.CanaryPercent / 100.0;
     }
 
     /// <summary>
     /// Creates a blue-green deployment strategy with two steps (50% then 100%).
     /// </summary>
-    /// <param name="splitter">The traffic splitter instance</param>
-    /// <param name="projectName">Name of the project being deployed</param>
-    /// <param name="canaryVersion">Version identifier for the canary</param>
-    /// <param name="stableVersion">Version identifier for the stable baseline</param>
-    /// <param name="targetEnvironment">Environment where deployment occurs</param>
-    /// <returns>A configured canary deployment with blue-green rollout plan</returns>
+    /// <param name="splitter">The traffic splitter instance.</param>
+    /// <param name="projectName">Name of the project being deployed.</param>
+    /// <param name="canaryVersion">Version identifier for the canary.</param>
+    /// <param name="stableVersion">Version identifier for the stable baseline.</param>
+    /// <param name="targetEnvironment">Environment where deployment occurs.</param>
+    /// <returns>A configured canary deployment with blue-green rollout plan.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="splitter"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="projectName"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="canaryVersion"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="stableVersion"/> is <see langword="null"/>.</exception>
     public static CanaryDeployment CreateBlueGreenCanaryDeployment(
         this TrafficSplitter splitter,
         string projectName,
@@ -170,6 +210,11 @@ public static class TrafficSplitterExtensions
         string stableVersion,
         Environment targetEnvironment)
     {
+        ArgumentNullException.ThrowIfNull(splitter);
+        ArgumentNullException.ThrowIfNull(projectName);
+        ArgumentNullException.ThrowIfNull(canaryVersion);
+        ArgumentNullException.ThrowIfNull(stableVersion);
+
         var rolloutPlan = splitter.GenerateRolloutPlan(CanaryStrategy.BlueGreen);
 
         return new CanaryDeployment
