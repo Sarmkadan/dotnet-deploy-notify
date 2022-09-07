@@ -20,10 +20,11 @@ public static class SearchCriteriaExtensions
     /// <param name="criteria">The base criteria</param>
     /// <param name="additionalCriteria">Additional criteria to combine</param>
     /// <returns>A new SearchCriteria with combined filters</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="criteria"/> or <paramref name="additionalCriteria"/> is null.</exception>
     public static SearchCriteria Combine(this SearchCriteria criteria, SearchCriteria additionalCriteria)
     {
-        if (criteria == null) throw new ArgumentNullException(nameof(criteria));
-        if (additionalCriteria == null) throw new ArgumentNullException(nameof(additionalCriteria));
+        ArgumentNullException.ThrowIfNull(criteria);
+        ArgumentNullException.ThrowIfNull(additionalCriteria);
 
         var result = new SearchCriteria
         {
@@ -38,22 +39,17 @@ public static class SearchCriteriaExtensions
             MinimumPriority = criteria.MinimumPriority ?? additionalCriteria.MinimumPriority,
             MessageContains = criteria.MessageContains ?? additionalCriteria.MessageContains,
             Limit = Math.Min(criteria.Limit, additionalCriteria.Limit),
-            Offset = criteria.Offset + additionalCriteria.Offset
+            Offset = checked(criteria.Offset + additionalCriteria.Offset)
         };
 
-        // Combine channels using intersection
-        if (criteria.Channels != null && additionalCriteria.Channels != null)
+        // Combine channels using pattern matching
+        result.Channels = (criteria.Channels, additionalCriteria.Channels) switch
         {
-            result.Channels = criteria.Channels.Intersect(additionalCriteria.Channels).ToList();
-        }
-        else if (criteria.Channels != null)
-        {
-            result.Channels = new List<NotificationChannel>(criteria.Channels);
-        }
-        else if (additionalCriteria.Channels != null)
-        {
-            result.Channels = new List<NotificationChannel>(additionalCriteria.Channels);
-        }
+            ({ } c, { } a) => c.Intersect(a).ToList(),
+            ({ } c, null) => new List<NotificationChannel>(c),
+            (null, { } a) => new List<NotificationChannel>(a),
+            _ => null
+        };
 
         return result;
     }
@@ -63,9 +59,10 @@ public static class SearchCriteriaExtensions
     /// </summary>
     /// <param name="criteria">The criteria to clone</param>
     /// <returns>A new SearchCriteria with same pagination but no filters</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="criteria"/> is null.</exception>
     public static SearchCriteria ClearFilters(this SearchCriteria criteria)
     {
-        if (criteria == null) throw new ArgumentNullException(nameof(criteria));
+        ArgumentNullException.ThrowIfNull(criteria);
 
         return new SearchCriteria
         {
@@ -81,11 +78,13 @@ public static class SearchCriteriaExtensions
     /// <param name="limit">Maximum number of items to return</param>
     /// <param name="offset">Number of items to skip</param>
     /// <returns>The modified SearchCriteria for method chaining</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="criteria"/> is null.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="limit"/> is not positive or <paramref name="offset"/> is negative.</exception>
     public static SearchCriteria WithPagination(this SearchCriteria criteria, int limit, int offset = 0)
     {
-        if (criteria == null) throw new ArgumentNullException(nameof(criteria));
-        if (limit <= 0) throw new ArgumentOutOfRangeException(nameof(limit), "Limit must be positive");
-        if (offset < 0) throw new ArgumentOutOfRangeException(nameof(offset), "Offset cannot be negative");
+        ArgumentNullException.ThrowIfNull(criteria);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(limit, 0);
+        ArgumentOutOfRangeException.ThrowIfNegative(offset);
 
         criteria.Limit = limit;
         criteria.Offset = offset;
@@ -98,19 +97,16 @@ public static class SearchCriteriaExtensions
     /// <param name="notifications">The notifications to filter</param>
     /// <param name="criteria">The search criteria containing MinimumPriority</param>
     /// <returns>Filtered notifications</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="notifications"/> or <paramref name="criteria"/> is null.</exception>
     public static IEnumerable<DeploymentNotification> FilterByPriority(
         this IEnumerable<DeploymentNotification> notifications,
         SearchCriteria criteria)
     {
-        if (notifications == null) throw new ArgumentNullException(nameof(notifications));
-        if (criteria == null) throw new ArgumentNullException(nameof(criteria));
+        ArgumentNullException.ThrowIfNull(notifications);
+        ArgumentNullException.ThrowIfNull(criteria);
 
-        if (criteria.MinimumPriority.HasValue)
-        {
-            var minPriority = criteria.MinimumPriority.Value;
-            return notifications.Where(n => n.Priority >= minPriority);
-        }
-
-        return notifications;
+        return criteria.MinimumPriority.HasValue
+            ? notifications.Where(n => n.Priority >= criteria.MinimumPriority.Value)
+            : notifications;
     }
 }
