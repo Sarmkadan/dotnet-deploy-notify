@@ -3,7 +3,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System.Text;
 
@@ -19,6 +19,7 @@ public static class CanaryDeploymentExtensions
     /// </summary>
     /// <param name="deployment">The canary deployment instance</param>
     /// <returns><see langword="true"/> if the deployment status is Active; otherwise, <see langword="false"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static bool IsActive(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
@@ -30,6 +31,7 @@ public static class CanaryDeploymentExtensions
     /// </summary>
     /// <param name="deployment">The canary deployment instance</param>
     /// <returns><see langword="true"/> if the deployment status is Promoted; otherwise, <see langword="false"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static bool IsPromoted(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
@@ -41,6 +43,7 @@ public static class CanaryDeploymentExtensions
     /// </summary>
     /// <param name="deployment">The canary deployment instance</param>
     /// <returns><see langword="true"/> if the deployment status is Aborted or RollingBack; otherwise, <see langword="false"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static bool IsFailedOrAborted(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
@@ -52,6 +55,7 @@ public static class CanaryDeploymentExtensions
     /// </summary>
     /// <param name="deployment">The canary deployment instance</param>
     /// <returns>A formatted string representing the current traffic split</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static string GetTrafficSplitDisplay(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
@@ -63,6 +67,7 @@ public static class CanaryDeploymentExtensions
     /// </summary>
     /// <param name="deployment">The canary deployment instance</param>
     /// <returns>A health score between 0 (unhealthy) and 100 (healthy)</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static double CalculateHealthScore(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
@@ -88,6 +93,7 @@ public static class CanaryDeploymentExtensions
     /// </summary>
     /// <param name="deployment">The canary deployment instance</param>
     /// <returns>A formatted status summary string</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static string GetStatusSummary(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
@@ -98,8 +104,8 @@ public static class CanaryDeploymentExtensions
         sb.AppendLine($"Status: {deployment.Status}");
         sb.AppendLine($"Environment: {deployment.TargetEnvironment}");
         sb.AppendLine($"Traffic: {deployment.GetTrafficSplitDisplay()}");
-        sb.AppendLine($"Progress: {deployment.ProgressPercent:F1}%")
-            .AppendLine($"Health Score: {deployment.CalculateHealthScore():F1}/100");
+        sb.AppendLine($"Progress: {deployment.ProgressPercent:F1}%");
+        sb.AppendLine($"Health Score: {deployment.CalculateHealthScore():F1}/100");
 
         if (!string.IsNullOrEmpty(deployment.AbortReason))
         {
@@ -123,6 +129,7 @@ public static class CanaryDeploymentExtensions
     /// <param name="errorRateThreshold">Maximum acceptable error rate percentage (default: 1.0)</param>
     /// <param name="p95LatencyThresholdMs">Maximum acceptable 95th percentile latency in milliseconds (default: 500)</param>
     /// <returns><see langword="true"/> if the canary metrics meet promotion criteria; otherwise, <see langword="false"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static bool CanPromote(this CanaryDeployment deployment,
         double errorRateThreshold = 1.0,
         double p95LatencyThresholdMs = 500)
@@ -161,6 +168,7 @@ public static class CanaryDeploymentExtensions
     /// </summary>
     /// <param name="deployment">The canary deployment instance</param>
     /// <returns>The next target canary traffic percentage, or null if no more steps are available</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static double? GetNextTrafficPercentage(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
@@ -180,6 +188,7 @@ public static class CanaryDeploymentExtensions
     /// </summary>
     /// <param name="deployment">The canary deployment instance</param>
     /// <returns>TimeSpan representing remaining duration, or null if no active step or soak not started</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static TimeSpan? GetCurrentSoakRemaining(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
@@ -201,6 +210,7 @@ public static class CanaryDeploymentExtensions
     /// </summary>
     /// <param name="deployment">The canary deployment instance</param>
     /// <returns><see langword="true"/> if the current soak is complete; otherwise, <see langword="false"/></returns>
+    /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
     public static bool IsCurrentSoakComplete(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
