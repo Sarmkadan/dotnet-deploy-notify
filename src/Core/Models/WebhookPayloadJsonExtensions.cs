@@ -1,13 +1,9 @@
 #nullable enable
-// =============================================================================
-// Author: Vladyslav Zaiets | https://sarmkadan.com
-// CTO & Software Architect
-// =====================================================================
 
 namespace DotNetDeployNotify.Core.Models;
 
 /// <summary>
-/// Provides JSON serialization/deserialization extensions for WebhookPayload
+/// Provides JSON serialization/deserialization extensions for <see cref="WebhookPayload"/>.
 /// </summary>
 public static class WebhookPayloadJsonExtensions
 {
@@ -18,39 +14,29 @@ public static class WebhookPayloadJsonExtensions
     };
 
     /// <summary>
-    /// Serializes the WebhookPayload to a JSON string
+    /// Serializes the WebhookPayload to a JSON string.
     /// </summary>
-    /// <param name="value">The payload to serialize</param>
-    /// <param name="indented">Whether to format the JSON with indentation</param>
-    /// <returns>JSON string representation of the payload</returns>
+    /// <param name="value">The payload to serialize.</param>
+    /// <param name="indented">Whether to format the JSON with indentation.</param>
+    /// <returns>JSON string representation of the payload.</returns>
+    /// <exception cref="System.ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static string ToJson(this WebhookPayload value, bool indented = false)
-    {
-        if (value is null)
-        {
-            throw new System.ArgumentNullException(nameof(value));
-        }
-
-        var options = indented
-            ? new System.Text.Json.JsonSerializerOptions(_jsonOptions)
-            {
-                WriteIndented = true
-            }
-            : _jsonOptions;
-
-        return System.Text.Json.JsonSerializer.Serialize(value, options);
-    }
+        => value is null
+            ? throw new System.ArgumentNullException(nameof(value))
+            : System.Text.Json.JsonSerializer.Serialize(
+                value,
+                indented
+                    ? new System.Text.Json.JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
+                    : _jsonOptions);
 
     /// <summary>
-    /// Deserializes a JSON string to a WebhookPayload
+    /// Deserializes a JSON string to a WebhookPayload.
     /// </summary>
-    /// <param name="json">JSON string to deserialize</param>
-    /// <returns>Deserialized WebhookPayload or null if parsing fails</returns>
+    /// <param name="json">JSON string to deserialize.</param>
+    /// <returns>Deserialized WebhookPayload or <see langword="null"/> if parsing fails.</returns>
     public static WebhookPayload? FromJson(string json)
     {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return null;
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(json);
 
         try
         {
@@ -63,19 +49,14 @@ public static class WebhookPayloadJsonExtensions
     }
 
     /// <summary>
-    /// Attempts to deserialize a JSON string to a WebhookPayload
+    /// Attempts to deserialize a JSON string to a WebhookPayload.
     /// </summary>
-    /// <param name="json">JSON string to deserialize</param>
-    /// <param name="value">Output parameter containing the deserialized payload or null</param>
-    /// <returns>True if deserialization succeeded, false otherwise</returns>
+    /// <param name="json">JSON string to deserialize.</param>
+    /// <param name="value">Output parameter containing the deserialized payload or <see langword="null"/>.</param>
+    /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
     public static bool TryFromJson(string json, out WebhookPayload? value)
     {
-        value = null;
-
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return false;
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(json);
 
         try
         {
@@ -84,6 +65,7 @@ public static class WebhookPayloadJsonExtensions
         }
         catch (System.Text.Json.JsonException)
         {
+            value = null;
             return false;
         }
     }
