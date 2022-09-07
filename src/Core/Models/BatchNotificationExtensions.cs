@@ -3,7 +3,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System.Text;
 
@@ -20,6 +20,8 @@ public static class BatchNotificationExtensions
     /// <param name="batch">The batch notification</param>
     /// <param name="projectName">Project name to filter by</param>
     /// <returns>Filtered list of notifications matching the project name</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="projectName"/> is <see langword="null"/>, empty, or whitespace</exception>
     public static List<DeploymentNotification> FilterByProject(this BatchNotification batch, string projectName)
     {
         ArgumentNullException.ThrowIfNull(batch);
@@ -36,6 +38,7 @@ public static class BatchNotificationExtensions
     /// <param name="batch">The batch notification</param>
     /// <param name="environment">Target environment to filter by</param>
     /// <returns>Filtered list of notifications matching the target environment</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
     public static List<DeploymentNotification> FilterByEnvironment(this BatchNotification batch, Environment environment)
     {
         ArgumentNullException.ThrowIfNull(batch);
@@ -50,21 +53,22 @@ public static class BatchNotificationExtensions
     /// </summary>
     /// <param name="batch">The batch notification</param>
     /// <returns>Formatted string with delivery statistics</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
     public static string GetDeliveryStatistics(this BatchNotification batch)
     {
         ArgumentNullException.ThrowIfNull(batch);
 
         var sb = new StringBuilder();
         sb.AppendLine($"Delivery Statistics for Batch: {batch.Name}");
-        sb.AppendLine($"  Total Attempts: {batch.TotalDeliveryAttempts}");
-        sb.AppendLine($"  Successful: {batch.SuccessfulDeliveries}");
-        sb.AppendLine($"  Failed: {batch.FailedDeliveries}");
-        sb.AppendLine($"  Success Rate: {batch.GetSuccessRate():F1}%");
-        sb.AppendLine($"  Total Delivery Targets: {batch.GetTotalDeliveryTargets()}");
+        sb.AppendLine($" Total Attempts: {batch.TotalDeliveryAttempts}");
+        sb.AppendLine($" Successful: {batch.SuccessfulDeliveries}");
+        sb.AppendLine($" Failed: {batch.FailedDeliveries}");
+        sb.AppendLine($" Success Rate: {batch.GetSuccessRate():F1}%");
+        sb.AppendLine($" Total Delivery Targets: {batch.GetTotalDeliveryTargets()}");
 
         if (batch.Metadata.TryGetValue("LastError", out var lastError) && lastError is string errorMessage)
         {
-            sb.AppendLine($"  Last Error: {errorMessage}");
+            sb.AppendLine($" Last Error: {errorMessage}");
         }
 
         return sb.ToString();
@@ -75,6 +79,7 @@ public static class BatchNotificationExtensions
     /// </summary>
     /// <param name="batch">The batch notification</param>
     /// <returns>True if any notification is not processed, false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
     public static bool HasPendingNotifications(this BatchNotification batch)
     {
         ArgumentNullException.ThrowIfNull(batch);
@@ -87,6 +92,7 @@ public static class BatchNotificationExtensions
     /// </summary>
     /// <param name="batch">The batch notification</param>
     /// <returns>Number of pending notifications</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
     public static int GetPendingNotificationCount(this BatchNotification batch)
     {
         ArgumentNullException.ThrowIfNull(batch);
@@ -99,6 +105,7 @@ public static class BatchNotificationExtensions
     /// </summary>
     /// <param name="batch">The batch notification</param>
     /// <returns>Number of processed notifications</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
     public static int GetProcessedNotificationCount(this BatchNotification batch)
     {
         ArgumentNullException.ThrowIfNull(batch);
@@ -111,6 +118,7 @@ public static class BatchNotificationExtensions
     /// </summary>
     /// <param name="batch">The batch notification</param>
     /// <returns>Formatted string with batch details</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
     public static string GetDetailedSummary(this BatchNotification batch)
     {
         ArgumentNullException.ThrowIfNull(batch);
@@ -137,18 +145,18 @@ public static class BatchNotificationExtensions
         sb.AppendLine($"Pending: {batch.GetPendingNotificationCount()}");
         sb.AppendLine($"Processed: {batch.GetProcessedNotificationCount()}");
         sb.AppendLine($"Channels: {batch.Channels.Count}");
-        sb.AppendLine($"\nDelivery Stats:");
-        sb.AppendLine($"  Total Attempts: {batch.TotalDeliveryAttempts}");
-        sb.AppendLine($"  Successful: {batch.SuccessfulDeliveries}");
-        sb.AppendLine($"  Failed: {batch.FailedDeliveries}");
-        sb.AppendLine($"  Success Rate: {batch.GetSuccessRate():F1}%");
+        sb.AppendLine("\nDelivery Stats:");
+        sb.AppendLine($" Total Attempts: {batch.TotalDeliveryAttempts}");
+        sb.AppendLine($" Successful: {batch.SuccessfulDeliveries}");
+        sb.AppendLine($" Failed: {batch.FailedDeliveries}");
+        sb.AppendLine($" Success Rate: {batch.GetSuccessRate():F1}%");
 
         if (batch.Metadata.Count > 0)
         {
             sb.AppendLine("\nMetadata:");
             foreach (var kvp in batch.Metadata)
             {
-                sb.AppendLine($"  {kvp.Key}: {kvp.Value}");
+                sb.AppendLine($" {kvp.Key}: {kvp.Value}");
             }
         }
 
@@ -160,6 +168,7 @@ public static class BatchNotificationExtensions
     /// </summary>
     /// <param name="batch">The batch notification</param>
     /// <returns>True if batch is in terminal state, false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
     public static bool IsTerminalState(this BatchNotification batch)
     {
         ArgumentNullException.ThrowIfNull(batch);
@@ -173,6 +182,7 @@ public static class BatchNotificationExtensions
     /// </summary>
     /// <param name="batch">The batch notification</param>
     /// <returns>Number of unique channels</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
     public static int GetUniqueChannelCount(this BatchNotification batch)
     {
         ArgumentNullException.ThrowIfNull(batch);
@@ -188,6 +198,8 @@ public static class BatchNotificationExtensions
     /// <param name="batch">The batch notification</param>
     /// <param name="projectName">Project name to count</param>
     /// <returns>Count of notifications for the specified project</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="batch"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="projectName"/> is <see langword="null"/>, empty, or whitespace</exception>
     public static int GetNotificationCountByProject(this BatchNotification batch, string projectName)
     {
         ArgumentNullException.ThrowIfNull(batch);
