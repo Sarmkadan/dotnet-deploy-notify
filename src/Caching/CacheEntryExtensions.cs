@@ -17,13 +17,11 @@ public static class CacheEntryExtensions
     /// </summary>
     /// <typeparam name="T">The type of the cached value.</typeparam>
     /// <param name="entry">The cache entry.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/></exception>
     /// <returns>The remaining time-to-live, or TimeSpan.Zero if expired.</returns>
     public static TimeSpan GetTimeToLive<T>(this CacheEntry<T> entry)
     {
-        if (entry is null)
-        {
-            throw new ArgumentNullException(nameof(entry));
-        }
+        ArgumentNullException.ThrowIfNull(entry);
 
         var now = DateTime.UtcNow;
         if (now >= entry.ExpiresAt)
@@ -39,13 +37,11 @@ public static class CacheEntryExtensions
     /// </summary>
     /// <typeparam name="T">The type of the cached value.</typeparam>
     /// <param name="entry">The cache entry.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/></exception>
     /// <returns>True if the entry is valid; otherwise, false.</returns>
     public static bool IsValid<T>(this CacheEntry<T> entry)
     {
-        if (entry is null)
-        {
-            throw new ArgumentNullException(nameof(entry));
-        }
+        ArgumentNullException.ThrowIfNull(entry);
 
         return !entry.IsExpired;
     }
@@ -55,13 +51,11 @@ public static class CacheEntryExtensions
     /// </summary>
     /// <typeparam name="T">The type of the cached value.</typeparam>
     /// <param name="entry">The cache entry.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/></exception>
     /// <returns>The age of the entry.</returns>
     public static TimeSpan GetAge<T>(this CacheEntry<T> entry)
     {
-        if (entry is null)
-        {
-            throw new ArgumentNullException(nameof(entry));
-        }
+        ArgumentNullException.ThrowIfNull(entry);
 
         return DateTime.UtcNow - entry.CreatedAt;
     }
@@ -72,13 +66,11 @@ public static class CacheEntryExtensions
     /// </summary>
     /// <typeparam name="T">The type of the cached value.</typeparam>
     /// <param name="entry">The cache entry.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="entry"/> is <see langword="null"/></exception>
     /// <returns>The expiration percentage (0 to 1).</returns>
     public static double GetExpirationPercentage<T>(this CacheEntry<T> entry)
     {
-        if (entry is null)
-        {
-            throw new ArgumentNullException(nameof(entry));
-        }
+        ArgumentNullException.ThrowIfNull(entry);
 
         var ttl = entry.ExpiresAt - entry.CreatedAt;
         if (ttl <= TimeSpan.Zero)
