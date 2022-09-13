@@ -7,10 +7,16 @@ using Xunit;
 
 namespace DotNetDeployNotify.Tests;
 
+/// <summary>
+/// Tests for the ValidationService class.
+/// </summary>
 public class ValidationServiceTests
 {
     private readonly ValidationService _validationService;
 
+    /// <summary>
+    /// Initializes a new instance of the ValidationServiceTests class.
+    /// </summary>
     public ValidationServiceTests()
     {
         _validationService = new ValidationService();
@@ -18,6 +24,9 @@ public class ValidationServiceTests
 
     #region ValidateNotification Tests
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a successful result when given a valid notification.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithValidNotification_ReturnsSuccess()
     {
@@ -40,6 +49,9 @@ public class ValidationServiceTests
         result.Errors.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a failed result when given a null notification.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithNullNotification_ReturnsFailure()
     {
@@ -51,6 +63,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Notification cannot be null");
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a failed result when given a notification with a missing project name.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithMissingProjectName_ReturnsFailure()
     {
@@ -72,6 +87,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Project name is required");
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a failed result when given a notification with a missing version.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithMissingVersion_ReturnsFailure()
     {
@@ -93,6 +111,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Version is required");
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a failed result when given a notification with a missing branch name.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithMissingBranchName_ReturnsFailure()
     {
@@ -114,6 +135,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Branch name is required");
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a failed result when given a notification with a missing message.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithMissingMessage_ReturnsFailure()
     {
@@ -135,6 +159,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Message is required");
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a failed result when given a notification with no channels.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithNoChannels_ReturnsFailure()
     {
@@ -156,6 +183,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("At least one notification channel must be specified");
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a failed result when given a notification with negative delivery attempts.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithNegativeDeliveryAttempts_ReturnsFailure()
     {
@@ -178,6 +208,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Delivery attempts cannot be negative");
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a failed result when given a notification with a negative duration.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithNegativeDuration_ReturnsFailure()
     {
@@ -200,6 +233,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Duration cannot be negative");
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns a successful result when given a notification with a positive duration.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithPositiveDuration_ReturnsSuccess()
     {
@@ -221,6 +257,9 @@ public class ValidationServiceTests
         result.IsValid.Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that ValidateNotification returns all errors when given a notification with multiple errors.
+    /// </summary>
     [Fact]
     public void ValidateNotification_WithMultipleErrors_ReturnsAllErrors()
     {
@@ -247,6 +286,9 @@ public class ValidationServiceTests
 
     #region ValidateChannelConfiguration Tests
 
+    /// <summary>
+    /// Tests that ValidateChannelConfiguration returns a successful result when given a valid channel configuration.
+    /// </summary>
     [Fact]
     public void ValidateChannelConfiguration_WithValidConfig_ReturnsSuccess()
     {
@@ -269,6 +311,9 @@ public class ValidationServiceTests
         result.Errors.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Tests that ValidateChannelConfiguration returns a failed result when given a null channel configuration.
+    /// </summary>
     [Fact]
     public void ValidateChannelConfiguration_WithNullConfig_ReturnsFailure()
     {
@@ -280,6 +325,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Channel configuration cannot be null");
     }
 
+    /// <summary>
+    /// Tests that ValidateChannelConfiguration returns a failed result when given a channel configuration with a missing display name.
+    /// </summary>
     [Fact]
     public void ValidateChannelConfiguration_WithMissingDisplayName_ReturnsFailure()
     {
@@ -299,6 +347,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Display name is required");
     }
 
+    /// <summary>
+    /// Tests that ValidateChannelConfiguration returns a failed result when given a channel configuration with an invalid webhook URL.
+    /// </summary>
     [Fact]
     public void ValidateChannelConfiguration_WithInvalidWebhookUrl_ReturnsFailure()
     {
@@ -319,6 +370,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Webhook URL is invalid or missing");
     }
 
+    /// <summary>
+    /// Tests that ValidateChannelConfiguration returns a failed result when given a channel configuration with a missing target ID.
+    /// </summary>
     [Fact]
     public void ValidateChannelConfiguration_WithMissingTargetId_ReturnsFailure()
     {
@@ -339,6 +393,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Target ID (chat ID, channel ID, etc.) is required");
     }
 
+    /// <summary>
+    /// Tests that ValidateChannelConfiguration returns a failed result when given a channel configuration with a zero timeout.
+    /// </summary>
     [Fact]
     public void ValidateChannelConfiguration_WithZeroTimeout_ReturnsFailure()
     {
@@ -360,6 +417,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Timeout must be greater than 0");
     }
 
+    /// <summary>
+    /// Tests that ValidateChannelConfiguration returns a failed result when given a channel configuration with a negative max retries.
+    /// </summary>
     [Fact]
     public void ValidateChannelConfiguration_WithNegativeMaxRetries_ReturnsFailure()
     {
@@ -382,6 +442,9 @@ public class ValidationServiceTests
         result.Errors.Should().Contain("Max retries cannot be negative");
     }
 
+    /// <summary>
+    /// Tests that ValidateChannelConfiguration returns a failed result when given a channel configuration with null custom headers.
+    /// </summary>
     [Fact]
     public void ValidateChannelConfiguration_WithNullCustomHeaders_ReturnsFailure()
     {
@@ -408,6 +471,9 @@ public class ValidationServiceTests
 
     #region URL and Email Validation Tests
 
+    /// <summary>
+    /// Tests that IsValidUrl returns true for a valid HTTPS URL.
+    /// </summary>
     [Fact]
     public void IsValidUrl_WithHttpsUrl_ReturnsTrue()
     {
@@ -415,6 +481,9 @@ public class ValidationServiceTests
         _validationService.IsValidUrl("https://example.com").Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that IsValidUrl returns true for a valid HTTP URL.
+    /// </summary>
     [Fact]
     public void IsValidUrl_WithHttpUrl_ReturnsTrue()
     {
@@ -422,6 +491,9 @@ public class ValidationServiceTests
         _validationService.IsValidUrl("http://example.com").Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that IsValidUrl returns false for an invalid URL.
+    /// </summary>
     [Fact]
     public void IsValidUrl_WithInvalidUrl_ReturnsFalse()
     {
@@ -429,6 +501,9 @@ public class ValidationServiceTests
         _validationService.IsValidUrl("not-a-url").Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that IsValidUrl returns false for an FTP URL.
+    /// </summary>
     [Fact]
     public void IsValidUrl_WithFtpUrl_ReturnsFalse()
     {
@@ -436,6 +511,9 @@ public class ValidationServiceTests
         _validationService.IsValidUrl("ftp://example.com").Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that IsValidUrl returns false for an empty string.
+    /// </summary>
     [Fact]
     public void IsValidUrl_WithEmptyString_ReturnsFalse()
     {
@@ -443,6 +521,9 @@ public class ValidationServiceTests
         _validationService.IsValidUrl("").Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that IsValidUrl returns false for a null string.
+    /// </summary>
     [Fact]
     public void IsValidUrl_WithNullString_ReturnsFalse()
     {
@@ -450,6 +531,9 @@ public class ValidationServiceTests
         _validationService.IsValidUrl(null!).Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that IsValidUrl returns true for a URL with a port.
+    /// </summary>
     [Fact]
     public void IsValidUrl_WithUrlWithPort_ReturnsTrue()
     {
@@ -457,6 +541,9 @@ public class ValidationServiceTests
         _validationService.IsValidUrl("https://example.com:8080/path").Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that IsValidEmail returns true for a valid email address.
+    /// </summary>
     [Fact]
     public void IsValidEmail_WithValidEmail_ReturnsTrue()
     {
@@ -464,6 +551,9 @@ public class ValidationServiceTests
         _validationService.IsValidEmail("test@example.com").Should().BeTrue();
     }
 
+    /// <summary>
+    /// Tests that IsValidEmail returns false for an invalid email address.
+    /// </summary>
     [Fact]
     public void IsValidEmail_WithInvalidEmail_ReturnsFalse()
     {
@@ -471,6 +561,9 @@ public class ValidationServiceTests
         _validationService.IsValidEmail("not-an-email").Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that IsValidEmail returns false for an empty string.
+    /// </summary>
     [Fact]
     public void IsValidEmail_WithEmptyString_ReturnsFalse()
     {
@@ -478,6 +571,9 @@ public class ValidationServiceTests
         _validationService.IsValidEmail("").Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that IsValidEmail returns false for a null string.
+    /// </summary>
     [Fact]
     public void IsValidEmail_WithNullString_ReturnsFalse()
     {
@@ -485,6 +581,9 @@ public class ValidationServiceTests
         _validationService.IsValidEmail(null!).Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that IsValidEmail returns false for an email address missing a domain.
+    /// </summary>
     [Fact]
     public void IsValidEmail_WithEmailMissingDomain_ReturnsFalse()
     {
