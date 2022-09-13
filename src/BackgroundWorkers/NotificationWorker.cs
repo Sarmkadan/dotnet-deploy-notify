@@ -16,7 +16,12 @@ public class NotificationProcessingWorker : BackgroundWorker
 {
     private readonly INotificationService _notificationService;
     private readonly ILogger<NotificationProcessingWorker> _logger;
-    private readonly TimeSpan _interval;
+    private readonly object _statsLock = new();
+
+    private TimeSpan _interval;
+    private ILogger? _detailLogger;
+    private int _totalProcessed;
+    private int _totalSucceeded;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="NotificationProcessingWorker"/> class.
@@ -34,6 +39,35 @@ public class NotificationProcessingWorker : BackgroundWorker
         _interval = interval ?? TimeSpan.FromSeconds(30);
     }
 
+    /// <summary>
+    /// Sets the processing interval. Takes effect on the next processing cycle.
+    /// </summary>
+    /// <param name="interval">The new interval; must be positive.</param>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> is zero or negative.</exception>
+    internal void SetInterval(TimeSpan interval)
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(interval, TimeSpan.Zero);
+        _interval = interval;
+    }
+
+    /// <summary>
+    /// Attaches an additional logger that receives per-cycle diagnostic messages.
+    /// </summary>
+    /// <param name="logger">The logger to receive detailed output.</param>
+    internal void SetDetailLogger(ILogger logger) => _detailLogger = logger;
+
+    /// <summary>
+    /// Returns the statistics accumulated since the worker was constructed.
+    /// </summary>
+    internal (int TotalProcessed, double SuccessRate, TimeSpan Uptime) GetStatisticsCore()
+    {
+        lock (_statsLock)
+        {
+            var successRate = _totalProcessed == 0 ? 0.0 : (double)_totalSucceeded / _totalProcessed;
+            return (_totalProcessed, successRate, DateTime.UtcNow - StartTime);
+        }
+    }
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         _logger.LogInformation("Notification processing worker started (interval: {Interval}s)",
@@ -46,14 +80,31 @@ public class NotificationProcessingWorker : BackgroundWorker
                 var startTime = DateTime.UtcNow;
                 var results = await _notificationService.SendPendingNotificationsAsync();
 
+                ExecutionCount++;
+
                 if (results.Any())
                 {
                     var duration = DateTime.UtcNow - startTime;
                     var successCount = results.Count(r => r.IsSuccessful);
 
+                    lock (_statsLock)
+                    {
+                        _totalProcessed += results.Count;
+                        _totalSucceeded += successCount;
+                    }
+
                     _logger.LogInformation(
                         "Processed {Count} notifications: {Success} succeeded, {Failed} failed ({Duration}ms)",
                         results.Count, successCount, results.Count - successCount, duration.TotalMilliseconds);
+
+                    _detailLogger?.LogDebug(
+                        "Cycle detail: {Count} processed in {Duration}ms, failures: {Failures}",
+                        results.Count, duration.TotalMilliseconds,
+                        string.Join(", ", results.Where(r => !r.IsSuccessful).Select(r => r.ErrorMessage ?? "unknown")));
+                }
+                else
+                {
+                    _detailLogger?.LogDebug("Cycle detail: no pending notifications");
                 }
 
                 await Task.Delay(_interval, stoppingToken);
