@@ -280,8 +280,6 @@ public class PayloadBuilderTests
 
         // Assert
         payload.Should().NotBeNull();
-        var payloadDict = payload as dynamic;
-        payloadDict.Should().NotBeNull();
     }
 
     [Fact]

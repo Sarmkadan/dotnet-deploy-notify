@@ -159,6 +159,13 @@ public class MetricsService : IMetricsService
     private readonly Dictionary<NotificationChannel, ChannelMetrics> _channelMetrics = new();
     private readonly ILogger<MetricsService> _logger;
 
+    private readonly List<DeliveryEvent> _deliveryEvents = new();
+    private readonly List<DateTime> _notificationCreatedTimestamps = new();
+    private readonly List<DateTime> _validationFailureTimestamps = new();
+    private readonly List<DateTime> _configurationChangeTimestamps = new();
+
+    private readonly record struct DeliveryEvent(DateTime Timestamp, NotificationChannel Channel, bool Success, long DurationMs);
+
     /// <summary>Initializes the metrics service</summary>
     public MetricsService(ILogger<MetricsService> logger)
     {
@@ -179,6 +186,7 @@ public class MetricsService : IMetricsService
         lock (_lockObject)
         {
             _notificationsCreated++;
+            _notificationCreatedTimestamps.Add(DateTime.UtcNow);
         }
     }
 
@@ -191,6 +199,7 @@ public class MetricsService : IMetricsService
         {
             _deliveryAttempts++;
             _deliveryTimes.Add(durationMs);
+            _deliveryEvents.Add(new DeliveryEvent(DateTime.UtcNow, channel, success, durationMs));
 
             if (success)
             {
@@ -220,6 +229,7 @@ public class MetricsService : IMetricsService
         lock (_lockObject)
         {
             _validationFailures++;
+            _validationFailureTimestamps.Add(DateTime.UtcNow);
         }
     }
 
@@ -231,6 +241,7 @@ public class MetricsService : IMetricsService
         lock (_lockObject)
         {
             _configurationChanges++;
+            _configurationChangeTimestamps.Add(DateTime.UtcNow);
         }
     }
 
@@ -267,14 +278,61 @@ public class MetricsService : IMetricsService
     }
 
     /// <summary>
-    /// Gets metrics for a specific time period
+    /// Gets metrics restricted to events recorded within the given time period (inclusive).
     /// </summary>
+    /// <param name="startTime">Start of the period (UTC).</param>
+    /// <param name="endTime">End of the period (UTC).</param>
+    /// <exception cref="ArgumentException"><paramref name="endTime"/> is earlier than <paramref name="startTime"/>.</exception>
     public Task<MetricsSnapshot> GetMetricsByPeriodAsync(DateTime startTime, DateTime endTime)
     {
-        // This is a simplified implementation
-        // In production, you'd store timestamped metrics and filter
+        if (endTime < startTime)
+            throw new ArgumentException("endTime must not be earlier than startTime.", nameof(endTime));
+
         _logger.LogDebug("Getting metrics for period {StartTime} - {EndTime}", startTime, endTime);
-        return GetMetricsAsync();
+
+        lock (_lockObject)
+        {
+            var events = _deliveryEvents
+                .Where(e => e.Timestamp >= startTime && e.Timestamp <= endTime)
+                .ToList();
+
+            var channelMetrics = new Dictionary<NotificationChannel, ChannelMetrics>();
+            foreach (var group in events.GroupBy(e => e.Channel))
+            {
+                channelMetrics[group.Key] = new ChannelMetrics
+                {
+                    Channel = group.Key,
+                    DeliveryAttempts = group.Count(),
+                    SuccessfulDeliveries = group.Count(e => e.Success),
+                    FailedDeliveries = group.Count(e => !e.Success),
+                    AverageDeliveryTimeMs = (long)group.Average(e => e.DurationMs),
+                    LastDeliveryAt = group.Max(e => e.Timestamp)
+                };
+            }
+
+            var snapshot = new MetricsSnapshot
+            {
+                NotificationsCreated = _notificationCreatedTimestamps.Count(t => t >= startTime && t <= endTime),
+                DeliveryAttempts = events.Count,
+                SuccessfulDeliveries = events.Count(e => e.Success),
+                FailedDeliveries = events.Count(e => !e.Success),
+                ValidationFailures = _validationFailureTimestamps.Count(t => t >= startTime && t <= endTime),
+                ConfigurationChanges = _configurationChangeTimestamps.Count(t => t >= startTime && t <= endTime),
+                ChannelMetrics = channelMetrics
+            };
+
+            if (events.Count > 0)
+            {
+                var times = events.Select(e => e.DurationMs).ToList();
+                snapshot.AverageDeliveryTimeMs = (long)times.Average();
+                snapshot.MinDeliveryTimeMs = times.Min();
+                snapshot.MaxDeliveryTimeMs = times.Max();
+                snapshot.P95DeliveryTimeMs = CalculatePercentile(times, 95);
+                snapshot.P99DeliveryTimeMs = CalculatePercentile(times, 99);
+            }
+
+            return Task.FromResult(snapshot);
+        }
     }
 
     /// <summary>
@@ -293,12 +351,14 @@ public class MetricsService : IMetricsService
         }
     }
 
-    private long CalculatePercentile(int percentile)
+    private long CalculatePercentile(int percentile) => CalculatePercentile(_deliveryTimes, percentile);
+
+    private static long CalculatePercentile(List<long> values, int percentile)
     {
-        if (!_deliveryTimes.Any())
+        if (values.Count == 0)
             return 0;
 
-        var sorted = _deliveryTimes.OrderBy(x => x).ToList();
+        var sorted = values.OrderBy(x => x).ToList();
         var index = (int)Math.Ceiling((percentile / 100.0) * sorted.Count) - 1;
         return sorted[Math.Max(0, Math.Min(index, sorted.Count - 1))];
     }

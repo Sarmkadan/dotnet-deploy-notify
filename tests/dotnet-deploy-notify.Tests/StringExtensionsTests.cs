@@ -52,7 +52,7 @@ public class StringExtensionsTests
         // Assert
         result.Should().Be("my-deploy-project");
         result.Should().NotContain(" ");
-        result.Should().BeLowerCased();
+        result.Should().MatchRegex("^[a-z0-9-]+$");
     }
 
     [Theory]

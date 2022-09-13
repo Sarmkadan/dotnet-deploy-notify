@@ -8,6 +8,8 @@ using DotNetDeployNotify.Core.Models;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
 
+using System.Globalization;
+
 namespace DotNetDeployNotify.Services;
 
 /// <summary>
@@ -55,7 +57,7 @@ public class TemplateService : ITemplateService
             { "Duration", n => n.DurationSeconds?.ToString() ?? "N/A" },
             { "Priority", n => n.Priority.ToString() },
             { "CreatedAt", n => n.CreatedAt.ToString("O") },
-            { "CreatedAtLocal", n => n.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss") }
+            { "CreatedAtLocal", n => n.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) }
         };
 
     /// <summary>Initializes the template service</summary>

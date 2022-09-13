@@ -257,6 +257,7 @@ public class NotificationProcessor : INotificationProcessor
                 result.SuccessCount += batchResult.SuccessCount;
                 result.FailureCount += batchResult.FailureCount;
                 result.SkippedCount += batchResult.SkippedCount;
+                result.Errors.AddRange(batchResult.Errors);
             }
 
             _logger.LogInformation(

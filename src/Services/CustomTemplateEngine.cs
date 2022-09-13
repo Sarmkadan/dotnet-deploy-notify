@@ -9,6 +9,8 @@ using System.Text.RegularExpressions;
 using DotNetDeployNotify.Core.Models;
 using Microsoft.Extensions.Logging;
 
+using System.Globalization;
+
 namespace DotNetDeployNotify.Services;
 
 /// <summary>
@@ -74,7 +76,7 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
             { "Duration",        n => n.DurationSeconds?.ToString() ?? "N/A" },
             { "Priority",        n => n.Priority.ToString() },
             { "CreatedAt",       n => n.CreatedAt.ToString("O") },
-            { "CreatedAtLocal",  n => n.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss") }
+            { "CreatedAtLocal",  n => n.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture) }
         };
 
     private static readonly IReadOnlyDictionary<string, Func<string, string>> Filters

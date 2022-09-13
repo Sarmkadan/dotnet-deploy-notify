@@ -196,6 +196,14 @@ public class NotificationService : INotificationService
                     // Send the webhook
                     var result = await _dispatcher.SendToWebhookAsync(config, notification);
 
+                    // Stamp identifying data so the stored result always maps back
+                    // to the channel and notification it belongs to
+                    result.Channel = config.ChannelType;
+                    if (string.IsNullOrEmpty(result.NotificationId))
+                        result.NotificationId = notification.Id;
+                    if (string.IsNullOrEmpty(result.ConfigurationId))
+                        result.ConfigurationId = config.Id;
+
                     // Store the result
                     await _resultRepository.CreateAsync(result);
                     results.Add(result);
