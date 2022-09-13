@@ -25,13 +25,12 @@ namespace DotNetDeployNotify.BackgroundWorkers
         /// <param name="interval">The interval at which to process notifications.</param>
         /// <returns>The configured notification processing worker.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="worker"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="interval"/> is zero or negative.</exception>
         public static NotificationProcessingWorker WithInterval(this NotificationProcessingWorker worker, TimeSpan interval)
         {
             ArgumentNullException.ThrowIfNull(worker);
 
-            // Note: In a real implementation, we would need to access the private _interval field
-            // For this extension method, we'll document that this is a configuration method
-            // that would typically be used during worker construction
+            worker.SetInterval(interval);
             return worker;
         }
 
@@ -47,8 +46,7 @@ namespace DotNetDeployNotify.BackgroundWorkers
             ArgumentNullException.ThrowIfNull(worker);
             ArgumentNullException.ThrowIfNull(logger);
 
-            // This extension method documents the intended usage pattern
-            // In a real implementation, we would configure the worker's logger
+            worker.SetDetailLogger(logger);
             return worker;
         }
 
@@ -77,9 +75,7 @@ namespace DotNetDeployNotify.BackgroundWorkers
         {
             ArgumentNullException.ThrowIfNull(worker);
 
-            // In a real implementation, this would track and return actual statistics
-            // For now, return default values as this is a placeholder for actual implementation
-        return (0, 0.0, TimeSpan.Zero);
+            return worker.GetStatisticsCore();
         }
     }
 
@@ -117,11 +113,9 @@ namespace DotNetDeployNotify.BackgroundWorkers
             {
                 _logger.LogInformation("Running health check for notification processing worker...");
 
-                // Check if worker is running
                 var workerType = _worker.GetType().Name;
                 _logger.LogInformation("Worker type: {WorkerType}", workerType);
 
-                // In a real implementation, we would check actual worker state and statistics
                 var stats = _worker.GetStatistics();
                 _logger.LogInformation("Worker statistics - Total processed: {TotalProcessed}, Success rate: {SuccessRate:P}, Uptime: {Uptime}",
                     stats.TotalProcessed, stats.SuccessRate, stats.Uptime);
