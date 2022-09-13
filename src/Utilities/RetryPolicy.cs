@@ -92,7 +92,7 @@ public class RetryHelper
                 }
 
                 var delay = CalculateDelay(attempt, policy);
-                Task.Delay(delay).Wait();
+                Thread.Sleep(delay);
             }
         }
 

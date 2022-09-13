@@ -182,11 +182,10 @@ public class SafeJsonParser
 
         foreach (var json in jsonStrings.Where(j => !string.IsNullOrWhiteSpace(j)))
         {
-            if (TryParse<Dictionary<string, object>>(json).Success &&
-                TryParse<Dictionary<string, object>>(json).Result is not null)
+            var (success, dict) = TryParse<Dictionary<string, object>>(json);
+            if (success && dict is not null)
             {
-                var dict = TryParse<Dictionary<string, object>>(json).Result;
-                foreach (var kvp in dict!)
+                foreach (var kvp in dict)
                 {
                     merged[kvp.Key] = kvp.Value;
                 }

@@ -9,6 +9,8 @@ using System.Text.Json.Serialization;
 using DotNetDeployNotify.Core.Models;
 using DotNetDeployNotify.Formatting;
 
+using System.Globalization;
+
 namespace DotNetDeployNotify.Formatters;
 
 /// <summary>
@@ -76,7 +78,7 @@ public sealed class TextNotificationFormatter : INotificationFormatter
             $"║ Commit Author:   {PadRight(notification.CommitAuthor, 40)} ║",
             $"║ Commit Hash:     {PadRight(notification.CommitHash.Substring(0, Math.Min(8, notification.CommitHash.Length)), 40)} ║",
             $"║ Priority:        {PadRight(notification.Priority.ToString(), 40)} ║",
-            $"║ Timestamp:       {PadRight(notification.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss"), 40)} ║",
+            $"║ Timestamp:       {PadRight(notification.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture), 40)} ║",
             "╠════════════════════════════════════════════════════════════════╣",
             "║ MESSAGE                                                        ║",
             "╠════════════════════════════════════════════════════════════════╣"

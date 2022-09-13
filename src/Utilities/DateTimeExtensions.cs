@@ -4,6 +4,8 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System.Globalization;
+
 namespace DotNetDeployNotify.Utilities;
 
 /// <summary>
@@ -48,7 +50,7 @@ public static class DateTimeExtensions
     /// <param name="dateTime">The DateTime to format</param>
     /// <returns>An ISO 8601 formatted string</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when dateTime is invalid</exception>
-    public static string ToIsoString(this DateTime dateTime) => dateTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ");
+    public static string ToIsoString(this DateTime dateTime) => dateTime.ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ss.fffZ", CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Formats DateTime to human-readable string with timezone
@@ -56,7 +58,7 @@ public static class DateTimeExtensions
     /// <param name="dateTime">The DateTime to format</param>
     /// <returns>A formatted string representation</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when dateTime is invalid</exception>
-    public static string ToFormattedString(this DateTime dateTime) => dateTime.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss UTC");
+    public static string ToFormattedString(this DateTime dateTime) => dateTime.ToUniversalTime().ToString("yyyy-MM-dd HH:mm:ss UTC", CultureInfo.InvariantCulture);
 
     /// <summary>
     /// Checks if DateTime is in the past

@@ -517,11 +517,12 @@ public class MetricsServiceTests
             }));
         }
 
-        var metricsTask = _metricsService.GetMetricsAsync();
-        await Task.WhenAll(recordingTasks.Append(metricsTask));
+        await Task.WhenAll(recordingTasks);
+        var metrics = await _metricsService.GetMetricsAsync();
 
         // Assert
-        metricsTask.Result.NotificationsCreated.Should().Be(50);
+        metrics.NotificationsCreated.Should().Be(50);
+        metrics.DeliveryAttempts.Should().Be(50);
     }
 
     #endregion
