@@ -220,7 +220,7 @@ public class CircuitBreakerWithBackoff
         }
     }
 
-    private class NullLogger : ILogger
+    internal class NullLogger : ILogger
     {
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => new NoOpDisposable();
         public bool IsEnabled(LogLevel logLevel) => false;
