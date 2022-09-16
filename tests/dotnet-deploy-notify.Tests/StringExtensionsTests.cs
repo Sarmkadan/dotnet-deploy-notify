@@ -10,8 +10,15 @@ using Xunit;
 
 namespace DotNetDeployNotify.Tests;
 
+/// <summary>
+/// Tests for the <see cref="StringExtensions"/> utility methods.
+/// </summary>
 public class StringExtensionsTests
 {
+    /// <summary>
+    /// Verifies that <c>Truncate</c> correctly truncates a string that exceeds the maximum length
+    /// and appends the ellipsis suffix.
+    /// </summary>
     [Fact]
     public void Truncate_StringExceedsMaxLength_TruncatesAndAppendsSuffix()
     {
@@ -27,6 +34,10 @@ public class StringExtensionsTests
         result.Should().Be("This is a very lo...");
     }
 
+    /// <summary>
+    /// Ensures that <c>Truncate</c> returns an empty string when the input is null, empty, or whitespace.
+    /// </summary>
+    /// <param name="input">The input string to truncate.</param>
     [Theory]
     [InlineData(null)]
     [InlineData("")]
@@ -40,6 +51,10 @@ public class StringExtensionsTests
         result.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Tests that <c>ToSlug</c> converts a string with spaces and uppercase letters
+    /// into a lowercase, hyphen‑separated slug.
+    /// </summary>
     [Fact]
     public void ToSlug_StringWithSpacesAndUppercase_ReturnsLowercaseHyphenated()
     {
@@ -55,6 +70,12 @@ public class StringExtensionsTests
         result.Should().MatchRegex("^[a-z0-9-]+$");
     }
 
+    /// <summary>
+    /// Validates that <c>ToBooleanSafe</c> correctly interprets common string representations
+    /// of boolean values.
+    /// </summary>
+    /// <param name="input">The string to convert.</param>
+    /// <param name="expected">The expected boolean result.</param>
     [Theory]
     [InlineData("1", true)]
     [InlineData("true", true)]
@@ -73,6 +94,10 @@ public class StringExtensionsTests
         result.Should().Be(expected);
     }
 
+    /// <summary>
+    /// Checks that <c>CountOccurrences</c> accurately counts how many times a substring appears
+    /// within a larger string.
+    /// </summary>
     [Fact]
     public void CountOccurrences_SubstringAppearsMultipleTimes_ReturnsCorrectCount()
     {
@@ -86,6 +111,10 @@ public class StringExtensionsTests
         count.Should().Be(3);
     }
 
+    /// <summary>
+    /// Ensures that <c>MaskSensitive</c> returns a string of asterisks when the input
+    /// is shorter than the visible character threshold.
+    /// </summary>
     [Fact]
     public void MaskSensitive_StringShorterThanVisibleCharThreshold_ReturnsAllStars()
     {
@@ -99,6 +128,10 @@ public class StringExtensionsTests
         result.Should().Be("****");
     }
 
+    /// <summary>
+    /// Verifies that <c>MaskSensitive</c> shows only the first four characters of a long token
+    /// and masks the remainder with asterisks, preserving the original length.
+    /// </summary>
     [Fact]
     public void MaskSensitive_LongApiToken_ShowsOnlyFirstFourCharsAndMasksRest()
     {
