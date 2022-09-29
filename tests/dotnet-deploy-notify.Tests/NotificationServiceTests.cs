@@ -8,8 +8,9 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
-namespace DotNetDeployNotify.Tests;
-
+/// <summary>
+/// Tests for the NotificationService class.
+/// </summary>
 public class NotificationServiceTests
 {
     private readonly Mock<INotificationRepository> _notificationRepositoryMock = new();
@@ -21,6 +22,9 @@ public class NotificationServiceTests
 
     private readonly NotificationService _service;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="NotificationServiceTests"/> class.
+    /// </summary>
     public NotificationServiceTests()
     {
         _service = new NotificationService(
@@ -32,6 +36,9 @@ public class NotificationServiceTests
             _loggerMock.Object);
     }
 
+    /// <summary>
+    /// Tests that CreateNotificationAsync returns the ID of the created notification when the notification is valid.
+    /// </summary>
     [Fact]
     public async Task CreateNotificationAsync_ShouldReturnId_WhenValid()
     {
@@ -48,6 +55,9 @@ public class NotificationServiceTests
         _notificationRepositoryMock.Verify(r => r.CreateAsync(notification), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that CreateNotificationAsync throws a NotificationValidationException when the notification is invalid.
+    /// </summary>
     [Fact]
     public async Task CreateNotificationAsync_ShouldThrowException_WhenInvalid()
     {
@@ -63,6 +73,9 @@ public class NotificationServiceTests
         await act.Should().ThrowAsync<NotificationValidationException>();
     }
 
+    /// <summary>
+    /// Tests that SendNotificationAsync throws a NotificationException when the notification is not found.
+    /// </summary>
     [Fact]
     public async Task SendNotificationAsync_ShouldThrowException_WhenNotificationNotFound()
     {
@@ -77,6 +90,9 @@ public class NotificationServiceTests
         await act.Should().ThrowAsync<NotificationException>();
     }
 
+    /// <summary>
+    /// Tests that SendNotificationAsync returns an empty list when no channels are specified.
+    /// </summary>
     [Fact]
     public async Task SendNotificationAsync_ShouldReturnEmptyList_WhenNoChannelsSpecified()
     {
@@ -92,6 +108,9 @@ public class NotificationServiceTests
         results.Should().BeEmpty();
     }
 
+    /// <summary>
+    /// Tests that SendNotificationAsync sends and returns the result when the notification is valid.
+    /// </summary>
     [Fact]
     public async Task SendNotificationAsync_ShouldSendAndReturnResult_WhenValid()
     {
@@ -121,6 +140,9 @@ public class NotificationServiceTests
         _notificationRepositoryMock.Verify(r => r.UpdateAsync(notification), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that RetryFailedDeliveriesAsync throws a NotificationException when the notification is not found.
+    /// </summary>
     [Fact]
     public async Task RetryFailedDeliveriesAsync_ShouldThrowException_WhenNotificationNotFound()
     {
