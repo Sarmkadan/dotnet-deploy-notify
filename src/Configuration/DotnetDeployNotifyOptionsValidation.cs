@@ -171,45 +171,6 @@ public static class DotnetDeployNotifyOptionsValidation
     }
 
     /// <summary>
-    /// Validates the provided <see cref="CanaryOptions"/> instance.
-    /// </summary>
-    /// <param name="value">The configuration to validate.</param>
-    /// <returns>A list of human-readable validation problems; empty if valid.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static IReadOnlyList<string> Validate(this CanaryOptions value)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var problems = new List<string>();
-
-        if (value.LinearStepCount < 2 || value.LinearStepCount > 20)
-        {
-            problems.Add($"Canary.LinearStepCount must be between 2 and 20, but was {value.LinearStepCount}.");
-        }
-
-        if (value.StepSoakDuration <= TimeSpan.Zero)
-        {
-            problems.Add($"Canary.StepSoakDuration must be positive, but was {value.StepSoakDuration.TotalSeconds} seconds.");
-        }
-
-        if (value.MaxDeploymentDuration <= TimeSpan.Zero)
-        {
-            problems.Add($"Canary.MaxDeploymentDuration must be positive, but was {value.MaxDeploymentDuration.TotalHours} hours.");
-        }
-
-        if (value.Thresholds is null)
-        {
-            problems.Add("Canary.Thresholds is required and cannot be null.");
-        }
-        else
-        {
-            problems.AddRange(value.Thresholds.Validate());
-        }
-
-        return problems.AsReadOnly();
-    }
-
-    /// <summary>
     /// Validates the provided <see cref="CanaryThresholds"/> instance.
     /// </summary>
     /// <param name="value">The configuration to validate.</param>
