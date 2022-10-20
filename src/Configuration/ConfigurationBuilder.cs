@@ -26,6 +26,46 @@ public sealed class ChannelConfigurationBuilder
         };
     }
 
+    /// <summary>
+    /// Gets the display name for this channel configuration
+    /// </summary>
+    public string DisplayName => _config.DisplayName;
+
+    /// <summary>
+    /// Gets the webhook URL for this channel configuration
+    /// </summary>
+    public string WebhookUrl => _config.WebhookUrl;
+
+    /// <summary>
+    /// Gets the target ID for this channel configuration
+    /// </summary>
+    public string TargetId => _config.TargetId;
+
+    /// <summary>
+    /// Gets the timeout in milliseconds for this channel configuration
+    /// </summary>
+    public int TimeoutMs => _config.TimeoutMs;
+
+    /// <summary>
+    /// Gets the maximum number of retries for this channel configuration
+    /// </summary>
+    public int MaxRetries => _config.MaxRetries;
+
+    /// <summary>
+    /// Gets the minimum priority level for this channel configuration
+    /// </summary>
+    public NotificationPriority MinimumPriority => _config.MinimumPriority;
+
+    /// <summary>
+    /// Gets the list of allowed environments for this channel configuration
+    /// </summary>
+    public IReadOnlyList<Environment> AllowedEnvironments => _config.AllowedEnvironments.AsReadOnly();
+
+    /// <summary>
+    /// Gets the list of allowed build statuses for this channel configuration
+    /// </summary>
+    public IReadOnlyList<BuildStatus> AllowedStatuses => _config.AllowedStatuses.AsReadOnly();
+
     public ChannelConfigurationBuilder WithName(string displayName)
     {
         _config.DisplayName = displayName;
