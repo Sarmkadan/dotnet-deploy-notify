@@ -12,17 +12,18 @@ using System.Linq;
 namespace DotNetDeployNotify.Validation;
 
 /// <summary>
-/// Validation helpers for <see cref="ValidationRule"/>.
+/// Validation helpers for <see cref="ValidationRule{T}"/>.
 /// </summary>
 public static class ValidationRuleValidation
 {
     /// <summary>
-    /// Validates a <see cref="ValidationRule"/> and returns a list of human-readable problems.
+    /// Validates a <see cref="ValidationRule{T}"/> and returns a list of human-readable problems.
     /// </summary>
-    /// <param name="value">The <see cref="ValidationRule"/> to validate.</param>
+    /// <typeparam name="T">The type of the value to validate.</typeparam>
+    /// <param name="value">The <see cref="ValidationRule{T}"/> to validate.</param>
     /// <returns>A list of human-readable problems.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <c>null</c>.</exception>
-    public static IReadOnlyList<string> Validate(this ValidationRule value)
+    public static IReadOnlyList<string> Validate<T>(this ValidationRule<T> value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -37,23 +38,25 @@ public static class ValidationRuleValidation
     }
 
     /// <summary>
-    /// Checks if a <see cref="ValidationRule"/> is valid.
+    /// Checks if a <see cref="ValidationRule{T}"/> is valid.
     /// </summary>
-    /// <param name="value">The <see cref="ValidationRule"/> to validate.</param>
-    /// <returns><c>true</c> if the <see cref="ValidationRule"/> is valid; otherwise, <c>false</c>.</returns>
+    /// <typeparam name="T">The type of the value to validate.</typeparam>
+    /// <param name="value">The <see cref="ValidationRule{T}"/> to validate.</param>
+    /// <returns><c>true</c> if the <see cref="ValidationRule{T}"/> is valid; otherwise, <c>false</c>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <c>null</c>.</exception>
-    public static bool IsValid(this ValidationRule value)
+    public static bool IsValid<T>(this ValidationRule<T> value)
     {
         return Validate(value).Count == 0;
     }
 
     /// <summary>
-    /// Ensures that a <see cref="ValidationRule"/> is valid, throwing an <see cref="ArgumentException"/> if it is not.
+    /// Ensures that a <see cref="ValidationRule{T}"/> is valid, throwing an <see cref="ArgumentException"/> if it is not.
     /// </summary>
-    /// <param name="value">The <see cref="ValidationRule"/> to validate.</param>
+    /// <typeparam name="T">The type of the value to validate.</typeparam>
+    /// <param name="value">The <see cref="ValidationRule{T}"/> to validate.</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <c>null</c>.</exception>
     /// <exception cref="ArgumentException">Thrown when <paramref name="value"/> is not valid.</exception>
-    public static void EnsureValid(this ValidationRule value)
+    public static void EnsureValid<T>(this ValidationRule<T> value)
     {
         var problems = Validate(value);
         if (problems.Count > 0)
