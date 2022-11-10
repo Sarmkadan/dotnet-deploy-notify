@@ -30,4 +30,24 @@ Console.WriteLine($"Can promote: {canPromote}");
 Console.WriteLine($"Next traffic percentage: {nextPercentage}%");
 Console.WriteLine($"Soak remaining: {soakRemaining?.TotalMinutes:F1} minutes");
 ```
-// rest of existing content remains unchanged
+
+## NotificationProcessingWorkerExtensions
+
+The `NotificationProcessingWorkerExtensions` class provides extension methods for configuring and monitoring `NotificationProcessingWorker` instances. It allows setting processing intervals, enabling detailed logging, creating health check tasks, and retrieving worker statistics.
+
+Example usage:
+```csharp
+var worker = new NotificationProcessingWorker();
+var logger = LoggerFactory.Create(builder => builder.AddConsole()).CreateLogger<NotificationProcessingWorker>();
+
+// Configure worker with interval and logging
+worker = worker.WithInterval(TimeSpan.FromMinutes(1))
+               .WithDetailedLogging(logger);
+
+// Create health check task
+var healthCheckTask = worker.CreateHealthCheckTask(logger);
+
+// Get and display statistics
+var stats = worker.GetStatistics();
+Console.WriteLine($"Processed: {stats.TotalProcessed}, Success Rate: {stats.SuccessRate:P}, Uptime: {stats.Uptime}");
+```
