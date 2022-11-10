@@ -1,29 +1,33 @@
 // existing content ...
 
-## BatchNotificationExtensions
+## CanaryDeploymentExtensions
 
-The `BatchNotificationExtensions` class provides extension methods for `BatchNotification` to enhance batch processing capabilities. It allows filtering, statistics gathering, and state checking for batch notifications.
+The `CanaryDeploymentExtensions` class provides helper methods for analyzing and managing canary deployment status, health, and rollout progress. It includes methods to check deployment status, calculate health scores, determine promotion eligibility, and track traffic progression.
 
 Example usage:
 ```csharp
-var batch = new BatchNotification
+var deployment = new CanaryDeployment
 {
-    // Initialize batch properties
-    Notifications = new List<DeploymentNotification>
+    Status = CanaryStatus.Active,
+    CurrentSplit = new TrafficSplit { StablePercent = 80, CanaryPercent = 20 },
+    CanaryMetrics = new CanaryMetrics { ErrorRatePercent = 0.5, P95LatencyMs = 150 },
+    RolloutPlan = new List<RolloutStep>
     {
-        new DeploymentNotification { ProjectName = "ProjectA" },
-        new DeploymentNotification { ProjectName = "ProjectB" },
+        new RolloutStep { CanaryPercent = 20, SoakDuration = TimeSpan.FromMinutes(10) },
+        new RolloutStep { CanaryPercent = 50, SoakDuration = TimeSpan.FromMinutes(15) }
     },
-    Channels = new List<string> { "Channel1", "Channel2" },
+    ActiveStep = new RolloutStep { CanaryPercent = 20, StartedAt = DateTime.UtcNow, Status = RolloutStepStatus.InProgress }
 };
 
-var projectAFilters = batch.FilterByProject("ProjectA");
-var deliveryStats = batch.GetDeliveryStatistics();
-var hasPending = batch.HasPendingNotifications();
-var detailedSummary = batch.GetDetailedSummary();
+bool isActive = deployment.IsActive();
+string statusSummary = deployment.GetStatusSummary();
+bool canPromote = deployment.CanPromote();
+double? nextPercentage = deployment.GetNextTrafficPercentage();
+TimeSpan? soakRemaining = deployment.GetCurrentSoakRemaining();
 
-Console.WriteLine(deliveryStats);
-Console.WriteLine($"Has pending notifications: {hasPending}");
-Console.WriteLine(detailedSummary);
+Console.WriteLine(statusSummary);
+Console.WriteLine($"Can promote: {canPromote}");
+Console.WriteLine($"Next traffic percentage: {nextPercentage}%");
+Console.WriteLine($"Soak remaining: {soakRemaining?.TotalMinutes:F1} minutes");
 ```
 // rest of existing content remains unchanged
