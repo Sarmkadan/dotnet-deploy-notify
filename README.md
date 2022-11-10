@@ -1,20 +1,29 @@
 // existing content ...
 
-## ServiceExtensionsJsonExtensions
+## BatchNotificationExtensions
 
-The `ServiceExtensionsJsonExtensions` class provides JSON serialization utilities for ServiceExtensions metadata. It allows converting metadata about ServiceExtensions methods and types to/from JSON format using `ToJson()`, `FromJson()`, and `TryFromJson()` methods.
+The `BatchNotificationExtensions` class provides extension methods for `BatchNotification` to enhance batch processing capabilities. It allows filtering, statistics gathering, and state checking for batch notifications.
 
 Example usage:
 ```csharp
-var json = ServiceExtensionsJsonExtensions.ToJson();
-var metadata = ServiceExtensionsJsonExtensions.FromJson(json);
-Console.WriteLine(metadata.Methods.Length); // Output: 10
-var success = ServiceExtensionsJsonExtensions.TryFromJson(json, out var parsedMetadata);
-Console.WriteLine(parsedMetadata.Type); // Output: ServiceExtensions
+var batch = new BatchNotification
+{
+    // Initialize batch properties
+    Notifications = new List<DeploymentNotification>
+    {
+        new DeploymentNotification { ProjectName = "ProjectA" },
+        new DeploymentNotification { ProjectName = "ProjectB" },
+    },
+    Channels = new List<string> { "Channel1", "Channel2" },
+};
+
+var projectAFilters = batch.FilterByProject("ProjectA");
+var deliveryStats = batch.GetDeliveryStatistics();
+var hasPending = batch.HasPendingNotifications();
+var detailedSummary = batch.GetDetailedSummary();
+
+Console.WriteLine(deliveryStats);
+Console.WriteLine($"Has pending notifications: {hasPending}");
+Console.WriteLine(detailedSummary);
 ```
-
-## TestHttpClientExtensions
-
-The `TestHttpClientExtensions` class provides a set of extension methods for simplifying common webhook testing scenarios with `TestHttpClient`...
-
 // rest of existing content remains unchanged
