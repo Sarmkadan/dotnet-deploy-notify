@@ -3,7 +3,9 @@
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
 // =============================================================================
-
+/// <summary>
+/// Tests for the notification functionality.
+/// </summary>
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
 using DotNetDeployNotify.Services;
@@ -16,6 +18,9 @@ namespace DotNetDeployNotify.Tests;
 
 public class NotificationTests
 {
+    /// <summary>
+    /// Tests that a notification builder with all required fields builds a valid notification.
+    /// </summary>
     [Fact]
     public void NotificationBuilder_WithAllRequiredFields_BuildsValidNotification()
     {
@@ -38,6 +43,9 @@ public class NotificationTests
         notification.Id.Should().NotBeNullOrWhiteSpace();
     }
 
+    /// <summary>
+    /// Tests that a notification builder as a failure sets the critical priority and failed status.
+    /// </summary>
     [Fact]
     public void NotificationBuilder_AsFailure_SetsCriticalPriorityAndFailedStatus()
     {
@@ -54,6 +62,9 @@ public class NotificationTests
         notification.Priority.Should().Be(NotificationPriority.Critical);
     }
 
+    /// <summary>
+    /// Tests that a notification builder as a deployment success sets the high priority and correct status.
+    /// </summary>
     [Fact]
     public void NotificationBuilder_AsDeploymentSuccess_SetsHighPriorityAndCorrectStatus()
     {
@@ -70,6 +81,9 @@ public class NotificationTests
         notification.Priority.Should().Be(NotificationPriority.High);
     }
 
+    /// <summary>
+    /// Tests that a notification builder build with a missing project name throws an InvalidOperationException.
+    /// </summary>
     [Fact]
     public void NotificationBuilder_Build_WithMissingProjectName_ThrowsInvalidOperationException()
     {
@@ -86,6 +100,9 @@ public class NotificationTests
             .WithMessage("*not valid*");
     }
 
+    /// <summary>
+    /// Tests that a notification builder build with no channels throws an InvalidOperationException.
+    /// </summary>
     [Fact]
     public void NotificationBuilder_Build_WithNoChannels_ThrowsInvalidOperationException()
     {
@@ -101,6 +118,9 @@ public class NotificationTests
         act.Should().Throw<InvalidOperationException>();
     }
 
+    /// <summary>
+    /// Tests that a mocked IValidationService returns configured errors and is verifiable.
+    /// </summary>
     [Fact]
     public void IValidationService_WhenMocked_ReturnsConfiguredErrorsAndIsVerifiable()
     {
@@ -123,6 +143,9 @@ public class NotificationTests
         mockValidation.Verify(s => s.ValidateNotification(incompleteNotification), Times.Once);
     }
 
+    /// <summary>
+    /// Tests that a channel configuration should send a notification when the channel is disabled returns false.
+    /// </summary>
     [Fact]
     public void ChannelConfiguration_ShouldSendNotification_WhenChannelDisabled_ReturnsFalse()
     {
@@ -146,6 +169,9 @@ public class NotificationTests
         shouldSend.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that a channel configuration should send a notification when the priority is below the minimum returns false.
+    /// </summary>
     [Fact]
     public void ChannelConfiguration_ShouldSendNotification_WhenPriorityBelowMinimum_ReturnsFalse()
     {
@@ -168,6 +194,9 @@ public class NotificationTests
         shouldSend.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that a notification result marks as successful sets the delivered status and clears the error.
+    /// </summary>
     [Fact]
     public void NotificationResult_MarkAsSuccessful_SetsDeliveredStatusAndClearsError()
     {
@@ -191,6 +220,9 @@ public class NotificationTests
         result.ErrorMessage.Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that a notification result marks as failed sets the failed status with error details.
+    /// </summary>
     [Fact]
     public void NotificationResult_MarkAsFailed_SetsFailedStatusWithErrorDetails()
     {
@@ -212,6 +244,9 @@ public class NotificationTests
         result.IsSuccessful.Should().BeFalse();
     }
 
+    /// <summary>
+    /// Tests that a deployment notification sets and gets metadata with round-tripped typed values.
+    /// </summary>
     [Fact]
     public void DeploymentNotification_SetAndGetMetadata_RoundTripsTypedValues()
     {
@@ -232,6 +267,9 @@ public class NotificationTests
         missing.Should().BeNull();
     }
 
+    /// <summary>
+    /// Tests that a deployment notification increments the delivery attempt counter each call.
+    /// </summary>
     [Fact]
     public void DeploymentNotification_IncrementDeliveryAttempt_IncrementsCounterEachCall()
     {
@@ -248,6 +286,9 @@ public class NotificationTests
         notification.DeliveryAttempts.Should().Be(3);
     }
 
+    /// <summary>
+    /// Tests that a deployment notification marks as processed sets the is processed flag to true.
+    /// </summary>
     [Fact]
     public void DeploymentNotification_MarkAsProcessed_SetsIsProcessedTrue()
     {
