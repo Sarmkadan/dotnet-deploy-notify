@@ -1,5 +1,32 @@
 // existing content ...
 
+## IRequestLogger
+
+The `IRequestLogger` interface provides a contract for logging HTTP requests and responses. It allows logging outgoing webhook requests, incoming webhook responses, and webhook errors. Implementations of this interface can store and retrieve request logs for analysis and debugging purposes.
+
+Example usage:
+```csharp
+var logger = new RequestLogger(ILogger<RequestLogger>.CreateLogger<RequestLogger>());
+var entry = new RequestLogEntry
+{
+    WebhookUrl = "https://example.com/webhook",
+    Method = "POST",
+    RequestHeaders = new Dictionary<string, string> { { "Content-Type", "application/json" } },
+    RequestPayload = "{\"key\":\"value\"}",
+    Timestamp = DateTime.UtcNow
+};
+
+logger.LogWebhookRequest(entry.WebhookUrl, entry.RequestPayload, entry.RequestHeaders);
+logger.LogWebhookResponse(entry.WebhookUrl, 200, "{\"status\":\"ok\"}", 100);
+logger.LogWebhookError(entry.WebhookUrl, "Error message");
+
+var history = logger.GetRequestHistory();
+foreach (var log in history)
+{
+    Console.WriteLine(log.GetSummary());
+}
+```
+
 ## CanaryDeploymentExtensions
 
 The `CanaryDeploymentExtensions` class provides helper methods for analyzing and managing canary deployment status, health, and rollout progress. It includes methods to check deployment status, calculate health scores, determine promotion eligibility, and track traffic progression.
