@@ -1,5 +1,30 @@
 // existing content ...
 
+## IConfigurationValidator
+
+The `IConfigurationValidator` interface provides a contract for validating system and channel configurations. It allows checking the validity of channel configurations, notification service configurations, and suggesting improvements to channel configurations.
+
+Example usage:
+```csharp
+var validator = new ConfigurationValidator(ILogger<ConfigurationValidator>.CreateLogger<ConfigurationValidator>());
+var config = new ChannelConfiguration
+{
+    DisplayName = "Example Channel",
+    WebhookUrl = "https://example.com/webhook",
+    TimeoutMs = 30000,
+    MaxRetries = 5,
+    AllowedEnvironments = new List<string> { "Production", "Staging" },
+    IncludeCommitDetails = true,
+    IncludeBuildUrl = true
+};
+
+var (isValid, warnings, errors) = validator.ValidateChannelConfiguration(config);
+Console.WriteLine($"Is valid: {isValid}, Warnings: {string.Join(", ", warnings)}, Errors: {string.Join(", ", errors)}");
+
+var suggestions = validator.SuggestImprovements(config);
+Console.WriteLine($"Suggestions: {string.Join(", ", suggestions)}");
+```
+
 ## IRequestLogger
 
 The `IRequestLogger` interface provides a contract for logging HTTP requests and responses. It allows logging outgoing webhook requests, incoming webhook responses, and webhook errors. Implementations of this interface can store and retrieve request logs for analysis and debugging purposes.
