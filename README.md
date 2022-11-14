@@ -51,3 +51,14 @@ var healthCheckTask = worker.CreateHealthCheckTask(logger);
 var stats = worker.GetStatistics();
 Console.WriteLine($"Processed: {stats.TotalProcessed}, Success Rate: {stats.SuccessRate:P}, Uptime: {stats.Uptime}");
 ```
+
+## TestHttpClient
+
+The `TestHttpClient` class is a mock implementation of `HttpClient` for testing purposes. It allows simulating different webhook response scenarios, such as success, failure, and network delays.
+
+Example usage:
+```csharp
+var client = new TestHttpClient();
+var response = await client.GetAsync("https://hooks.slack.com/services/test");
+Console.WriteLine(response.StatusCode);
+```
