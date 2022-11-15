@@ -222,3 +222,64 @@ var activeDeployments = await engine.GetActiveDeploymentsAsync();
 // Get deployment history for a project
 var history = await engine.GetDeploymentHistoryAsync("MyWebApp", limit: 20);
 ```
+
+## RequestContext
+
+The `RequestContext` class provides ambient request tracking functionality for tracking request execution across asynchronous boundaries. It captures correlation identifiers, timestamps, user information, and custom metadata, enabling comprehensive request tracing and debugging. The ambient context is stored using `AsyncLocal` for proper flow across async/await boundaries.
+
+
+
+Example usage:
+
+```csharp
+// Set context for the current request
+AmbientRequestContext.SetContext(new RequestContext
+{
+    UserId = "user-123",
+    ClientId = "web-app",
+    Metadata = new Dictionary<string, object>
+    {
+        ["requestSource"] = "web-portal",
+        ["featureFlag"] = true,
+        ["userAgent"] = "Mozilla/5.0"
+    }
+});
+
+// Get the current context
+var context = AmbientRequestContext.Current;
+Console.WriteLine($"CorrelationId: {context.CorrelationId}");
+Console.WriteLine($"RequestId: {context.RequestId}");
+Console.WriteLine($"RequestTime: {context.RequestTime}");
+Console.WriteLine($"UserId: {context.UserId}");
+Console.WriteLine($"ClientId: {context.ClientId}");
+
+// Use context scope for isolated operations
+using (var scope = new RequestContextScope())
+{
+    scope.Context.SetMetadata("operation", "data-processing");
+    scope.Context.ExecutionTimeMs = 150;
+    
+    // Execute work with the scoped context
+    ProcessRequest(scope.Context);
+}
+
+// Execute work within a context using helper methods
+RequestContextExtensions.ExecuteInContext(ctx =>
+{
+    ctx.SetMetadata("batchId", Guid.NewGuid().ToString());
+    ctx.ExecutionTimeMs = 250;
+    
+    // Do work...
+});
+
+// Get or create context
+var currentContext = RequestContextExtensions.GetOrCreateContext();
+if (currentContext.HasMetadata("featureFlag"))
+{
+    var flagValue = currentContext.GetMetadata<bool>("featureFlag");
+    Console.WriteLine($"Feature flag: {flagValue}");
+}
+
+// Clear context when done
+AmbientRequestContext.ClearContext();
+```
