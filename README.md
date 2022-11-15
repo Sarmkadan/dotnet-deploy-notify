@@ -99,6 +99,40 @@ else
 ```
 ```
 
+## DomainEvent
+
+The `DomainEvent` class serves as the base class for all domain events in the system. It provides common event metadata including a unique identifier, timestamp, and aggregate identifier. Domain events enable loose coupling between components by allowing publishers to emit events without knowing their subscribers, and subscribers to react to specific event types without dependencies on the publishers.
+
+
+Example usage:
+
+```csharp
+// Create a custom domain event
+public class DeploymentCompletedEvent : DomainEvent
+{
+    public string ProjectName { get; set; } = string.Empty;
+    public string Version { get; set; } = string.Empty;
+    public string Environment { get; set; } = string.Empty;
+    public TimeSpan Duration { get; set; }
+}
+
+// Publish the event
+var deploymentEvent = new DeploymentCompletedEvent
+{
+    AggregateId = "project-123",
+    ProjectName = "MyWebApp",
+    Version = "2.0.0",
+    Environment = "Production",
+    Duration = TimeSpan.FromMinutes(15)
+};
+
+// The event bus handles publishing
+await eventBus.PublishAsync(deploymentEvent);
+
+Console.WriteLine(deploymentEvent.ToString());
+// Output: DeploymentCompletedEvent - project-123 @ 2024-07-15T10:30:45.123456Z
+```
+
 ## CanaryDeploymentEngine
 
 The `CanaryDeploymentEngine` orchestrates canary deployments end-to-end, managing traffic splitting, step-by-step rollout advancement, health evaluation, automatic rollback on failure, and lifecycle notifications dispatched via the notification pipeline. It coordinates between the traffic splitter, health evaluator, rollback service, and notification service to provide a complete canary deployment workflow.
