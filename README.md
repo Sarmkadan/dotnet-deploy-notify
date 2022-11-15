@@ -223,6 +223,34 @@ var activeDeployments = await engine.GetActiveDeploymentsAsync();
 var history = await engine.GetDeploymentHistoryAsync("MyWebApp", limit: 20);
 ```
 
+## SearchCriteria
+
+The `SearchCriteria` class defines the filtering parameters available when searching deployment notifications. It supports filtering by project name, version, build status, environment, branch, author, date ranges, priority levels, notification channels, and message content. The criteria can be used with the `NotificationSearchEngine` to query and paginate through deployment notifications efficiently.
+
+Example usage:
+```csharp
+var searchCriteria = new SearchCriteria
+{
+    ProjectName = "MyWebApp",
+    Status = BuildStatus.DeploymentFailed,
+    TargetEnvironment = Environment.Production,
+    MinimumPriority = NotificationPriority.Medium,
+    Channels = new List<NotificationChannel> { NotificationChannel.Email, NotificationChannel.Teams },
+    CreatedAfter = DateTime.UtcNow.AddDays(-7),
+    Limit = 50,
+    Offset = 0
+};
+
+var searchEngine = new NotificationSearchEngine(logger);
+var results = searchEngine.Search(allNotifications, searchCriteria);
+
+Console.WriteLine($"Found {results.Total} notifications, showing {results.Returned}");
+foreach (var notification in results.Items)
+{
+    Console.WriteLine($"[{notification.Status}] {notification.ProjectName}@{notification.Version} ({notification.TargetEnvironment})");
+}
+```
+
 ## RequestContext
 
 The `RequestContext` class provides ambient request tracking functionality for tracking request execution across asynchronous boundaries. It captures correlation identifiers, timestamps, user information, and custom metadata, enabling comprehensive request tracing and debugging. The ambient context is stored using `AsyncLocal` for proper flow across async/await boundaries.
