@@ -311,3 +311,77 @@ if (currentContext.HasMetadata("featureFlag"))
 // Clear context when done
 AmbientRequestContext.ClearContext();
 ```
+
+## IHttpClientFactory
+
+The `IHttpClientFactory` provides a robust HTTP client implementation with built-in retry logic, timeout management, and request/response handling utilities. It includes a fluent `HttpRequestBuilder` API for constructing requests and a `RetryableHttpClient` decorator that automatically retries failed requests with exponential backoff. The factory supports both standard HTTP operations and custom retry policies.
+
+
+Example usage:
+
+```csharp
+// Register the factory in DI container
+services.AddHttpClient();
+services.AddSingleton<IHttpClientFactory, DefaultHttpClientFactory>();
+
+// Example 1: Simple GET request with automatic retry
+var factory = serviceProvider.GetRequiredService<IHttpClientFactory>();
+var response = await factory.CreateClient().GetAsync("https://api.example.com/status");
+
+if (response.IsSuccessful)
+{
+    Console.WriteLine($"Status: {response.StatusCode}");
+    Console.WriteLine($"Content: {response.Content}");
+    Console.WriteLine($"Elapsed: {response.ElapsedTime.TotalMilliseconds}ms");
+}
+else
+{
+    Console.WriteLine($"Error: {response.ErrorMessage}");
+}
+
+// Example 2: POST request with JSON content and custom timeout
+var httpClient = factory.CreateClientWithRetry();
+var postResponse = await httpClient.PostWithRetryAsync(
+    "https://api.example.com/deploy",
+    builder => builder
+        .AddJsonContent(new { project = "web-app", version = "1.0.0" })
+        .SetTimeout(TimeSpan.FromSeconds(30))
+        .AddHeader("Authorization", "Bearer token123")
+        .AddHeader("X-Request-ID", Guid.NewGuid().ToString())
+);
+
+Console.WriteLine($"POST Status: {postResponse.StatusCode}");
+Console.WriteLine($"Response: {postResponse.Content}");
+
+// Example 3: Building requests with HttpRequestBuilder
+var request = HttpRequestBuilder.Post("https://api.example.com/build")
+    .AddHeader("Content-Type", "application/json")
+    .AddHeader("Accept", "application/json")
+    .AddJsonContent(new { branch = "main", commit = "abc123" })
+    .SetTimeout(TimeSpan.FromSeconds(15))
+    .Build();
+
+var client = factory.CreateClient();
+var buildResponse = await client.SendAsync(request);
+
+// Example 4: Using different HTTP methods
+var getRequest = HttpRequestBuilder.Get("https://api.example.com/projects")
+    .AddHeader("Accept", "application/json")
+    .Build();
+
+var projectsResponse = await client.SendAsync(getRequest);
+
+// Example 5: Error handling with retry
+try
+{
+    var retryClient = factory.CreateClientWithRetry(maxRetries: 3);
+    var result = await retryClient.PostWithRetryAsync(
+        "https://api.example.com/deployments",
+        builder => builder.AddJsonContent(deploymentRequest)
+    );
+}
+catch (Exception ex) when (ex is HttpRequestException || ex is TaskCanceledException)
+{
+    Console.WriteLine($"Request failed after retries: {ex.Message}");
+}
+```
