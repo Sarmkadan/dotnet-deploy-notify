@@ -223,6 +223,77 @@ var activeDeployments = await engine.GetActiveDeploymentsAsync();
 var history = await engine.GetDeploymentHistoryAsync("MyWebApp", limit: 20);
 ```
 
+## IExportService
+
+The `IExportService` interface provides functionality for exporting deployment notifications to various formats including JSON, CSV, and ZIP archives. It supports exporting collections of notifications to strings or saving them directly to files. The service is useful for generating reports, creating backups, or sharing notification data across different systems.
+
+Example usage:
+
+```csharp
+// Configure services
+services.AddSingleton<IExportService, ExportService>();
+services.AddSingleton<NotificationReportGenerator>();
+
+// Inject the export service
+var exportService = serviceProvider.GetRequiredService<IExportService>();
+var reportGenerator = serviceProvider.GetRequiredService<NotificationReportGenerator>();
+
+// Sample notifications
+var notifications = new List<DeploymentNotification>
+{
+    new DeploymentNotification
+    {
+        Id = Guid.NewGuid().ToString(),
+        ProjectName = "MyWebApp",
+        Version = "2.0.0",
+        Status = BuildStatus.DeploymentSuccess,
+        TargetEnvironment = Environment.Production,
+        BranchName = "main",
+        CommitAuthor = "developer@example.com",
+        Message = "New features deployed successfully",
+        Channels = new List<NotificationChannel> { NotificationChannel.Email, NotificationChannel.Teams },
+        CreatedAt = DateTime.UtcNow,
+        DurationSeconds = 125
+    },
+    new DeploymentNotification
+    {
+        Id = Guid.NewGuid().ToString(),
+        ProjectName = "API Gateway",
+        Version = "1.5.2",
+        Status = BuildStatus.DeploymentFailed,
+        TargetEnvironment = Environment.Staging,
+        BranchName = "develop",
+        CommitAuthor = "devops@example.com",
+        Message = "Configuration issue detected",
+        Channels = new List<NotificationChannel> { NotificationChannel.Slack },
+        CreatedAt = DateTime.UtcNow.AddHours(-2),
+        DurationSeconds = 89
+    }
+};
+
+// Export as JSON
+string jsonExport = await exportService.ExportAsJsonAsync(notifications);
+Console.WriteLine("JSON Export:");
+Console.WriteLine(jsonExport);
+
+// Export as CSV
+string csvExport = await exportService.ExportAsCsvAsync(notifications);
+Console.WriteLine("\nCSV Export:");
+Console.WriteLine(csvExport);
+
+// Save to file
+string filePath = "/tmp/notifications_export.json";
+await exportService.SaveToFileAsync(notifications, filePath, "json");
+Console.WriteLine($"\nSaved to file: {filePath}");
+
+// Generate and display a report
+var report = reportGenerator.GenerateReport(notifications);
+Console.WriteLine($"\n{report}");
+Console.WriteLine($"Environments: {string.Join(", ", report.EnvironmentBreakdown.Select(kv => $"{kv.Key}: {kv.Value}"))}");
+Console.WriteLine($"Statuses: {string.Join(", ", report.StatusBreakdown.Select(kv => $"{kv.Key}: {kv.Value}"))}");
+Console.WriteLine($"Top Projects: {string.Join(", ", report.TopProjects.Select(p => $"{p.Project} ({p.Count})"))}");
+```
+
 ## SearchCriteria
 
 The `SearchCriteria` class defines the filtering parameters available when searching deployment notifications. It supports filtering by project name, version, build status, environment, branch, author, date ranges, priority levels, notification channels, and message content. The criteria can be used with the `NotificationSearchEngine` to query and paginate through deployment notifications efficiently.
