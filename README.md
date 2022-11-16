@@ -251,6 +251,48 @@ foreach (var notification in results.Items)
 }
 ```
 
+## IWebhookPayloadBuilder
+
+The `IWebhookPayloadBuilder` interface defines a contract for building channel-specific webhook payloads from deployment notifications. Implementations convert notification objects into JSON payloads suitable for different messaging platforms (Slack, Discord, Telegram). The interface is used by the webhook notification system to format messages according to each platform's requirements.
+
+Example usage:
+```csharp
+// Create a deployment notification
+var notification = new DeploymentNotification
+{
+    Status = BuildStatus.DeploymentSuccess,
+    TargetEnvironment = Environment.Production,
+    ProjectName = "MyWebApp",
+    Version = "2.0.0",
+    BranchName = "main",
+    CommitAuthor = "developer@example.com",
+    Priority = NotificationPriority.High,
+    Message = "New features deployed successfully",
+    BuildUrl = "https://ci.example.com/build/456"
+};
+
+// Create a builder for Slack channel
+var slackBuilder = WebhookPayloadBuilderFactory.CreateBuilder(NotificationChannel.Slack);
+var slackPayload = slackBuilder.BuildPayload(notification);
+
+Console.WriteLine("Slack payload:");
+Console.WriteLine(slackPayload);
+
+// Create a builder for Discord channel
+dynamic discordBuilder = WebhookPayloadBuilderFactory.CreateBuilder(NotificationChannel.Discord);
+var discordPayload = discordBuilder.BuildPayload(notification);
+
+Console.WriteLine("\nDiscord payload:");
+Console.WriteLine(discordPayload);
+
+// Create a builder for Telegram channel
+var telegramBuilder = WebhookPayloadBuilderFactory.CreateBuilder(NotificationChannel.Telegram);
+var telegramPayload = telegramBuilder.BuildPayload(notification);
+
+Console.WriteLine("\nTelegram payload:");
+Console.WriteLine(telegramPayload);
+```
+
 ## RequestContext
 
 The `RequestContext` class provides ambient request tracking functionality for tracking request execution across asynchronous boundaries. It captures correlation identifiers, timestamps, user information, and custom metadata, enabling comprehensive request tracing and debugging. The ambient context is stored using `AsyncLocal` for proper flow across async/await boundaries.
