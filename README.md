@@ -39,3 +39,36 @@ else
 ## NotificationException
 
 The `NotificationException` class serves as the base class for all notification-related errors in the system...
+
+## RollbackRequest
+
+The `RollbackRequest` type represents a request to roll back a deployment to a previous version. It contains metadata such as project, target version, environment, and notification channels. It can be validated and summarized.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Core.Models;
+using System;
+using System.Collections.Generic;
+
+var rollback = new RollbackRequest
+{
+    ProjectName = "MyApp",
+    TargetVersion = "1.0.0",
+    CurrentVersion = "1.0.1",
+    TargetEnvironment = Environment.Production,
+    RequestedBy = "alice",
+    Reason = "Bug in new release",
+    Channels = new List<NotificationChannel> { NotificationChannel.Email, NotificationChannel.Slack },
+    Priority = NotificationPriority.High,
+    Metadata = new Dictionary<string, object> { { "Ticket", "ABC-123" } }
+};
+
+if (rollback.IsValid())
+{
+    Console.WriteLine(rollback.GetSummary());
+}
+else
+{
+    Console.WriteLine("Invalid rollback request");
+}
+```
