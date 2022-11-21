@@ -133,6 +133,43 @@ var retryResult = new NotificationResult
 Console.WriteLine(retryResult.GetSummary());
 ```
 
+## DeploymentNotification
+
+The `DeploymentNotification` class represents the core data for a deployment event, including project details, status, commit information, and notification channels. It provides functionality to validate the notification and generate a human-readable summary of the deployment event.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Core.Models;
+using System;
+using System.Collections.Generic;
+
+var notification = new DeploymentNotification
+{
+    Id = "notif-123",
+    ProjectName = "MyApp",
+    Version = "1.0.0",
+    Status = BuildStatus.Success,
+    Message = "Deployed successfully to production.",
+    TargetEnvironment = Environment.Production,
+    BranchName = "main",
+    CommitHash = "a1b2c3d",
+    CommitAuthor = "jane.doe",
+    RepositoryUrl = "https://github.com/myorg/myapp",
+    BuildUrl = "https://ci.myorg.com/build/123",
+    DurationSeconds = 120,
+    CreatedAt = DateTime.UtcNow,
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack },
+    Priority = NotificationPriority.High,
+    Metadata = new Dictionary<string, object> { { "User", "admin" } }
+};
+
+if (notification.IsValid)
+{
+    Console.WriteLine(notification.GetSummary);
+}
+```
+
+
 ## CustomTemplate
 
 The `CustomTemplate` class represents a user-defined named notification template stored in the engine registry. It enables customizable notification content with placeholders, conditional blocks, and metadata for organizing templates. Templates can be activated or deactivated, and the `Touch()` method updates the modification timestamp.
