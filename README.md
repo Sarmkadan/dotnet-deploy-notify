@@ -72,3 +72,61 @@ else
     Console.WriteLine("Invalid rollback request");
 }
 ```
+
+## NotificationResult
+
+The `NotificationResult` class represents the outcome of a notification delivery attempt, tracking delivery status, response details, retry attempts, and timing information. It provides methods to mark deliveries as successful, failed, or scheduled for retry, and includes validation for result completeness.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Core.Models;
+using System;
+
+// Create a notification result for a successful webhook delivery
+var result = new NotificationResult
+{
+    NotificationId = "notif-12345",
+    Channel = NotificationChannel.Webhook,
+    ConfigurationId = "webhook-config-67890",
+    Status = DeliveryStatus.Delivered,
+    HttpStatusCode = 200,
+    ResponseBody = "{\"status\": \"received\"}",
+    DurationMs = 145,
+    AttemptNumber = 1,
+    AttemptedAt = DateTime.UtcNow
+};
+
+if (result.IsValid())
+{
+    Console.WriteLine(result.GetSummary());
+    Console.WriteLine($"Status: {result.Status}");
+    Console.WriteLine($"Duration: {result.DurationMs}ms");
+}
+
+// Mark a delivery as failed with error details
+var failedResult = NotificationResult.CreateFailure(
+    notificationId: "notif-54321",
+    channel: NotificationChannel.Email,
+    configId: "email-config-09876",
+    errorMessage: "SMTP server unavailable",
+    exceptionType: "SmtpException"
+);
+
+failedResult.MarkAsFailed("Connection timeout after 30 seconds", "TimeoutException", 504);
+
+// Mark a delivery for retry
+var retryResult = new NotificationResult
+{
+    NotificationId = "notif-abc123",
+    Channel = NotificationChannel.Slack,
+    ConfigurationId = "slack-config-xyz789",
+    Status = DeliveryStatus.Retried,
+    AttemptNumber = 2,
+    DurationMs = 250,
+    AttemptedAt = DateTime.UtcNow.AddMinutes(-5),
+    LastRetryAt = DateTime.UtcNow.AddMinutes(-5),
+    NextRetryAt = DateTime.UtcNow.AddMinutes(10)
+};
+
+Console.WriteLine(retryResult.GetSummary());
+```
