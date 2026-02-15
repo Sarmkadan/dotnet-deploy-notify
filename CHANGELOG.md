@@ -4,28 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.0.0] - 2026-02-08
+## [2.0.0] - 2026-05-18
 
 ### Added
-- Multi-stage `Dockerfile` for production-ready container builds
-- Optimized runtime image using .NET 10 runtime base
-- Non-root user execution for improved security (UID 1000)
-- `docker-compose.yml` for simplified local and production deployments
-- Health check endpoint configuration for container orchestration
-- Container networking support with bridge network
-- Environment variable support for ASP.NET Core configuration
-- Volume mounting support for runtime configuration
-- Comprehensive migration guide (docs/MIGRATION_v2.md)
+- Add canary deployment with traffic splitting and auto-rollback
+- Docker support with multi-stage builds
+- Health check endpoints (/health, /health/ready)
+- Integration test suite with xUnit
+- Migration guide from v1.x
 
 ### Changed
-- Primary distribution method now includes container deployment
-- Improved deployment documentation with Docker examples
-- Enhanced health monitoring capabilities for containerized deployments
+- Upgraded to .NET 10.0
+- Modern C# features (records, primary constructors)
+- Improved API consistency
 
-### Documentation
-- Added `docs/MIGRATION_v2.md` for v1.0 to v2.0 upgrade guide
-- Updated README with Docker deployment instructions
-- Container best practices and security guidelines
+### Fixed
+- Various edge cases found through testing
 
 ## [1.0.0] - 2025-07-28
 
