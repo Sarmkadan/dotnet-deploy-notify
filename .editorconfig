@@ -1,0 +1,60 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# Top-most EditorConfig file
+root = true
+
+# Default settings for all files
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+indent_size = 4
+
+# C# settings
+[*.cs]
+# C# coding conventions
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
+
+# Use var when the type is apparent
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Use expression-bodied for accessors
+csharp_style_expression_bodied_accessors = true:silent
+csharp_style_expression_bodied_properties = true:silent
+csharp_style_expression_bodied_indexers = true:silent
+csharp_style_expression_bodied_constructors = true:silent
+csharp_style_expression_bodied_methods = true:silent
+csharp_style_expression_bodied_operators = true:silent
+
+# Pattern matching preferences
+csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
+csharp_style_pattern_matching_over_as_with_null_check = true:suggestion
+
+# Null checking preferences
+csharp_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+
+# Use braces consistently
+csharp_prefer_braces = when_multiline:true
+
+# Prefer readonly fields
+dotnet_style_readonly_field = true:suggestion
+
+# Organize using directives
+dotnet_sort_system_first = true
+dotnet_separate_import_directive_groups = false
+
+# File header
+file_header_template = Copyright (c) 2026 Red Rocket Software. All rights reserved.
+
+# Indentation
+indent_size = 4
