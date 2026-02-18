@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -11,7 +12,7 @@ namespace DotNetDeployNotify.CLI;
 /// <summary>
 /// Handles execution of parsed CLI commands
 /// </summary>
-public class CommandHandler
+public sealed class CommandHandler
 {
     private readonly INotificationService _notificationService;
     private readonly IChannelConfigRepository _configRepository;
