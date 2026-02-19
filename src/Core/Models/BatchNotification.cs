@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace DotNetDeployNotify.Core.Models;
 /// <summary>
 /// Represents a batch of notifications to be sent together
 /// </summary>
-public class BatchNotification
+public sealed class BatchNotification
 {
     /// <summary>Unique identifier for this batch</summary>
     public string Id { get; set; } = Guid.NewGuid().ToString();
@@ -138,7 +139,7 @@ public class BatchNotification
     public bool RemoveNotification(string notificationId)
     {
         var notification = Notifications.FirstOrDefault(n => n.Id == notificationId);
-        if (notification != null)
+        if (notification is not null)
         {
             Notifications.Remove(notification);
             return true;

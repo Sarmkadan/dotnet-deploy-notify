@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -8,7 +9,7 @@ namespace DotNetDeployNotify.Context;
 /// <summary>
 /// Represents the context of a request execution
 /// </summary>
-public class RequestContext
+public sealed class RequestContext
 {
     public string CorrelationId { get; set; } = Guid.NewGuid().ToString();
     public string RequestId { get; set; } = Guid.NewGuid().ToString();
@@ -74,7 +75,7 @@ public static class AmbientRequestContext
 /// <summary>
 /// Scope for managing request context lifecycle
 /// </summary>
-public class RequestContextScope : IDisposable
+public sealed class RequestContextScope : IDisposable
 {
     private readonly RequestContext _previousContext;
 
@@ -153,7 +154,7 @@ public static class RequestContextExtensions
 /// <summary>
 /// Structured logging helper for request context
 /// </summary>
-public class RequestContextLogger
+public sealed class RequestContextLogger
 {
     private readonly ILogger _logger;
 

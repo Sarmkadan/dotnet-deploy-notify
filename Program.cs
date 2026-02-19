@@ -18,7 +18,7 @@ namespace DotNetDeployNotify;
 /// <summary>
 /// Main application entry point for the deployment notification system
 /// </summary>
-internal class Program
+internal sealed class Program
 {
     /// <summary>
     /// Application entry point

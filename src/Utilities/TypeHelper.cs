@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -33,7 +34,7 @@ public static class TypeHelper
     /// </summary>
     public static bool IsNullable(this Type type)
     {
-        return Nullable.GetUnderlyingType(type) != null;
+        return Nullable.GetUnderlyingType(type) is not null;
     }
 
     /// <summary>
@@ -124,7 +125,7 @@ public static class TypeHelper
     /// </summary>
     public static bool HasParameterlessConstructor(this Type type)
     {
-        return type.GetConstructor(Type.EmptyTypes) != null;
+        return type.GetConstructor(Type.EmptyTypes) is not null;
     }
 
     /// <summary>
@@ -143,7 +144,7 @@ public static class TypeHelper
     /// </summary>
     public static object? ConvertTo(this object? value, Type targetType)
     {
-        if (value == null)
+        if (value is null)
             return targetType.IsValueType ? Activator.CreateInstance(targetType) : null;
 
         if (targetType.IsAssignableFrom(value.GetType()))
@@ -171,7 +172,7 @@ public static class TypeHelper
     public static T? ConvertTo<T>(this object? value)
     {
         var result = value.ConvertTo(typeof(T));
-        return result != null ? (T)result : default;
+        return result is not null ? (T)result : default;
     }
 
     /// <summary>
@@ -205,6 +206,6 @@ public static class TypeHelper
     /// </summary>
     public static bool HasAttribute<T>(this Type type) where T : Attribute
     {
-        return type.GetAttribute<T>() != null;
+        return type.GetAttribute<T>() is not null;
     }
 }
