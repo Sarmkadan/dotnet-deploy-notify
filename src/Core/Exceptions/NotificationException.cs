@@ -86,8 +86,35 @@ public class NotificationValidationException : NotificationException
 }
 
 /// <summary>
-/// Thrown when a required configuration is missing
+/// Thrown when a notification delivery fails due to an authentication or authorization error.
+/// For example, when a bot token is revoked or a webhook URL is invalidated.
 /// </summary>
+public class NotificationDeliveryException : NotificationException
+{
+    /// <summary>The channel that failed to receive the notification</summary>
+    public NotificationChannel Channel { get; set; }
+
+    /// <summary>HTTP status code returned by the endpoint</summary>
+    public int? HttpStatusCode { get; set; }
+
+    /// <summary>Initializes a new instance with channel and status code</summary>
+    public NotificationDeliveryException(string message, NotificationChannel channel, int? httpStatusCode = null)
+        : base(message)
+    {
+        Channel = channel;
+        HttpStatusCode = httpStatusCode;
+    }
+
+    /// <summary>Initializes a new instance with an inner exception</summary>
+    public NotificationDeliveryException(string message, NotificationChannel channel, int? httpStatusCode, Exception innerException)
+        : base(message, innerException)
+    {
+        Channel = channel;
+        HttpStatusCode = httpStatusCode;
+    }
+}
+
+
 public class ConfigurationMissingException : NotificationException
 {
     /// <summary>The missing configuration key</summary>
