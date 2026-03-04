@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -99,7 +100,7 @@ public class MetricsCollector
     public MetricStatistics? GetStatistics(string name)
     {
         var metric = GetMetric(name);
-        if (metric == null || metric.Values.Count == 0)
+        if (metric is null || metric.Values.Count == 0)
             return null;
 
         var values = metric.Values.OrderBy(v => v).ToList();
@@ -259,7 +260,7 @@ public class PerformanceMonitor
         var successCount = _collector.GetMetric($"{operationName}_success")?.Count ?? 0;
         var errorCount = _collector.GetMetric($"{operationName}_error")?.Count ?? 0;
 
-        if (durationMetric == null)
+        if (durationMetric is null)
             return null;
 
         var stats = _collector.GetStatistics($"{operationName}_duration_ms");

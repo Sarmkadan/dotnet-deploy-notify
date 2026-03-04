@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -15,7 +16,7 @@ public static class GuardExtensions
     /// </summary>
     public static void ThrowIfNull(this object? value, string paramName)
     {
-        if (value == null)
+        if (value is null)
             throw new ArgumentNullException(paramName, $"{paramName} cannot be null");
     }
 
@@ -33,7 +34,7 @@ public static class GuardExtensions
     /// </summary>
     public static void ThrowIfNullOrEmpty<T>(this IEnumerable<T>? value, string paramName)
     {
-        if (value == null || !value.Any())
+        if (value is null || !value.Any())
             throw new ArgumentException($"{paramName} cannot be null or empty", paramName);
     }
 

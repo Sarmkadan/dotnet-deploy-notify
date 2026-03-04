@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -112,7 +113,7 @@ public class ValidationProcessor : INotificationProcessor
 
     public Task ProcessAsync(PipelineContext context)
     {
-        if (context.Notification == null)
+        if (context.Notification is null)
         {
             context.IsValid = false;
             context.Errors.Add("Notification is null");
@@ -199,7 +200,7 @@ public class FilterProcessor : INotificationProcessor
         foreach (var channel in notification.Channels)
         {
             var config = configs.FirstOrDefault(c => c.ChannelType == channel);
-            if (config == null)
+            if (config is null)
             {
                 _logger.LogWarning("No configuration found for channel: {Channel}", channel);
                 continue;

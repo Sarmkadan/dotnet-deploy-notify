@@ -1,3 +1,4 @@
+#nullable enable
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -167,7 +168,7 @@ public static class ServiceCollectionExtensions
 /// <summary>
 /// Configuration builder for fluent service setup
 /// </summary>
-public class ServiceConfigurationBuilder
+public sealed class ServiceConfigurationBuilder
 {
     private readonly IServiceCollection _services;
 
