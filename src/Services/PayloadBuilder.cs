@@ -102,10 +102,15 @@ public class PayloadBuilder : IPayloadBuilder
     }
 
     /// <summary>
-    /// Builds a Slack-formatted message payload (Block Kit format)
+    /// Builds a Slack-formatted message payload.
+    /// Uses Block Kit rich layout when <see cref="ChannelConfiguration.UseSlackBlockKit"/> is true,
+    /// otherwise falls back to the legacy attachments format.
     /// </summary>
     public object BuildSlackPayload(DeploymentNotification notification, ChannelConfiguration config)
     {
+        if (config.UseSlackBlockKit)
+            return BuildSlackBlockKitPayload(notification, config);
+
         var color = GetStatusColor(notification.Status);
         var emoji = GetStatusEmoji(notification.Status);
 
@@ -125,6 +130,89 @@ public class PayloadBuilder : IPayloadBuilder
         };
 
         return payload;
+    }
+
+    /// <summary>
+    /// Builds a Slack Block Kit payload with sections, dividers, and context blocks.
+    /// </summary>
+    private object BuildSlackBlockKitPayload(DeploymentNotification notification, ChannelConfiguration config)
+    {
+        var emoji = GetStatusEmoji(notification.Status);
+        var blocks = new List<object>
+        {
+            new
+            {
+                type = "header",
+                text = new { type = "plain_text", text = $"{emoji} {notification.ProjectName} v{notification.Version}", emoji = true }
+            },
+            new { type = "divider" },
+            new
+            {
+                type = "section",
+                fields = new object[]
+                {
+                    new { type = "mrkdwn", text = $"*Status*\n{notification.Status}" },
+                    new { type = "mrkdwn", text = $"*Environment*\n{notification.TargetEnvironment}" },
+                    new { type = "mrkdwn", text = $"*Branch*\n`{notification.BranchName}`" },
+                    new { type = "mrkdwn", text = $"*Priority*\n{notification.Priority}" }
+                }
+            }
+        };
+
+        if (config.IncludeCommitDetails && !string.IsNullOrWhiteSpace(notification.CommitHash))
+        {
+            var shortHash = notification.CommitHash[..Math.Min(7, notification.CommitHash.Length)];
+            blocks.Add(new
+            {
+                type = "section",
+                fields = new object[]
+                {
+                    new { type = "mrkdwn", text = $"*Commit*\n`{shortHash}`" },
+                    new { type = "mrkdwn", text = $"*Author*\n{notification.CommitAuthor}" }
+                }
+            });
+        }
+
+        if (!string.IsNullOrWhiteSpace(notification.Message))
+        {
+            blocks.Add(new
+            {
+                type = "section",
+                text = new { type = "mrkdwn", text = $"*Message*\n{notification.Message}" }
+            });
+        }
+
+        if (notification.DurationSeconds.HasValue)
+        {
+            blocks.Add(new
+            {
+                type = "context",
+                elements = new object[]
+                {
+                    new { type = "mrkdwn", text = $"⏱️ Duration: {notification.DurationSeconds}s" }
+                }
+            });
+        }
+
+        if (config.IncludeBuildUrl && !string.IsNullOrWhiteSpace(notification.BuildUrl))
+        {
+            blocks.Add(new
+            {
+                type = "actions",
+                elements = new object[]
+                {
+                    new
+                    {
+                        type = "button",
+                        text = new { type = "plain_text", text = "View Build", emoji = true },
+                        url = notification.BuildUrl,
+                        action_id = "view_build"
+                    }
+                }
+            });
+        }
+
+        return new { blocks = blocks.ToArray() };
     }
 
     /// <summary>
