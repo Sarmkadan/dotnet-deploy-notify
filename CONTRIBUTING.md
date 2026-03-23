@@ -110,7 +110,14 @@ Do not modify or remove existing author headers when editing files.
 - Run tests locally before submitting a pull request
 
 ```bash
+# Run all tests
 dotnet test
+
+# Run with detailed output and generate a TRX report
+dotnet test --verbosity normal --logger "trx" --results-directory ./TestResults
+
+# Run a specific test project
+dotnet test tests/dotnet-deploy-notify.Tests/dotnet-deploy-notify.Tests.csproj
 ```
 
 ## Submitting Changes
