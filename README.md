@@ -169,7 +169,80 @@ if (notification.IsValid)
 }
 ```
 
+## DeploymentHistoryEntry
 
+The `DeploymentHistoryEntry` class represents a single recorded deployment event in the history log. It captures all essential deployment metadata including project details, version information, status, environment, commit data, timing information, and optional tags for categorization. This class is typically used to maintain an audit trail of all deployments for reporting, rollback tracking, and compliance purposes.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Core.Models;
+using System;
+using System.Collections.Generic;
+
+// Create a deployment history entry for a successful production deployment
+var entry = new DeploymentHistoryEntry
+{
+    ProjectName = "MyWebApp",
+    Version = "2.1.0",
+    FinalStatus = BuildStatus.Success,
+    TargetEnvironment = Environment.Production,
+    BranchName = "main",
+    CommitHash = "a1b2c3d4e5f67890",
+    CommitAuthor = "john.doe@example.com",
+    DeployedAt = DateTime.UtcNow,
+    DurationSeconds = 185,
+    Tags = new Dictionary<string, string>
+    {
+        { "Team", "Platform" },
+        { "ReleaseType", "Scheduled" },
+        { "CIBuild", "12345" }
+    }
+};
+
+Console.WriteLine($"Deployment {entry.Id} recorded for {entry.ProjectName} v{entry.Version}");
+Console.WriteLine($"Status: {entry.FinalStatus}, Duration: {entry.DurationSeconds} seconds");
+
+// Create a history entry from a deployment notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyWebApp",
+    Version = "2.1.0",
+    Status = BuildStatus.Success,
+    TargetEnvironment = Environment.Production,
+    BranchName = "main",
+    CommitHash = "a1b2c3d4e5f67890",
+    CommitAuthor = "john.doe@example.com",
+    CreatedAt = DateTime.UtcNow,
+    DurationSeconds = 185,
+    Metadata = new Dictionary<string, object>
+    {
+        { "User", "admin" },
+        { "RollbackFromVersion", "2.0.5" }
+    }
+};
+
+var historyEntry = DeploymentHistoryEntry.FromNotification(notification);
+Console.WriteLine($"Created from notification: {historyEntry.ProjectName} v{historyEntry.Version}");
+
+// Create a rollback entry
+var rollbackEntry = new DeploymentHistoryEntry
+{
+    ProjectName = "MyWebApp",
+    Version = "2.0.5",
+    FinalStatus = BuildStatus.RollbackSuccess,
+    TargetEnvironment = Environment.Production,
+    BranchName = "hotfix/rollback-2.1.0",
+    CommitHash = "f1e2d3c4b5a67890",
+    CommitAuthor = "alice@example.com",
+    DeployedAt = DateTime.UtcNow.AddMinutes(-10),
+    DurationSeconds = 95,
+    IsRollback = true,
+    RolledBackFromVersion = "2.1.0",
+    ErrorDetails = "Critical bug in 2.1.0: memory leak in API endpoint"
+};
+
+Console.WriteLine($"Rollback from {rollbackEntry.RolledBackFromVersion} to {rollbackEntry.Version}");
+```
 ## CustomTemplate
 
 The `CustomTemplate` class represents a user-defined named notification template stored in the engine registry. It enables customizable notification content with placeholders, conditional blocks, and metadata for organizing templates. Templates can be activated or deactivated, and the `Touch()` method updates the modification timestamp.
