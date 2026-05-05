@@ -86,7 +86,7 @@ public class CommandHandler
         }
 
         var environmentStr = command.GetOption("environment") ?? "Production";
-        if (!Enum.TryParse<Core.Models.Environment>(environmentStr, true, out var environment))
+        if (!Enum.TryParse<DotNetDeployNotify.Core.Environment>(environmentStr, true, out var environment))
         {
             Console.Error.WriteLine($"❌ Invalid environment: {environmentStr}");
             return 1;

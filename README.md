@@ -1,3 +1,7 @@
+[![Build](https://github.com/sarmkadan/dotnet-deploy-notify/actions/workflows/build.yml/badge.svg)](https://github.com/sarmkadan/dotnet-deploy-notify/actions/workflows/build.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![.NET](https://img.shields.io/badge/.NET-10.0-purple.svg)](https://dotnet.microsoft.com/)
+
 # DotNetDeployNotify
 
 A comprehensive deployment notification pipeline for .NET applications. Send build status updates to Telegram, Slack, Discord, and custom webhooks with full support for retries, validation, metrics, and batch processing.

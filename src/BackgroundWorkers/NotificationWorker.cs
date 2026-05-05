@@ -125,12 +125,12 @@ public class HealthCheckWorker : BackgroundWorker
             try
             {
                 ExecutionCount++;
-                var health = await _healthCheckService.CheckHealthAsync();
+                var health = await _healthCheckService.CheckSystemHealthAsync();
 
-                if (!health.IsHealthy)
+                if (!health.IsOperational)
                 {
                     _logger.LogWarning("Health check failed: {Issues}",
-                        string.Join(", ", health.Issues));
+                        string.Join(", ", health.Errors));
                 }
 
                 await Task.Delay(_interval, stoppingToken);

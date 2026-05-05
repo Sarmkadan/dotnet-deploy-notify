@@ -19,7 +19,6 @@ public interface IHttpClientFactory
 /// </summary>
 public class DefaultHttpClientFactory : IHttpClientFactory
 {
-    private readonly System.Net.Http.HttpClientFactory _factory = new();
     private readonly ILogger<DefaultHttpClientFactory> _logger;
     private readonly Dictionary<string, HttpClient> _clients = new();
 

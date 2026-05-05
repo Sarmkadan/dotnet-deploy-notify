@@ -75,7 +75,7 @@ public class NotificationBatchProcessor : IBatchProcessor<DeploymentNotification
     {
         try
         {
-            await _notificationService.SendNotificationAsync(notification);
+            await _notificationService.SendNotificationAsync(notification.Id);
             notification.MarkAsProcessed();
         }
         catch (Exception ex)
@@ -133,9 +133,9 @@ public class ResilientBatchProcessor<T>
     /// <summary>
     /// Processes items with automatic retry and error recovery
     /// </summary>
-    public async Task<ProcessingResult> ProcessWithRetryAsync(IEnumerable<T> items)
+    public async Task<BatchProcessingResult> ProcessWithRetryAsync(IEnumerable<T> items)
     {
-        var result = new ProcessingResult();
+        var result = new BatchProcessingResult();
         var itemList = items.ToList();
 
         _logger.LogInformation("Starting resilient batch processing for {Count} items", itemList.Count);
@@ -180,9 +180,9 @@ public class ResilientBatchProcessor<T>
 }
 
 /// <summary>
-/// Result of batch processing
+/// Result of resilient batch processing
 /// </summary>
-public class ProcessingResult
+public class BatchProcessingResult
 {
     public int SuccessCount { get; set; }
     public int FailureCount { get; set; }

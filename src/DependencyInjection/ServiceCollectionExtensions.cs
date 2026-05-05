@@ -95,7 +95,7 @@ public static class ServiceCollectionExtensions
     public static IServiceCollection AddIntegrationServices(this IServiceCollection services)
     {
         services.AddHttpClient();
-        services.AddScoped<IHttpClientFactory, DefaultHttpClientFactory>();
+        services.AddScoped<DotNetDeployNotify.Integration.IHttpClientFactory, DefaultHttpClientFactory>();
         services.AddScoped<WebhookPayloadBuilderFactory>();
         services.AddScoped<WebhookClient>();
         services.AddScoped<RetryableHttpClient>();
