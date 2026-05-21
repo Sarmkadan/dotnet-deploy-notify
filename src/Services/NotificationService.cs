@@ -76,8 +76,12 @@ public class NotificationService : INotificationService
             var validation = _validationService.ValidateNotification(notification);
             if (!validation.IsValid)
             {
-                var errors = string.Join(", ", validation.Errors);
-                throw new NotificationValidationException($"Notification validation failed: {errors}", validation.Errors);
+                var errors = validation.Errors.Count > 0
+                    ? string.Join(", ", validation.Errors)
+                    : "unknown validation error";
+                throw new NotificationValidationException(
+                    $"Notification validation failed: {errors}",
+                    validation.Errors);
             }
 
             // Store the notification
