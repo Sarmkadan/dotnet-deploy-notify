@@ -17,22 +17,47 @@ namespace DotNetDeployNotify.Services;
 /// </summary>
 public interface INotificationService
 {
-    /// <summary>Creates and queues a new deployment notification</summary>
+    /// <summary>
+    /// Creates and queues a new deployment notification.
+    /// </summary>
+    /// <param name="notification">The notification to create.</param>
+    /// <returns>The ID of the created notification.</returns>
     Task<string> CreateNotificationAsync(DeploymentNotification notification);
 
-    /// <summary>Sends pending notifications to configured channels</summary>
+    /// <summary>
+    /// Sends pending notifications to configured channels.
+    /// </summary>
+    /// <returns>A list of results for each notification sent.</returns>
     Task<List<NotificationResult>> SendPendingNotificationsAsync();
 
-    /// <summary>Sends notification to specific channels</summary>
+    /// <summary>
+    /// Sends notification to specific channels.
+    /// </summary>
+    /// <param name="notificationId">The ID of the notification to send.</param>
+    /// <param name="channels">The list of channels to send to (if null, uses notification's channels).</param>
+    /// <returns>A list of results for each channel attempt.</returns>
     Task<List<NotificationResult>> SendNotificationAsync(string notificationId, List<NotificationChannel>? channels = null);
 
-    /// <summary>Gets notification history by project</summary>
+    /// <summary>
+    /// Gets notification history by project.
+    /// </summary>
+    /// <param name="projectName">The project name to query.</param>
+    /// <param name="limit">The maximum number of entries to return.</param>
+    /// <returns>A list of notifications for the specified project.</returns>
     Task<List<DeploymentNotification>> GetNotificationHistoryAsync(string projectName, int limit = 50);
 
-    /// <summary>Gets delivery results for a notification</summary>
+    /// <summary>
+    /// Gets delivery results for a notification.
+    /// </summary>
+    /// <param name="notificationId">The ID of the notification.</param>
+    /// <returns>A list of delivery results for the notification.</returns>
     Task<List<NotificationResult>> GetDeliveryResultsAsync(string notificationId);
 
-    /// <summary>Retries failed deliveries</summary>
+    /// <summary>
+    /// Retries failed deliveries.
+    /// </summary>
+    /// <param name="notificationId">The ID of the notification to retry.</param>
+    /// <returns>A list of new delivery results from the retries.</returns>
     Task<List<NotificationResult>> RetryFailedDeliveriesAsync(string notificationId);
 }
 
