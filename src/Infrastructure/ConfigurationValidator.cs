@@ -6,6 +6,7 @@
 
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Configuration;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetDeployNotify.Infrastructure;

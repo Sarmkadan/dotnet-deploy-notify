@@ -43,8 +43,7 @@ internal sealed class Program
                     logging.AddConsole();
                     logging.SetMinimumLevel(LogLevel.Information);
                 })
-                .Configure<NotificationConfig>(configuration.GetSection(NotificationConfig.SectionName))
-                .AddNotificationServices();
+                .AddNotificationServices(configuration);
 
             var serviceProvider = services.BuildServiceProvider();
             var logger = serviceProvider.GetRequiredService<ILogger<Program>>();
