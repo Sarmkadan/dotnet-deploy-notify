@@ -83,3 +83,6 @@ appsettings.local.json
 *.pem
 *.pfx
 *.DotSettings.user
+
+# aider internal state - never commit
+.aider*
