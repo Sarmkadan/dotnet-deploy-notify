@@ -280,6 +280,47 @@ builder.Services.Configure<DotnetDeployNotifyOptions>(options =>
     };
 });
 
+## CacheEntry
+
+The `CacheEntry<T>` class represents a single cache entry in the in-memory cache system. It stores a cached value along with metadata such as expiration time and creation timestamp, enabling time-to-live (TTL) functionality for cache entries.
+
+Each cache entry tracks when it was created, when it expires, and whether it has expired, providing the foundation for the cache's automatic expiration and cleanup system.
+
+Example usage:
+
+```csharp
+// Create a cache entry with a string value
+var cacheEntry = new CacheEntry<string>
+{
+    Value = "Hello, World!",
+    ExpiresAt = DateTime.UtcNow.AddMinutes(10),
+    CreatedAt = DateTime.UtcNow
+};
+
+Console.WriteLine($"Cache entry created at: {cacheEntry.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"Expires at: {cacheEntry.ExpiresAt:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"Is expired: {cacheEntry.IsExpired}");
+
+// Using with MemoryCacheService
+var logger = new Logger<MemoryCacheService>(new LoggerFactory());
+var cacheService = new MemoryCacheService(logger);
+
+// Set a value in cache (automatically creates a CacheEntry internally)
+cacheService.Set("greeting", "Hello, World!", TimeSpan.FromMinutes(10));
+
+// Retrieve from cache
+var cachedValue = cacheService.Get<string>("greeting");
+if (cachedValue != null)
+{
+    Console.WriteLine($"Retrieved value: {cachedValue}");
+}
+
+// Get cache statistics
+var stats = cacheService.GetStatistics();
+Console.WriteLine($"Cache contains {stats.TotalItems} items");
+Console.WriteLine($"Cache hit rate: {stats.HitRate:F1}%");
+```
+
 ## ChannelConfigurationBuilder
 
 The `ChannelConfigurationBuilder` class provides a fluent interface for constructing `ChannelConfiguration` instances with a clean, readable API. It enables programmatic configuration of notification channels including Slack, Discord, and Telegram webhooks with support for filtering by environment, status, priority, and other channel-specific settings.
