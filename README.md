@@ -1,34 +1,35 @@
 // ... (rest of the file remains the same)
 
-## ChannelConfiguration
+## BatchNotification
 
-The `ChannelConfiguration` class represents a specific notification channel's settings, such as a Slack or Telegram channel. It encapsulates properties like channel type, webhook URL, authentication tokens, and filtering criteria. You can create and manage channel configurations to customize notification delivery.
+The `BatchNotification` class represents a collection of notifications to be sent together, allowing for batch processing and improved delivery efficiency. It provides properties and methods to manage the batch's status, notifications, channels, and delivery results.
 
 Example usage:
 ```csharp
-var channelConfig = new ChannelConfiguration
+var batchNotification = new BatchNotification
 {
-    ChannelType = NotificationChannel.Slack,
-    WebhookUrl = "https://hooks.slack.com/services/T000/B000/XXXX",
-    DisplayName = "Production Alerts",
-    TargetId = "prod-channel-id",
-    IsEnabled = true,
-    MinimumPriority = NotificationPriority.Normal,
-    AllowedEnvironments = new List<Environment> { Environment.Production },
-    AllowedStatuses = new List<BuildStatus> { BuildStatus.Success, BuildStatus.Failure },
-    MaxRetries = 3,
-    TimeoutMs = 10000,
-    CustomHeaders = new Dictionary<string, string> { { "Content-Type", "application/json" } },
-    Settings = new Dictionary<string, string> { { "icon_emoji", ":rocket:" } }
+    Name = "Deployment Alerts",
+    Description = "Alerts for deployment notifications",
+    Notifications = new List<DeploymentNotification>
+    {
+        new DeploymentNotification { /* initialize notification properties */ },
+        new DeploymentNotification { /* initialize notification properties */ }
+    },
+    Channels = new List<NotificationChannel>
+    {
+        new NotificationChannel { /* initialize channel properties */ }
+    }
 };
 
-if (channelConfig.IsValid())
+if (batchNotification.IsValid())
 {
-    Console.WriteLine($"Channel {channelConfig.DisplayName} is valid.");
-    // Use the channel configuration to send notifications
+    Console.WriteLine($"Batch {batchNotification.Name} is valid.");
+    // Process the batch
+    batchNotification.MarkAsSent();
+    Console.WriteLine($"Batch {batchNotification.Name} sent successfully. Success rate: {batchNotification.GetSuccessRate():F1}%");
 }
 else
 {
-    Console.WriteLine("Invalid channel configuration.");
+    Console.WriteLine("Invalid batch notification.");
 }
 ```
