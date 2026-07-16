@@ -762,6 +762,71 @@ Assert.True(successTryResult.IsSuccess);
 Assert.Equal(99, successTryResult.Value);
 ```
 
+## PayloadBuilderTests
+
+The `PayloadBuilderTests` class provides comprehensive unit tests for the `PayloadBuilder` class, which constructs notification payloads for different messaging channels (Slack, Discord, Telegram). These tests verify that payloads are correctly formatted for each channel type, include appropriate event types based on deployment status, and respect configuration options like emoji formatting, commit details inclusion, and build URL display.
+
+The test suite covers all public methods of the `PayloadBuilder` class including channel-specific payload building methods, message formatting with various deployment statuses, and configuration-dependent formatting options.
+
+Example usage:
+
+```csharp
+// Create payload builder with logger
+var logger = new Logger<PayloadBuilder>(new LoggerFactory());
+var payloadBuilder = new PayloadBuilder(logger);
+
+// Create a deployment notification with all possible fields
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = BuildStatus.Success,
+    TargetEnvironment = Environment.Production,
+    BranchName = "main",
+    CommitHash = "abc123def456",
+    CommitAuthor = "vlad",
+    Message = "Version 2.0.0 deployed successfully",
+    DurationSeconds = 180,
+    BuildUrl = "https://ci.example.com/build/123",
+    Priority = NotificationPriority.High,
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord }
+};
+
+// Create channel configurations
+var slackConfig = new ChannelConfiguration
+{
+    ChannelType = NotificationChannel.Slack,
+    DisplayName = "Production Slack",
+    WebhookUrl = "https://hooks.slack.com/services/T123/B456/C789",
+    TargetId = "C123456",
+    EnableEmojis = true,
+    UseSlackBlockKit = true,
+    IncludeCommitDetails = true,
+    IncludeBuildUrl = true
+};
+
+var telegramConfig = new ChannelConfiguration
+{
+    ChannelType = NotificationChannel.Telegram,
+    DisplayName = "Production Telegram",
+    WebhookUrl = "https://api.telegram.org/bot12345:ABC-DEF/sendMessage",
+    TargetId = "-123456",
+    EnableEmojis = true,
+    IncludeCommitDetails = true,
+    IncludeBuildUrl = true
+};
+
+// Build payloads for different channels
+var webhookPayload = payloadBuilder.BuildPayload(notification, slackConfig);
+var telegramMessage = payloadBuilder.BuildTelegramMessage(notification, telegramConfig);
+var slackPayload = payloadBuilder.BuildSlackPayload(notification, slackConfig);
+var discordPayload = payloadBuilder.BuildDiscordPayload(notification, slackConfig);
+
+Console.WriteLine($"Telegram message length: {telegramMessage.Length} characters");
+Console.WriteLine($"Slack payload type: {slackPayload.GetType().Name}");
+Console.WriteLine($"Discord payload type: {discordPayload.GetType().Name}");
+```
+
 ## ValidationServiceTests
 
 The `ValidationServiceTests` class provides comprehensive unit tests for the `ValidationService` class, which validates deployment notifications and channel configurations before they are sent through various notification channels (Slack, Discord, Telegram, etc.). These tests verify that validation correctly identifies missing required fields, invalid URLs, negative values, and other validation rules, ensuring data integrity throughout the notification system.
