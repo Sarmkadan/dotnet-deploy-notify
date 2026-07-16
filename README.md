@@ -196,6 +196,91 @@ The application currently supports the following notification channels:
 - **Telegram** - Mobile and desktop notifications
 
 
+## DotnetDeployNotifyOptions
+
+The `DotnetDeployNotifyOptions` class provides centralized configuration for the deployment notification system. It controls notification behavior, retry logic, storage settings, webhook configurations, and channel-specific options, enabling consistent deployment notifications across different environments and deployment pipelines.
+
+This configuration class is typically used in `appsettings.json` or loaded through dependency injection to customize notification delivery behavior.
+
+Example usage:
+
+```csharp
+// Configure DotnetDeployNotifyOptions in appsettings.json
+{
+  "DotnetDeployNotifyOptions": {
+    "Notification": {
+      "DefaultPriority": "Normal",
+      "EnableAuditLogging": true,
+      "RetentionDays": 30,
+      "IncludeCommitDetails": true,
+      "IncludeBuildUrl": true
+    },
+    "Canary": {
+      "Enabled": true,
+      "Threshold": 0.1
+    },
+    "MaxRetries": 5,
+    "WebhookTimeoutMs": 10000,
+    "RetryDelayMs": 2000,
+    "AutoProcessNotifications": true,
+    "ProcessingIntervalSeconds": 30,
+    "StorageType": "Database",
+    "LogLevel": "Information",
+    "StoragePath": "/var/data/notifications",
+    "EnvironmentChannels": {
+      "Production": {
+        "ChannelType": "Slack",
+        "WebhookUrl": "https://hooks.slack.com/services/...",
+        "DisplayName": "Production Alerts"
+      },
+      "Development": {
+        "ChannelType": "Discord",
+        "WebhookUrl": "https://discord.com/api/webhooks/...",
+        "DisplayName": "Dev Notifications"
+      }
+    },
+    "DefaultPriority": "Normal",
+    "TargetId": "production-channel-1"
+  }
+}
+
+// Or configure programmatically in Program.cs
+builder.Services.Configure<DotnetDeployNotifyOptions>(options =>
+{
+    options.MaxRetries = 3;
+    options.WebhookTimeoutMs = 5000;
+    options.RetryDelayMs = 1000;
+    options.AutoProcessNotifications = true;
+    options.ProcessingIntervalSeconds = 60;
+    options.LogLevel = "Debug";
+    options.StorageType = "FileSystem";
+    options.RetentionDays = 90;
+    options.IncludeCommitDetails = true;
+    options.IncludeBuildUrl = true;
+    options.DefaultPriority = "High";
+    options.EnableAuditLogging = true;
+    
+    // Configure environment-specific channels
+    options.EnvironmentChannels = new Dictionary<string, EnvironmentChannelConfig>
+    {
+        ["Production"] = new EnvironmentChannelConfig
+        {
+            ChannelType = "Slack",
+            WebhookUrl = "https://hooks.slack.com/services/T123/B456/C789",
+            DisplayName = "Production Alerts",
+            TargetId = "C123456"
+        },
+        ["Staging"] = new EnvironmentChannelConfig
+        {
+            ChannelType = "Discord",
+            WebhookUrl = "https://discord.com/api/webhooks/789/abc",
+            DisplayName = "Staging Notifications",
+            TargetId = "D789012"
+        }
+    };
+});
+```
+
 ## Configuration
 
 See `appsettings.example.json` for configuration examples.
