@@ -779,6 +779,67 @@ bool flag3 = "invalid".ToBooleanSafe(false); // false (default)
 bool flag4 = "1".ToBooleanSafe(); // true
 ```
 
+## TypeHelper
+
+The `TypeHelper` class provides a comprehensive set of utilities for working with .NET types and reflection. It includes methods for type checking, conversion, instantiation, and reflection operations, enabling type-safe operations and dynamic type handling throughout the application.
+
+Example usage:
+
+```csharp
+// Check if a type is numeric
+bool isNumeric = typeof(int).IsNumeric(); // true
+bool isNumericGeneric = TypeHelper.IsNumeric<int>(); // true
+
+// Check if a type is nullable
+bool isNullable = typeof(int?).IsNullable(); // true
+bool isNotNullable = typeof(int).IsNullable(); // false
+
+// Get underlying type from nullable
+Type underlyingType = typeof(int?).GetUnderlyingType(); // typeof(int)
+
+// Check if a type implements an interface
+bool implementsIDisposable = typeof(Stream).ImplementsInterface<IDisposable>(); // true
+
+// Check if a type is an enum
+bool isEnum = TypeHelper.IsEnum<DeploymentStatus>(); // true
+
+// Check if a type is a collection
+bool isCollection = typeof(List<int>).IsCollection(); // true
+bool isNotCollection = typeof(string).IsCollection(); // false
+
+// Get generic arguments from a type
+Type[]? genericArgs = typeof(Dictionary<string, int>).GetGenericArguments(); // [typeof(string), typeof(int)]
+
+// Check if a type is generic
+bool isGeneric = typeof(List<int>).IsGeneric(); // true
+bool isNotGeneric = typeof(string).IsGeneric(); // false
+
+// Get a method by signature
+var method = typeof(string).GetMethodBySignature("Substring", typeof(int), typeof(int));
+
+// Get all properties, fields, or methods of a type
+var properties = typeof(DeploymentNotification).GetAllProperties();
+var fields = typeof(DeploymentNotification).GetAllFields();
+var methods = typeof(DeploymentNotification).GetAllMethods();
+
+// Check if a type has a parameterless constructor and create an instance
+bool hasConstructor = typeof(DeploymentNotification).HasParameterlessConstructor(); // true
+var instance = typeof(DeploymentNotification).CreateInstance();
+
+// Convert values between types
+object convertedInt = "42".ConvertTo(typeof(int)); // 42
+int convertedString = "hello".ConvertTo<int>(); // 0 (default)
+string convertedFromInt = 123.ConvertTo<string>(); // "123"
+
+// Find types that inherit from a base type in an assembly
+var assembly = Assembly.GetExecutingAssembly();
+var types = assembly.FindTypesThatInherit(typeof(NotificationChannel));
+
+// Get attributes from a type
+var obsoleteAttr = typeof(ObsoleteAttribute).GetAttribute<AttributeUsageAttribute>();
+var allAttributes = typeof(DeploymentNotification).GetAttributes<SerializableAttribute>();
+```
+
 ## Configuration
 
 See `appsettings.example.json` for configuration examples.
