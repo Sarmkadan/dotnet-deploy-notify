@@ -762,6 +762,55 @@ Assert.True(successTryResult.IsSuccess);
 Assert.Equal(99, successTryResult.Value);
 ```
 
+## StringExtensionsTests
+
+The `StringExtensionsTests` class provides comprehensive unit tests for the `StringExtensions` utility methods. These tests verify that string manipulation functions like truncation, slug generation, boolean conversion, substring counting, and sensitive data masking work correctly for various input scenarios including edge cases like null values, empty strings, and whitespace.
+
+Example usage:
+
+```csharp
+// Test truncation behavior with various inputs
+var longMessage = "This is a very long deployment message that exceeds the limit";
+var truncated = longMessage.Truncate(20);
+Assert.Equal("This is a very lo...", truncated);
+Assert.Equal(20, truncated.Length);
+
+// Test null/empty string handling
+string? nullMessage = null;
+var emptyResult = nullMessage!.Truncate(10);
+Assert.Empty(emptyResult);
+
+// Test slug generation
+var projectName = "My Deploy Project";
+var slug = projectName.ToSlug();
+Assert.Equal("my-deploy-project", slug);
+Assert.DoesNotContain(" ", slug);
+
+// Test boolean conversion with various string representations
+Assert.True("1".ToBooleanSafe());
+Assert.True("true".ToBooleanSafe());
+Assert.True("yes".ToBooleanSafe());
+Assert.False("0".ToBooleanSafe());
+Assert.False("false".ToBooleanSafe());
+Assert.False("no".ToBooleanSafe());
+
+// Test substring counting
+var message = "deploy success deploy failed deploy retry";
+var count = message.CountOccurrences("deploy");
+Assert.Equal(3, count);
+
+// Test sensitive data masking
+var shortToken = "abc";
+var maskedShort = shortToken.MaskSensitive(visibleChars: 4);
+Assert.Equal("****", maskedShort);
+
+var longToken = "secret-api-token-12345";
+var maskedLong = longToken.MaskSensitive(visibleChars: 4);
+Assert.StartsWith("secr", maskedLong);
+Assert.Contains("*", maskedLong);
+Assert.Equal(longToken.Length, maskedLong.Length);
+```
+
 ## NotificationTests
 
 The `NotificationTests` class provides comprehensive unit tests for the notification builder and related notification functionality. These tests verify that notifications are correctly constructed with required fields, handle different statuses and priorities appropriately, validate channel configurations, and properly track delivery results. The test suite covers all public members of the notification system including `NotificationBuilder`, `DeploymentNotification`, `ChannelConfiguration`, `NotificationResult`, and `IValidationService`.
