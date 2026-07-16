@@ -883,6 +883,56 @@ if (!userNameValid)
 }
 ```
 
+## TemplateServiceTests
+
+The `TemplateServiceTests` class provides comprehensive unit tests for the `TemplateService` class, which handles template rendering and validation for deployment notifications. These tests verify that template variables are correctly replaced with notification values, edge cases are handled properly, and validation works as expected. The test suite covers all public methods of the `TemplateService` class including template rendering with various notification variables, HTML escaping, preset template access, and template validation.
+
+Example usage:
+
+```csharp
+// Create the template service with a logger
+var logger = new Logger<TemplateService>(new LoggerFactory());
+var templateService = new TemplateService(logger);
+
+// Create a deployment notification with all possible variables
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = DeploymentStatus.Success,
+    Message = "Version 2.0.0 deployed successfully",
+    TargetEnvironment = Environment.Production,
+    BranchName = "main",
+    CommitHash = "abc123def456789",
+    CommitAuthor = "vlad",
+    RepositoryUrl = "https://github.com/org/repo",
+    BuildUrl = "https://ci.example.com/build/123",
+    DurationSeconds = 180,
+    Priority = NotificationPriority.High,
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack }
+};
+
+// Render a template with variables
+var template = "🚀 {{ProjectName}} v{{Version}} deployed to {{Environment}} by {{CommitAuthor}}";
+var renderedMessage = templateService.RenderTemplate(template, notification);
+Console.WriteLine(renderedMessage);
+// Output: "🚀 MyApplication v2.0.0 deployed to Production by vlad"
+
+// Get available template variables
+var availableVariables = templateService.GetAvailableVariables();
+Console.WriteLine($"Available variables: {string.Join(", ", availableVariables)}");
+
+// Validate a template
+var (isValid, errors) = templateService.ValidateTemplate("{{ProjectName}} v{{Version}}");
+if (isValid)
+{
+    Console.WriteLine("Template is valid!");
+}
+
+// Render HTML-safe version for web notifications
+var htmlSafeMessage = templateService.RenderHtmlSafe(template, notification);
+```
+
 ## TypeHelper
 
 The `TypeHelper` class provides a comprehensive set of utilities for working with .NET types and reflection. It includes methods for type checking, conversion, instantiation, and reflection operations, enabling type-safe operations and dynamic type handling throughout the application.
