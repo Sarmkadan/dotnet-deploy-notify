@@ -2103,6 +2103,71 @@ string merged = SafeJsonParser.MergeJsonObjects(
 );
 ```
 
+## DateTimeExtensions
+
+The `DateTimeExtensions` class provides a comprehensive set of extension methods for working with `DateTime` values in .NET applications. These methods enable common date/time operations including relative time formatting, ISO string conversion, formatted string output, temporal comparisons, Unix timestamp conversion, and date/time rounding to nearest minute or hour boundaries. The extension methods support both UTC and local time zones and provide utility for consistent date/time handling throughout the application.
+
+Example usage:
+
+```csharp
+// Create a deployment timestamp
+var deploymentTime = DateTime.UtcNow.AddMinutes(-45);
+
+// Convert to relative time string (e.g., "2 hours ago", "5 minutes ago")
+string relativeTime = deploymentTime.ToRelativeTimeString();
+Console.WriteLine($"Deployment happened {relativeTime}"); // "Deployment happened 45 minutes ago"
+
+// Convert to ISO 8601 string format
+string isoTime = deploymentTime.ToIsoString();
+Console.WriteLine($"ISO timestamp: {isoTime}"); // "2024-07-16T14:30:00Z"
+
+// Convert to formatted string with custom format
+string formattedTime = deploymentTime.ToFormattedString("yyyy-MM-dd HH:mm:ss");
+Console.WriteLine($"Formatted: {formattedTime}"); // "2024-07-16 14:30:00"
+
+// Check if a datetime is in the past or future
+bool isPast = deploymentTime.IsPast();
+bool isFuture = deploymentTime.IsFuture();
+Console.WriteLine($"Is past: {isPast}, Is future: {isFuture}");
+
+// Calculate elapsed time in minutes and seconds
+int minutesElapsed = deploymentTime.GetMinutesElapsed();
+int secondsElapsed = deploymentTime.GetSecondsElapsed();
+Console.WriteLine($"Elapsed: {minutesElapsed} minutes, {secondsElapsed} seconds");
+
+// Round to nearest minute or hour
+var roundedToMinute = deploymentTime.RoundToNearestMinute();
+var roundedToHour = deploymentTime.RoundToNearestHour();
+Console.WriteLine($"Rounded to minute: {roundedToMinute:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"Rounded to hour: {roundedToHour:yyyy-MM-dd HH:mm:ss}");
+
+// Get start/end of day, week, or month
+var startOfDay = deploymentTime.GetStartOfDay();
+var endOfDay = deploymentTime.GetEndOfDay();
+var startOfWeek = deploymentTime.GetStartOfWeek();
+var startOfMonth = deploymentTime.GetStartOfMonth();
+var endOfMonth = deploymentTime.GetEndOfMonth();
+
+Console.WriteLine($"Start of day: {startOfDay:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"End of day: {endOfDay:yyyy-MM-dd HH:mm:ss}");
+
+// Check if a date is today or yesterday
+bool isToday = deploymentTime.IsToday();
+bool isYesterday = deploymentTime.IsYesterday();
+Console.WriteLine($"Is today: {isToday}, Is yesterday: {isYesterday}");
+
+// Convert between DateTime and Unix timestamp
+long unixTimestamp = deploymentTime.ToUnixTimestamp();
+var fromUnix = DateTimeExtensions.FromUnixTimestamp(unixTimestamp);
+Console.WriteLine($"Unix timestamp: {unixTimestamp}");
+Console.WriteLine($"From Unix: {fromUnix:yyyy-MM-dd HH:mm:ss}");
+
+// Calculate business days between two dates
+var futureDate = DateTime.UtcNow.AddDays(7);
+int businessDays = deploymentTime.GetBusinessDaysBetween(futureDate);
+Console.WriteLine($"Business days between: {businessDays}");
+```
+
 ## License
 
 MIT License - see LICENSE file for details.
