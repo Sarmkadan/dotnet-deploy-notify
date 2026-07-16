@@ -762,6 +762,70 @@ Assert.True(successTryResult.IsSuccess);
 Assert.Equal(99, successTryResult.Value);
 ```
 
+## ValidationServiceTests
+
+The `ValidationServiceTests` class provides comprehensive unit tests for the `ValidationService` class, which validates deployment notifications and channel configurations before they are sent through various notification channels (Slack, Discord, Telegram, etc.). These tests verify that validation correctly identifies missing required fields, invalid URLs, negative values, and other validation rules, ensuring data integrity throughout the notification system.
+
+The test suite covers all public validation methods including notification validation, channel configuration validation, URL validation, and email validation, with comprehensive test cases for both valid and invalid scenarios.
+
+Example usage:
+
+```csharp
+// Create validation service
+var validationService = new ValidationService();
+
+// Validate a deployment notification with all required fields
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    BranchName = "main",
+    Message = "Version 2.0.0 deployed successfully",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord },
+    Status = DeploymentStatus.Success,
+    DurationSeconds = 180
+};
+
+var notificationResult = validationService.ValidateNotification(notification);
+if (!notificationResult.IsValid)
+{
+    Console.WriteLine("Notification validation failed:");
+    foreach (var error in notificationResult.Errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Validate a channel configuration
+var channelConfig = new ChannelConfiguration
+{
+    DisplayName = "Production Slack",
+    WebhookUrl = "https://hooks.slack.com/services/T123/B456/C789",
+    TargetId = "C123456",
+    ChannelType = NotificationChannel.Slack,
+    TimeoutMs = 5000,
+    MaxRetries = 3,
+    CustomHeaders = new Dictionary<string, string>()
+};
+
+var configResult = validationService.ValidateChannelConfiguration(channelConfig);
+if (!configResult.IsValid)
+{
+    Console.WriteLine("Configuration validation failed:");
+    foreach (var error in configResult.Errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Validate individual fields
+bool isValidUrl = validationService.IsValidUrl("https://example.com/webhook");
+bool isValidEmail = validationService.IsValidEmail("admin@example.com");
+
+Console.WriteLine($"URL validation: {(isValidUrl ? "Valid" : "Invalid")}");
+Console.WriteLine($"Email validation: {(isValidEmail ? "Valid" : "Invalid")}");
+```
+
 ## RollbackNotificationServiceTests
 
 The `RollbackNotificationServiceTests` class provides comprehensive unit tests for the `RollbackNotificationService` class, which handles sending notifications related to deployment rollback operations. These tests verify message formatting for different channels (Slack, Discord, Telegram), notification dispatch functionality, and history tracking. The test suite covers all public methods including message formatting with various rollback statuses, notification sending methods, and history retrieval with filtering capabilities.
