@@ -200,6 +200,87 @@ The application currently supports the following notification channels:
 
 See `appsettings.example.json` for configuration examples.
 
+## ServiceCollectionExtensions
+
+The `ServiceCollectionExtensions` class provides extension methods for configuring application services in the dependency injection container. It offers a comprehensive set of methods to register all core services including CLI support, caching, formatting, serialization, event bus, middleware, integration, and background workers. The extension methods follow the standard Microsoft.Extensions.DependencyInjection pattern and return the `IServiceCollection` for method chaining.
+
+For more granular control, the `ServiceConfigurationBuilder` fluent API allows you to selectively enable services using a builder pattern. This approach provides better readability and makes it easier to compose only the services your application needs.
+
+Example usage with individual service registration:
+
+```csharp
+// Configure services in your Program.cs or Startup.cs
+var services = new ServiceCollection();
+
+// Register CLI services
+services.AddCliServices();
+
+// Register caching services
+services.AddCachingServices();
+
+// Register formatting services
+services.AddFormattingServices();
+
+// Register serialization services
+services.AddSerializationServices();
+
+// Register event bus services
+services.AddEventBusServices();
+
+// Register middleware services
+services.AddMiddlewareServices();
+
+// Register integration services
+services.AddIntegrationServices();
+
+// Register background workers
+services.AddBackgroundWorkers();
+
+// Build the service provider
+var serviceProvider = services.BuildServiceProvider();
+
+// Resolve and use services
+var commandParser = serviceProvider.GetRequiredService<CommandParser>();
+var cacheService = serviceProvider.GetRequiredService<ICacheService>();
+var eventBus = serviceProvider.GetRequiredService<IEventBus>();
+```
+
+Example usage with the fluent ServiceConfigurationBuilder:
+
+```csharp
+// Configure services using the fluent builder pattern
+var services = new ServiceCollection();
+
+var configuredServices = new ServiceConfigurationBuilder(services)
+    .WithCliSupport()
+    .WithCaching()
+    .WithFormatting()
+    .WithSerialization()
+    .WithEventBus()
+    .WithMiddleware()
+    .WithIntegration()
+    .WithBackgroundWorkers()
+    .Build();
+
+// Or use the convenience method to register all services
+var allServices = new ServiceCollection();
+new ServiceConfigurationBuilder(allServices).WithAll().Build();
+
+// Configure HTTP client with custom timeout
+services.AddConfiguredHttpClient("webhookClient", timeoutSeconds: 60);
+
+// Build the service provider
+var serviceProvider = services.BuildServiceProvider();
+
+// Configure the notification pipeline
+var pipeline = serviceProvider.GetRequiredService<NotificationPipeline>();
+pipeline.ConfigureNotificationPipeline(serviceProvider);
+
+// Register event handlers
+var eventBus = serviceProvider.GetRequiredService<IEventBus>();
+services.RegisterEventHandlers(eventBus, serviceProvider);
+```
+
 ## License
 
 MIT License - see LICENSE file for details.
