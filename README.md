@@ -689,6 +689,75 @@ Console.WriteLine($"Email validation: {(isValidEmail ? "Valid" : "Invalid")}");
 
 The `IRollbackNotificationService` interface provides methods for sending notifications related to deployment rollback operations. It handles dispatching notifications when rollbacks are initiated, completed, or failed, with support for multiple notification channels (Slack, Discord, Telegram, etc.). The service maintains a history of rollback notifications and provides formatted messages for different rollback statuses.
 
+## IHealthCheckService
+
+The `IHealthCheckService` interface provides methods for checking the health of the notification system and its configured channels. It performs comprehensive health checks to determine system status, channel availability, and delivery performance metrics. The service helps identify failing channels, calculate success rates, and provide actionable health reports for monitoring and alerting purposes.
+
+Example usage:
+
+```csharp
+// Create required dependencies
+var dbContext = new NotificationDbContext(/* connection string */);
+var logger = new Logger<HealthCheckService>(new LoggerFactory());
+
+// Create repositories
+var configRepository = new ChannelConfigRepository(dbContext);
+var resultRepository = new NotificationResultRepository(dbContext);
+
+// Create dispatcher
+var webhookClientFactory = new WebhookClientFactory();
+var dispatcher = new WebhookDispatcher(webhookClientFactory, logger);
+
+// Initialize the health check service
+var healthCheckService = new HealthCheckService(
+    configRepository,
+    resultRepository,
+    dispatcher,
+    logger);
+
+// Check overall system health
+var systemHealth = await healthCheckService.CheckSystemHealthAsync();
+Console.WriteLine($"System Health: {systemHealth.Status} ({systemHealth.HealthPercentage:F1}%)");
+Console.WriteLine($"Failing channels: {systemHealth.FailingChannels}");
+if (systemHealth.Errors.Any())
+{
+    Console.WriteLine("Errors:");
+    foreach (var error in systemHealth.Errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Check health of a specific channel
+var slackConfig = await configRepository.GetByIdAsync("slack-config-id");
+if (slackConfig != null)
+{
+    var channelHealth = await healthCheckService.CheckChannelHealthAsync(slackConfig.Id);
+    Console.WriteLine($"\nChannel {channelHealth.ConfigName} ({channelHealth.Channel}): {channelHealth.Status}");
+    Console.WriteLine($"Success rate: {channelHealth.SuccessRate:F1}%");
+    Console.WriteLine($"Avg delivery time: {channelHealth.AvgDeliveryTimeMs}ms");
+    Console.WriteLine($"Last success: {channelHealth.LastSuccessAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Never"}");
+    Console.WriteLine($"Last failure: {channelHealth.LastFailureAt?.ToString("yyyy-MM-dd HH:mm:ss") ?? "Never"}");
+}
+
+// Get complete health report
+var healthReport = await healthCheckService.GetHealthReportAsync();
+Console.WriteLine($"\nHealth Report:");
+Console.WriteLine($"Total notifications: {healthReport.TotalNotifications}");
+Console.WriteLine($"Total delivery attempts: {healthReport.TotalDeliveryAttempts}");
+Console.WriteLine($"Successful deliveries: {healthReport.SuccessfulDeliveries}");
+Console.WriteLine($"Failed deliveries: {healthReport.FailedDeliveries}");
+Console.WriteLine($"Overall success rate: {healthReport.OverallSuccessRate:F1}%");
+
+// Check all channels
+var allChannelStatuses = await healthCheckService.CheckAllChannelsAsync();
+Console.WriteLine($"\nChannel Statuses:");
+foreach (var channelStatus in allChannelStatuses)
+{
+    Console.WriteLine($"- {channelStatus.ConfigName}: {channelStatus.Status} ({channelStatus.SuccessRate:F1}%)");
+}
+```
+
 Example usage:
 
 ```csharp
