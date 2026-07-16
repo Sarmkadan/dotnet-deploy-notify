@@ -286,7 +286,8 @@ public sealed class CommandParser
                 new() { Name = "environment", ShortName = "e", Description = "Target environment" },
                 new() { Name = "branch", Description = "Branch name" },
                 new() { Name = "channels", ShortName = "c", Description = "Comma-separated channels" },
-                new() { Name = "message", ShortName = "m", Description = "Custom message" }
+                new() { Name = "message", ShortName = "m", Description = "Custom message" },
+                new() { Name = "dry-run", Description = "Render notifications without sending them", IsFlag = true }
             }
         });
 
@@ -360,7 +361,8 @@ public sealed class CommandParser
                 new() { Name = "environment",     ShortName = "e", Description = "Target environment (default: Production)" },
                 new() { Name = "channels",        ShortName = "c", Description = "Comma-separated channels (default: Slack)" },
                 new() { Name = "reason",          ShortName = "r", Description = "Reason for rollback" },
-                new() { Name = "requested-by",    Description = "User initiating the rollback" }
+                new() { Name = "requested-by",    Description = "User initiating the rollback" },
+                new() { Name = "dry-run",         Description = "Render rollback notifications without sending them", IsFlag = true }
             }
         });
     }

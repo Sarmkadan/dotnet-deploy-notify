@@ -20,6 +20,7 @@ public sealed class CommandHandler
     private readonly IChannelConfigRepository _configRepository;
     private readonly IDeploymentHistoryService _historyService;
     private readonly IRollbackNotificationService _rollbackNotificationService;
+    private readonly IDryRunRenderer _dryRunRenderer;
     private readonly ILogger<CommandHandler> _logger;
 
     public CommandHandler(
@@ -27,12 +28,14 @@ public sealed class CommandHandler
         IChannelConfigRepository configRepository,
         IDeploymentHistoryService historyService,
         IRollbackNotificationService rollbackNotificationService,
+        IDryRunRenderer dryRunRenderer,
         ILogger<CommandHandler> logger)
     {
         _notificationService = notificationService;
         _configRepository = configRepository;
         _historyService = historyService;
         _rollbackNotificationService = rollbackNotificationService;
+        _dryRunRenderer = dryRunRenderer;
         _logger = logger;
     }
 
@@ -122,6 +125,12 @@ public sealed class CommandHandler
             Channels = channels,
             Priority = status == BuildStatus.Failed ? NotificationPriority.Critical : NotificationPriority.Normal
         };
+
+        if (command.HasOption("dry-run"))
+        {
+            await RenderDryRunAsync(notification);
+            return 0;
+        }
 
         var notificationId = await _notificationService.CreateNotificationAsync(notification);
         var results = await _notificationService.SendPendingNotificationsAsync();
@@ -275,6 +284,40 @@ public sealed class CommandHandler
     }
 
     /// <summary>
+    /// Renders a notification for every configured channel without sending it and
+    /// prints the payloads that would otherwise have been dispatched.
+    /// </summary>
+    private async Task RenderDryRunAsync(DeploymentNotification notification)
+    {
+        Console.WriteLine("🧪 DRY RUN — no notifications will be sent");
+        Console.WriteLine("═══════════════════════════════════════════════════");
+
+        var configs = new List<ChannelConfiguration>();
+        foreach (var channel in notification.Channels)
+            configs.AddRange(await _configRepository.GetByChannelAsync(channel));
+
+        if (configs.Count == 0)
+        {
+            Console.WriteLine("No channel configurations matched the requested channels.");
+            return;
+        }
+
+        foreach (var render in _dryRunRenderer.RenderAll(notification, configs))
+        {
+            var marker = render.WouldSend ? "→ WOULD SEND" : $"→ SKIP ({render.SkipReason})";
+            Console.WriteLine();
+            Console.WriteLine($"[{render.Channel}] {render.DisplayName}  {marker}");
+            Console.WriteLine($"  Target: {render.TargetUrl}");
+            Console.WriteLine("  Payload:");
+            Console.WriteLine(Indent(render.RenderedPayload, "    "));
+        }
+    }
+
+    private static string Indent(string text, string prefix) =>
+        string.Join(System.Environment.NewLine,
+            text.Split('\n').Select(line => prefix + line.TrimEnd('\r')));
+
+    /// <summary>
     /// Parses comma-separated channel names into NotificationChannel enums
     /// </summary>
     private List<NotificationChannel> ParseChannels(string channelsStr)
@@ -383,6 +426,25 @@ public sealed class CommandHandler
             Channels = channels,
             Priority = NotificationPriority.High
         };
+
+        if (command.HasOption("dry-run"))
+        {
+            Console.WriteLine($"🔄 Dry-run rollback: {projectName} → v{targetVersion} [{environment}]");
+            var preview = new DeploymentNotification
+            {
+                ProjectName = request.ProjectName,
+                Version = request.TargetVersion,
+                Status = BuildStatus.Deploying,
+                TargetEnvironment = request.TargetEnvironment,
+                CommitAuthor = request.RequestedBy,
+                Channels = request.Channels,
+                Priority = request.Priority,
+                Message = _rollbackNotificationService.FormatRollbackMessage(
+                    request, RollbackStatus.InProgress, NotificationChannel.Slack)
+            };
+            await RenderDryRunAsync(preview);
+            return 0;
+        }
 
         Console.WriteLine($"🔄 Initiating rollback: {projectName} → v{targetVersion} [{environment}]");
 
