@@ -692,6 +692,110 @@ catch (Exception ex)
 }
 ```
 
+## IBatchNotificationService
+
+The `IBatchNotificationService` interface provides methods for managing batch notifications, enabling efficient processing of multiple deployment notifications together. It supports creating batches, adding/removing notifications, sending batches to configured channels, and tracking batch statistics including delivery status and success rates.
+
+Example usage:
+
+```csharp
+// Create required services
+var dbContext = new NotificationDbContext(/* connection string */);
+var logger = new Logger<NotificationService>(new LoggerFactory());
+
+// Create repositories and services
+var notificationRepository = new NotificationRepository(dbContext);
+var configRepository = new ChannelConfigRepository(dbContext);
+var resultRepository = new NotificationResultRepository(dbContext);
+var webhookClientFactory = new WebhookClientFactory();
+var dispatcher = new WebhookDispatcher(webhookClientFactory, logger);
+var validationService = new ValidationService();
+
+// Initialize the notification service
+var notificationService = new NotificationService(
+  notificationRepository,
+  configRepository,
+  resultRepository,
+  dispatcher,
+  validationService,
+  logger
+);
+
+// Create the batch notification service
+var batchNotificationService = new BatchNotificationService(notificationService, logger);
+
+// Create a batch of notifications for a deployment
+var batch = new BatchNotification
+{
+  Id = Guid.NewGuid().ToString(),
+  Name = "Production Deployment Batch",
+  Description = "Deployment notifications for version 2.0.0",
+  Notifications = new List<DeploymentNotification>
+  {
+    new DeploymentNotification
+    {
+      Id = Guid.NewGuid().ToString(),
+      ProjectName = "MyApplication",
+      Version = "2.0.0",
+      Status = DeploymentStatus.Success,
+      TargetEnvironment = "production",
+      Priority = NotificationPriority.High,
+      Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord }
+    },
+    new DeploymentNotification
+    {
+      Id = Guid.NewGuid().ToString(),
+      ProjectName = "MyApplication",
+      Version = "2.0.0",
+      Status = DeploymentStatus.Success,
+      TargetEnvironment = "production",
+      Priority = NotificationPriority.Normal,
+      Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
+    }
+  },
+  Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord, NotificationChannel.Telegram },
+  ScheduledAt = DateTime.UtcNow.AddMinutes(5)
+};
+
+// Create the batch
+var batchId = await batchNotificationService.CreateBatchAsync(batch);
+Console.WriteLine($"Created batch with ID: {batchId}");
+
+// Add additional notifications to the batch
+var additionalNotification = new DeploymentNotification
+{
+  Id = Guid.NewGuid().ToString(),
+  ProjectName = "MyService",
+  Version = "1.5.0",
+  Status = DeploymentStatus.Success,
+  TargetEnvironment = "production",
+  Priority = NotificationPriority.Normal
+};
+
+await batchNotificationService.AddNotificationAsync(batchId, additionalNotification);
+
+// Send the batch (will be sent at scheduled time)
+var sendResults = await batchNotificationService.SendBatchAsync(batchId);
+Console.WriteLine($"Sent batch with {sendResults.Count} delivery results");
+
+// Get batch statistics
+var stats = await batchNotificationService.GetBatchStatisticsAsync(batchId);
+Console.WriteLine($"Batch Statistics:");
+Console.WriteLine($"  Total notifications: {stats.NotificationCount}");
+Console.WriteLine($"  Total delivery targets: {stats.TotalDeliveryTargets}");
+Console.WriteLine($"  Successful deliveries: {stats.SuccessfulDeliveries}");
+Console.WriteLine($"  Failed deliveries: {stats.FailedDeliveries}");
+Console.WriteLine($"  Success rate: {stats.SuccessRate:P0}");
+Console.WriteLine($"  Progress: {stats.ProgressPercentage:F1}%");
+
+// Get all pending batches
+var pendingBatches = await batchNotificationService.GetPendingBatchesAsync();
+Console.WriteLine($"Found {pendingBatches.Count} pending batches");
+
+// Cancel a batch if needed
+await batchNotificationService.CancelBatchAsync(batchId);
+```
+
 ## NotificationBuilder
 
 The `NotificationBuilder` class provides a fluent interface for constructing `DeploymentNotification` instances with a clean, readable API. It supports setting all notification properties including project information, status, environment, build details, channels, priority, and metadata through method chaining.
