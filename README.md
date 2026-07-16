@@ -355,6 +355,97 @@ Console.WriteLine($"Pending: {stats.PendingCount}");
 Console.WriteLine($"Health: {stats.HealthPercentage:F1}%");
 ```
 
+## IBatchProcessor
+
+The `IBatchProcessor<T>` interface and its implementations (`NotificationBatchProcessor` and `ResilientBatchProcessor<T>`) provide batch processing capabilities for efficient notification handling. These processors enable processing collections of items in configurable batch sizes with support for concurrent execution, retry logic, and detailed result tracking.
+
+The `NotificationBatchProcessor` is designed for processing deployment notifications with built-in service integration, while the `ResilientBatchProcessor<T>` offers generic retry functionality for any async processing pipeline.
+
+Example usage with `NotificationBatchProcessor`:
+
+```csharp
+// Create required services
+var dbContext = new NotificationDbContext(/* connection string */);
+var logger = new Logger<NotificationBatchProcessor>(new LoggerFactory());
+
+var notificationService = new NotificationService(
+    new NotificationRepository(dbContext),
+    new ChannelStrategyResolver(new WebhookClientFactory()),
+    logger
+);
+
+// Create batch processor with default batch size (10)
+var batchProcessor = new NotificationBatchProcessor(notificationService, logger);
+
+// Process a list of notifications in batches
+var notifications = new List<DeploymentNotification>
+{
+    new DeploymentNotification { /* initialize */ },
+    new DeploymentNotification { /* initialize */ },
+    // ... more notifications
+};
+
+var processedNotifications = await batchProcessor.ProcessBatchAsync(notifications, batchSize: 20);
+
+Console.WriteLine($"Processed {processedNotifications.Count} notifications in batches");
+```
+
+Example usage with `ResilientBatchProcessor<T>`:
+
+```csharp
+// Create required logger
+var logger = new Logger<ResilientBatchProcessor<DeploymentNotification>>(new LoggerFactory());
+var options = new BatchProcessingOptions
+{
+    DefaultBatchSize = 15,
+    MaxConcurrentBatches = 3,
+    DelayBetweenBatches = TimeSpan.FromMilliseconds(300),
+    MaxRetries = 3
+};
+
+// Define the processing function
+async Task ProcessNotificationAsync(DeploymentNotification notification)
+{
+    // Your notification processing logic here
+    await Task.Delay(10); // Simulate work
+}
+
+// Create resilient batch processor
+var processor = new ResilientBatchProcessor<DeploymentNotification>(
+    ProcessNotificationAsync,
+    logger,
+    options
+);
+
+// Process items with automatic retry
+var items = new List<DeploymentNotification> { /* your items */ };
+var result = await processor.ProcessWithRetryAsync(items);
+
+Console.WriteLine($"Processing completed: {result}");
+Console.WriteLine($"Success rate: {result.SuccessRate:F1}%");
+Console.WriteLine($"Total: {result.TotalProcessed}, Success: {result.SuccessCount}, Final failures: {result.FinalFailureCount}");
+```
+
+### Batch Processing Options
+
+Both processors support configurable batch processing through `BatchProcessingOptions`:
+
+- **DefaultBatchSize**: Number of items per batch (default: 10)
+- **MaxConcurrentBatches**: Maximum concurrent batch operations (default: 5)
+- **DelayBetweenBatches**: Time delay between batches to avoid overwhelming systems (default: 500ms)
+- **MaxRetries**: Maximum retry attempts for failed items (default: 3)
+
+### Processing Results
+
+The `BatchProcessingResult` class provides detailed statistics:
+
+- **SuccessCount**: Number of successfully processed items
+- **FailureCount**: Number of items that failed during processing
+- **FinalFailureCount**: Number of items that still failed after all retries
+- **CompletedAt**: Timestamp when processing completed
+- **SuccessRate**: Calculated success percentage
+- **ToString()**: Human-readable summary of processing results
+
 ## INotificationService
 
 The `INotificationService` interface defines the contract for managing deployment notifications throughout the application. It provides methods for creating notifications, sending them to configured channels, retrieving notification history, and managing delivery results. This service serves as the primary entry point for working with deployment notifications in the system.
