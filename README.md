@@ -128,6 +128,32 @@ if (success)
 }
 ```
 
+## Result
+
+The `Result<T>` type provides a functional way to handle operations that might fail, avoiding exceptions for expected control flow. It encapsulates both successful values and error messages, allowing for chaining operations like `Map` and `Bind` to create clean, expressive pipelines.
+
+Example usage:
+```csharp
+// Simple usage
+public Result<int> Divide(int numerator, int denominator)
+{
+    if (denominator == 0)
+        return Result<int>.Fail("Cannot divide by zero.");
+
+    return Result<int>.Ok(numerator / denominator);
+}
+
+// Chaining operations
+var result = Divide(10, 2)
+    .OnSuccess(val => Console.WriteLine($"Result: {val}"))
+    .OnFailure(err => Console.WriteLine($"Error: {err}"));
+
+if (result.IsSuccess)
+{
+    var value = result.GetValueOrThrow();
+}
+```
+
 ## Supported Channels
 
 The application currently supports the following notification channels:
