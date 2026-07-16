@@ -719,6 +719,49 @@ var validStatuses = new[] { DeploymentStatus.Started, DeploymentStatus.Success }
 bool isValid = status.IsIn(validStatuses); // true
 ```
 
+## ResultTests
+
+The `ResultTests` class provides comprehensive unit tests for the `Result<T>` functional error handling type. These tests verify the core functionality of creating successful and failed results, mapping operations, error handling, and exception safety through the `Try` pattern. The test suite ensures that the `Result<T>` type behaves correctly for all expected use cases in the deployment notification system.
+
+Example usage:
+
+```csharp
+// Test successful result creation and value access
+var successResult = Result<int>.Ok(42);
+Assert.True(successResult.IsSuccess);
+Assert.Equal(42, successResult.Value);
+Assert.Null(successResult.Error);
+
+// Test failure result creation and error handling
+var failureResult = Result<string>.Fail("Webhook delivery failed");
+Assert.False(failureResult.IsSuccess);
+Assert.Equal("Webhook delivery failed", failureResult.Error);
+Assert.Null(failureResult.Value);
+
+// Test mapping operations
+var mappedResult = Result<int>.Ok(5).Map(x => x * 10);
+Assert.True(mappedResult.IsSuccess);
+Assert.Equal(50, mappedResult.Value);
+
+// Test error propagation (mapper should not be invoked)
+var errorResult = Result<int>.Fail("Original error");
+bool mapperInvoked = false;
+var propagatedResult = errorResult.Map(x => { mapperInvoked = true; return x.ToString(); });
+Assert.False(propagatedResult.IsSuccess);
+Assert.Equal("Original error", propagatedResult.Error);
+Assert.False(mapperInvoked);
+
+// Test exception handling with Try
+var exceptionResult = ResultExtensions.Try<int>(() => throw new InvalidOperationException("channel unavailable"));
+Assert.False(exceptionResult.IsSuccess);
+Assert.Equal("channel unavailable", exceptionResult.Error);
+
+// Test successful Try operation
+var successTryResult = ResultExtensions.Try(() => 99);
+Assert.True(successTryResult.IsSuccess);
+Assert.Equal(99, successTryResult.Value);
+```
+
 ## StringExtensions
 
 The `StringExtensions` class provides a comprehensive set of extension methods for string manipulation and formatting. These methods enable common string operations like truncation, case conversion, slug generation, sensitive data masking, and text normalization, providing utility for consistent string handling throughout the application.
