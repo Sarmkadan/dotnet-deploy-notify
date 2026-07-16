@@ -844,6 +844,62 @@ var allAttributes = typeof(DeploymentNotification).GetAttributes<SerializableAtt
 
 See `appsettings.example.json` for configuration examples.
 
+## INotificationFormatter
+
+The `INotificationFormatter` interface defines the contract for formatting deployment notifications into various output formats (JSON, text, CSV, Markdown). It provides methods to convert `DeploymentNotification` objects into formatted strings and specify the appropriate content type for HTTP headers, enabling consistent formatting across different notification channels and systems.
+
+Example usage:
+
+```csharp
+// Create a deployment notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = DeploymentStatus.Success,
+    TargetEnvironment = "production",
+    BranchName = "main",
+    CommitHash = "abc123def456",
+    CommitAuthor = "vlad",
+    Message = "Version 2.0.0 deployed successfully",
+    Priority = NotificationPriority.High,
+    CreatedAt = DateTime.UtcNow,
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord }
+};
+
+// Format as JSON
+var jsonFormatter = NotificationFormatterFactory.CreateFormatter("json");
+string jsonOutput = jsonFormatter.Format(notification);
+Console.WriteLine($"JSON Content-Type: {jsonFormatter.GetContentType()}");
+Console.WriteLine(jsonOutput);
+
+// Format as human-readable text with emojis
+var textFormatter = NotificationFormatterFactory.CreateFormatter("text");
+if (textFormatter is TextNotificationFormatter textFormatterImpl)
+{
+    textFormatterImpl.EnableEmojis = true; // Enable status emojis
+}
+string textOutput = textFormatter.Format(notification);
+Console.WriteLine($"\nText Content-Type: {textFormatter.GetContentType()}");
+Console.WriteLine(textOutput);
+
+// Format as Markdown with emojis
+var markdownFormatter = NotificationFormatterFactory.CreateFormatter("markdown");
+if (markdownFormatter is MarkdownNotificationFormatter mdFormatterImpl)
+{
+    mdFormatterImpl.EnableEmojis = true; // Enable status emojis
+}
+string markdownOutput = markdownFormatter.Format(notification);
+Console.WriteLine($"\nMarkdown Content-Type: {markdownFormatter.GetContentType()}");
+Console.WriteLine(markdownOutput);
+
+// Format as CSV
+var csvFormatter = NotificationFormatterFactory.CreateFormatter("csv");
+string csvOutput = csvFormatter.Format(notification);
+Console.WriteLine($"\nCSV Content-Type: {csvFormatter.GetContentType()}");
+Console.WriteLine(csvOutput);
+```
+
 ## IPayloadBuilder
 
 The `IPayloadBuilder` interface defines the contract for building notification payloads for different messaging channels (Slack, Discord, Telegram, etc.). It provides methods to construct channel-specific message formats and webhook payloads from deployment notifications and channel configurations, enabling consistent formatting across multiple notification destinations.
