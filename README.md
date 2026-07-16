@@ -692,6 +692,58 @@ catch (Exception ex)
 }
 ```
 
+## NotificationBuilder
+
+The `NotificationBuilder` class provides a fluent interface for constructing `DeploymentNotification` instances with a clean, readable API. It supports setting all notification properties including project information, status, environment, build details, channels, priority, and metadata through method chaining.
+
+Example usage:
+
+```csharp
+// Create a notification using the builder
+var notification = new NotificationBuilder()
+    .WithProject("MyApplication", "2.0.0")
+    .WithStatus(BuildStatus.Success, "Deployment completed successfully")
+    .WithEnvironment(Environment.Production)
+    .WithBranch("main", "abc123def456", "vlad")
+    .WithRepository("https://github.com/myorg/MyApplication")
+    .WithBuildUrl("https://ci.example.com/build/123")
+    .WithDuration(180)
+    .WithChannels(NotificationChannel.Slack, NotificationChannel.Discord)
+    .WithPriority(NotificationPriority.High)
+    .WithMessage("✅ MyApplication v2.0.0 deployed successfully to production")
+    .WithMetadata("buildNumber", "123")
+    .WithMetadata("deployedBy", "vlad")
+    .Build();
+
+Console.WriteLine($"Created notification for {notification.ProjectName} v{notification.Version}");
+
+// Use convenience methods for common scenarios
+var successNotification = new NotificationBuilder()
+    .WithProject("MyService", "1.5.2")
+    .WithEnvironment(Environment.Staging)
+    .AsSuccess()
+    .WithMessage("✅ MyService v1.5.2 deployed to staging")
+    .WithChannels(NotificationChannel.Slack)
+    .Build();
+
+var failureNotification = new NotificationBuilder()
+    .WithProject("MyService", "1.5.2")
+    .AsFailure()
+    .WithMessage("❌ Build failed: Unit tests failed")
+    .WithChannels(NotificationChannel.Slack, NotificationChannel.Discord)
+    .Build();
+
+var deploymentSuccess = new NotificationBuilder()
+    .WithProject("MyApp", "3.0.0")
+    .WithEnvironment(Environment.Production)
+    .AsDeploymentSuccess()
+    .WithMessage("🚀 MyApp v3.0.0 deployed to production")
+    .WithBuildUrl("https://ci.example.com/build/456")
+    .WithDuration(245)
+    .WithChannels(NotificationChannel.Telegram)
+    .Build();
+```
+
 ## ServiceCollectionExtensions
 
 The `ServiceCollectionExtensions` class provides extension methods for configuring application services in the dependency injection container. It offers a comprehensive set of methods to register all core services including CLI support, caching, formatting, serialization, event bus, middleware, integration, and background workers. The extension methods follow the standard Microsoft.Extensions.DependencyInjection pattern and return the `IServiceCollection` for method chaining.
