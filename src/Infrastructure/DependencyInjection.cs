@@ -32,6 +32,7 @@ public static class DependencyInjection
         services.AddScoped<IPayloadBuilder, PayloadBuilder>();
         services.AddScoped<INotificationService, NotificationService>();
         services.AddScoped<IWebhookDispatcher, WebhookDispatcher>();
+        services.AddScoped<IDryRunRenderer, DryRunRenderer>();
 
         // Configuration
         services.AddOptions<DotnetDeployNotifyOptions>()
