@@ -600,6 +600,66 @@ foreach (var kvp in statusCounts)
 var distinctProjects = notifications.DistinctBy(n => n.ProjectName);
 ```
 
+## StringExtensions
+
+The `StringExtensions` class provides a comprehensive set of extension methods for string manipulation and formatting. These methods enable common string operations like truncation, case conversion, slug generation, sensitive data masking, and text normalization, providing utility for consistent string handling throughout the application.
+
+Example usage:
+
+```csharp
+// Truncate a long message for display
+string longMessage = "This is a very long deployment message that needs to be truncated for notification purposes";
+string truncated = longMessage.Truncate(50); // "This is a very long deployment message that..."
+
+// Convert text to URL-friendly slug format
+string projectName = "My Awesome Project";
+string slug = projectName.ToSlug(); // "my-awesome-project"
+
+// Convert between different case formats
+string camelCase = "helloWorld".ToPascalCase(); // "Helloworld"
+string pascalCase = "HelloWorld".ToCamelCase(); // "helloWorld"
+
+// Mask sensitive information like API keys or tokens
+string apiKey = "sk_live_1234567890abcdef";
+string maskedKey = apiKey.MaskSensitive(); // "sk_live_****"
+string partiallyMasked = apiKey.MaskSensitive(8); // "sk_live_1234********"
+
+// Check if string contains any of multiple substrings
+bool containsError = "Deployment failed with error".ContainsAny("error", "failed", "exception"); // true
+bool containsSuccess = "Deployment completed".ContainsAny("error", "failed", "exception"); // false
+
+// Normalize line endings to Unix format
+string windowsText = "Line 1\r\nLine 2\rLine 3";
+string normalized = windowsText.NormalizeLineEndings(); // "Line 1\nLine 2\nLine 3"
+
+// Count occurrences of a substring
+int count = "deployment deployment deployment".CountOccurrences("deployment"); // 3
+
+// Remove duplicate consecutive characters
+string duplicateText = "Hellooooo Worlddddd";
+string cleaned = duplicateText.RemoveDuplicateCharacters(); // "Helo Worldd"
+
+// Extract specific number of words
+string firstThreeWords = "This is a sample deployment message".TakeWords(3); // "This is a"
+
+// Wrap text to specific line length
+string longText = "This is a very long deployment notification message that needs to be wrapped to fit within standard line lengths for proper display in notifications";
+string wrapped = longText.WrapText(40);
+/*
+This is a very long deployment
+notification message that needs to be
+wrapped to fit within standard line
+lengths for proper display in
+notifications
+*/
+
+// Safely convert string to boolean
+bool flag1 = "true".ToBooleanSafe(); // true
+bool flag2 = "yes".ToBooleanSafe(); // true
+bool flag3 = "invalid".ToBooleanSafe(false); // false (default)
+bool flag4 = "1".ToBooleanSafe(); // true
+```
+
 ## Configuration
 
 See `appsettings.example.json` for configuration examples.
