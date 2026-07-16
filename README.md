@@ -602,6 +602,96 @@ if (failedResults.Any())
 }
 ```
 
+## IRollbackNotificationService
+
+The `IRollbackNotificationService` interface provides methods for sending notifications related to deployment rollback operations. It handles dispatching notifications when rollbacks are initiated, completed, or failed, with support for multiple notification channels (Slack, Discord, Telegram, etc.). The service maintains a history of rollback notifications and provides formatted messages for different rollback statuses.
+
+Example usage:
+
+```csharp
+// Create required dependencies
+var dbContext = new NotificationDbContext(/* connection string */);
+var logger = new Logger<NotificationService>(new LoggerFactory());
+
+// Create repositories and services
+var notificationRepository = new NotificationRepository(dbContext);
+var configRepository = new ChannelConfigRepository(dbContext);
+var resultRepository = new NotificationResultRepository(dbContext);
+var webhookClientFactory = new WebhookClientFactory();
+var dispatcher = new WebhookDispatcher(webhookClientFactory, logger);
+var validationService = new ValidationService();
+
+// Initialize services
+var notificationService = new NotificationService(
+    notificationRepository,
+    configRepository,
+    resultRepository,
+    dispatcher,
+    validationService,
+    logger
+);
+
+var rollbackNotificationService = new RollbackNotificationService(
+    notificationService,
+    logger
+);
+
+// Create a rollback request
+var rollbackRequest = new RollbackRequest
+{
+    ProjectName = "MyApplication",
+    CurrentVersion = "2.1.0",
+    TargetVersion = "2.0.5",
+    TargetEnvironment = Environment.Production,
+    RequestedBy = "vlad",
+    Reason = "Critical regression in version 2.1.0",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord },
+    Priority = NotificationPriority.Critical
+};
+
+// Notify that a rollback has been initiated
+var initiatedResults = await rollbackNotificationService.NotifyRollbackInitiatedAsync(rollbackRequest);
+Console.WriteLine($"Initiated rollback notification sent to {initiatedResults.Count} channels");
+
+// Simulate rollback completion
+var rollbackResult = new RollbackResult
+{
+    RequestId = rollbackRequest.Id,
+    ProjectName = rollbackRequest.ProjectName,
+    RolledBackFromVersion = rollbackRequest.CurrentVersion,
+    RolledBackToVersion = rollbackRequest.TargetVersion,
+    Status = RollbackStatus.Completed
+};
+
+// Notify that the rollback completed successfully
+var completedResults = await rollbackNotificationService.NotifyRollbackCompletedAsync(rollbackRequest, rollbackResult);
+Console.WriteLine($"Completed rollback notification sent to {completedResults.Count} channels");
+
+// Get rollback notification history for a project
+var history = await rollbackNotificationService.GetRollbackNotificationHistoryAsync("MyApplication", limit: 10);
+Console.WriteLine($"Found {history.Count} rollback notifications for MyApplication");
+
+// Format a custom rollback message for a specific channel
+var telegramMessage = rollbackNotificationService.FormatRollbackMessage(
+    rollbackRequest,
+    RollbackStatus.Completed,
+    NotificationChannel.Telegram,
+    "Rollback completed successfully in 2 minutes"
+);
+Console.WriteLine($"Telegram message: {telegramMessage}");
+
+// Handle rollback failure
+try
+{
+    // Some rollback operation that might fail...
+}
+catch (Exception ex)
+{
+    var failedResults = await rollbackNotificationService.NotifyRollbackFailedAsync(rollbackRequest, ex.Message);
+    Console.WriteLine($"Failure notification sent to {failedResults.Count} channels");
+}
+```
+
 ## ServiceCollectionExtensions
 
 The `ServiceCollectionExtensions` class provides extension methods for configuring application services in the dependency injection container. It offers a comprehensive set of methods to register all core services including CLI support, caching, formatting, serialization, event bus, middleware, integration, and background workers. The extension methods follow the standard Microsoft.Extensions.DependencyInjection pattern and return the `IServiceCollection` for method chaining.
