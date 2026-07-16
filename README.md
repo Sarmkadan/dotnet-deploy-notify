@@ -1001,6 +1001,69 @@ Console.WriteLine($"URL validation: {(isValidUrl ? "Valid" : "Invalid")}");
 Console.WriteLine($"Email validation: {(isValidEmail ? "Valid" : "Invalid")}");
 ```
 
+## NotificationProcessorTests
+
+The `NotificationProcessorTests` class provides comprehensive unit tests for the `NotificationProcessor` class, which handles background processing of deployment notifications. These tests verify batch processing functionality, retry mechanisms for failed deliveries, priority-based processing, and statistics calculation. The test suite covers all public methods of the `NotificationProcessor` class including batch processing with various result scenarios, failed notification retry logic, priority-based processing order, and system statistics retrieval.
+
+Example usage:
+
+```csharp
+// Create required services for the notification processor
+var dbContext = new NotificationDbContext(/* connection string */);
+var logger = new Logger<NotificationProcessor>(new LoggerFactory());
+
+var notificationService = new NotificationService(
+    new NotificationRepository(dbContext),
+    new ChannelStrategyResolver(new WebhookClientFactory()),
+    logger
+);
+
+var configRepository = new ChannelConfigRepository(logger);
+var resultRepository = new NotificationResultRepository(logger);
+
+// Create the notification processor
+var processor = new NotificationProcessor(
+    notificationService,
+    new NotificationRepository(dbContext),
+    configRepository,
+    resultRepository,
+    logger
+);
+
+// Process a batch of notifications (up to 100 at a time)
+var batchResult = await processor.ProcessBatchAsync(100);
+Console.WriteLine(batchResult.GetSummary());
+// Output: "Processed 100 notifications: 95 successful, 5 failed, Success rate: 95.0%"
+
+// Process failed notifications with retry logic (up to 3 attempts)
+var retryResult = await processor.ProcessFailedAsync(3);
+Console.WriteLine($"Retried {retryResult.TotalProcessed} notifications with {retryResult.SuccessCount} successful");
+
+// Process notifications by priority (Critical > High > Normal > Low)
+var priorityResult = await processor.ProcessByPriorityAsync();
+Console.WriteLine($"Priority processing completed: {priorityResult.SuccessRate:P0} success rate");
+
+// Get system-wide statistics
+var stats = await processor.GetStatisticsAsync();
+Console.WriteLine($"System statistics:");
+Console.WriteLine($"  Total notifications: {stats.TotalNotifications}");
+Console.WriteLine($"  Pending: {stats.PendingCount}");
+Console.WriteLine($"  Success rate: {stats.SuccessRate:P0}");
+Console.WriteLine($"  Health: {stats.HealthPercentage:F1}%");
+Console.WriteLine($"  Average delivery time: {stats.AverageDeliveryTimeMs}ms");
+
+// Process a specific batch with mixed results
+var mixedBatch = new List<DeploymentNotification>
+{
+    new DeploymentNotification { ProjectName = "App1", Version = "1.0.0", Status = BuildStatus.Success },
+    new DeploymentNotification { ProjectName = "App2", Version = "2.0.0", Status = BuildStatus.Failed },
+    new DeploymentNotification { ProjectName = "App3", Version = "3.0.0", Status = BuildStatus.Success }
+};
+
+var mixedResult = await processor.ProcessBatchAsync(mixedBatch);
+Console.WriteLine($"Mixed batch: {mixedResult.SuccessCount} successful, {mixedResult.FailureCount} failed");
+```
+
 ## RollbackNotificationServiceTests
 
 The `RollbackNotificationServiceTests` class provides comprehensive unit tests for the `RollbackNotificationService` class, which handles sending notifications related to deployment rollback operations. These tests verify message formatting for different channels (Slack, Discord, Telegram), notification dispatch functionality, and history tracking. The test suite covers all public methods including message formatting with various rollback statuses, notification sending methods, and history retrieval with filtering capabilities.
