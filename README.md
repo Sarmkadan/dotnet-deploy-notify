@@ -200,6 +200,69 @@ The application currently supports the following notification channels:
 
 See `appsettings.example.json` for configuration examples.
 
+## IDeploymentHistoryService
+
+The `IDeploymentHistoryService` interface provides methods for tracking and querying deployment history throughout the application. It records deployment events, stores historical data, and exposes aggregated statistics for monitoring deployment patterns, success rates, and rollback operations across projects and environments.
+
+Example usage:
+
+```csharp
+// Create the service with required logger
+var logger = new Logger<DeploymentHistoryService>(new LoggerFactory());
+var historyService = new DeploymentHistoryService(logger);
+
+// Record a deployment event
+var deploymentEntry = new DeploymentHistoryEntry
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    TargetEnvironment = Environment.Production,
+    Status = DeploymentStatus.Success,
+    DeployedAt = DateTime.UtcNow,
+    DurationSeconds = 180,
+    CommitSha = "abc123def",
+    TriggeredBy = "vlad",
+    Message = "Version 2.0.0 deployed successfully to production"
+};
+
+await historyService.RecordDeploymentAsync(deploymentEntry);
+
+// Record from a notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.1",
+    Status = DeploymentStatus.Success,
+    TargetEnvironment = "production",
+    CommitAuthor = "vlad",
+    BranchName = "main",
+    Message = "Hotfix deployed"
+};
+
+await historyService.RecordFromNotificationAsync(notification);
+
+// Get project history
+var projectHistory = await historyService.GetProjectHistoryAsync("MyApplication", limit: 10);
+Console.WriteLine($"Found {projectHistory.Count} deployments for MyApplication");
+
+// Get recent deployments across all projects
+var recentDeployments = await historyService.GetRecentDeploymentsAsync(limit: 5);
+
+// Get statistics for a project
+var stats = await historyService.GetStatisticsAsync("MyApplication");
+Console.WriteLine($"Success rate: {stats.SuccessRate:P0}");
+Console.WriteLine($"Average duration: {stats.AverageDurationSeconds?.ToString("F0") ?? "N/A"} seconds");
+
+// Get deployments by environment
+var prodDeployments = await historyService.GetByEnvironmentAsync(Environment.Production, limit: 20);
+
+// Get the last successful deployment
+var lastSuccess = await historyService.GetLastSuccessfulDeploymentAsync("MyApplication", Environment.Production);
+
+// Get rollback entries
+var rollbacks = await historyService.GetRollbackEntriesAsync("MyApplication", limit: 10);
+```
+
 ## NotificationPipeline
 
 The `NotificationPipeline` class provides a flexible middleware pipeline for processing deployment notifications through a series of processors. It enables validation, enrichment, filtering, and transformation of notifications before they are sent to channels, ensuring data integrity and compliance with channel-specific requirements.
