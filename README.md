@@ -844,6 +844,78 @@ catch (Exception ex)
 }
 ```
 
+## IRollbackService
+
+The `IRollbackService` interface provides methods for initiating and managing deployment rollback operations. It enables one-click rollbacks to previous deployment versions with automatic notification dispatch to all configured channels (Slack, Discord, Telegram, etc.). The service tracks rollback status, maintains history, and provides cancellation capabilities for pending rollbacks.
+
+Example usage:
+
+```csharp
+// Create required services
+var dbContext = new NotificationDbContext(/* connection string */);
+var logger = new Logger<RollbackService>(new LoggerFactory());
+
+// Create repositories and services
+var notificationRepository = new NotificationRepository(dbContext);
+var configRepository = new ChannelConfigRepository(dbContext);
+var resultRepository = new NotificationResultRepository(dbContext);
+var webhookClientFactory = new WebhookClientFactory();
+var dispatcher = new WebhookDispatcher(webhookClientFactory, logger);
+var validationService = new ValidationService();
+
+// Initialize the notification service
+var notificationService = new NotificationService(
+    notificationRepository,
+    configRepository,
+    resultRepository,
+    dispatcher,
+    validationService,
+    logger
+);
+
+// Create the rollback service
+var rollbackService = new RollbackService(notificationService, notificationRepository, logger);
+
+// Create a rollback request
+var rollbackRequest = new RollbackRequest
+{
+    ProjectName = "MyApplication",
+    CurrentVersion = "2.1.0",
+    TargetVersion = "2.0.5",
+    TargetEnvironment = Environment.Production,
+    RequestedBy = "vlad",
+    Reason = "Critical regression in version 2.1.0 detected in production",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord },
+    Priority = NotificationPriority.Critical
+};
+
+// Initiate the rollback
+var rollbackResult = await rollbackService.InitiateRollbackAsync(rollbackRequest);
+Console.WriteLine($"Rollback initiated: {rollbackResult.Status}");
+Console.WriteLine($"Rollback ID: {rollbackResult.Id}");
+Console.WriteLine($"Rolled back from v{rollbackResult.RolledBackFromVersion} to v{rollbackResult.RolledBackToVersion}");
+
+// Check rollback status
+var status = await rollbackService.GetRollbackStatusAsync(rollbackResult.Id);
+if (status != null)
+{
+    Console.WriteLine($"Rollback status: {status.Status}");
+    Console.WriteLine($"Started at: {status.StartedAt}");
+    Console.WriteLine($"Completed at: {status.CompletedAt}");
+}
+
+// Get rollback history for the project
+var history = await rollbackService.GetRollbackHistoryAsync("MyApplication", limit: 10);
+Console.WriteLine($"Found {history.Count} rollback operations for MyApplication");
+
+// Cancel a pending rollback if needed
+var wasCancelled = await rollbackService.CancelRollbackAsync(rollbackResult.Id);
+if (wasCancelled)
+{
+    Console.WriteLine("Rollback was successfully cancelled");
+}
+```
+
 ## IBatchNotificationService
 
 The `IBatchNotificationService` interface provides methods for managing batch notifications, enabling efficient processing of multiple deployment notifications together. It supports creating batches, adding/removing notifications, sending batches to configured channels, and tracking batch statistics including delivery status and success rates.
