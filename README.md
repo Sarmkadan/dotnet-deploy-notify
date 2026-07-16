@@ -1341,6 +1341,54 @@ await auditService.ClearOldLogsAsync(TimeSpan.FromDays(90));
 Console.WriteLine("Old audit logs cleared successfully");
 ```
 
+## BuildStatusConverter
+
+The `BuildStatusConverter` class is a custom JSON converter that handles serialization and deserialization of the `BuildStatus` enum values. It provides proper conversion between enum values and their string representations in JSON format, enabling consistent JSON serialization for deployment status values throughout the application.
+
+The converter supports case-insensitive parsing and defaults to `BuildStatus.Started` when encountering null or empty values during deserialization.
+
+Example usage:
+
+```csharp
+// Create JSON serializer options with the BuildStatusConverter
+var options = new JsonSerializerOptions
+{
+    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+    Converters = { new BuildStatusConverter() }
+};
+
+// Serialize a BuildStatus enum to JSON
+var buildStatus = BuildStatus.Success;
+string json = JsonSerializer.Serialize(buildStatus, options);
+// Output: "Success"
+
+// Deserialize JSON back to BuildStatus enum
+string jsonInput = "\"Failed\"";
+BuildStatus deserializedStatus = JsonSerializer.Deserialize<BuildStatus>(jsonInput, options);
+// deserializedStatus = BuildStatus.Failed
+
+// Using with JsonSerializationHelper
+var helper = new JsonSerializationHelper();
+
+// Serialize an object containing BuildStatus
+var deployment = new { Status = BuildStatus.Started };
+string serialized = helper.Serialize(deployment);
+
+// Deserialize JSON containing BuildStatus
+var result = helper.Deserialize<Dictionary<string, object>>(serialized);
+// result["Status"] will be BuildStatus.Started
+
+// Safe parsing with TryParse
+var (success, parsedStatus) = SafeJsonParser.TryParse<BuildStatus>("\"Completed\"");
+if (success) { /* use parsedStatus */ }
+
+// Merge JSON objects containing BuildStatus
+string merged = SafeJsonParser.MergeJsonObjects(
+    "{\"status\":\"Started\"}",
+    "{\"status\":\"Success\"}"
+);
+```
+
 ## License
 
 MIT License - see LICENSE file for details.
