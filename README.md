@@ -455,6 +455,72 @@ public class CanaryDeploymentService
 ```
 ```
 
+## CollectionExtensions
+
+The `CollectionExtensions` class provides a comprehensive set of extension methods for working with collections and enumerables in a functional and efficient way. These methods enable common collection operations like adding items conditionally, batch processing, partitioning, and statistical analysis without modifying the original collections.
+
+The extension methods support various collection types including `ICollection<T>`, `IList<T>`, and `IEnumerable<T>`, providing safe operations that handle null values and edge cases appropriately.
+
+Example usage:
+
+```csharp
+// Create a list of deployment notifications
+var notifications = new List<DeploymentNotification>
+{
+    new DeploymentNotification { ProjectName = "App1", Status = DeploymentStatus.Success },
+    new DeploymentNotification { ProjectName = "App2", Status = DeploymentStatus.Failed },
+    new DeploymentNotification { ProjectName = "App3", Status = DeploymentStatus.Success }
+};
+
+// Add items conditionally
+notifications.AddIfNotExists(new DeploymentNotification { ProjectName = "App1", Status = DeploymentStatus.Success });
+notifications.AddRange(new[] { 
+    new DeploymentNotification { ProjectName = "App4", Status = DeploymentStatus.Success },
+    new DeploymentNotification { ProjectName = "App5", Status = DeploymentStatus.Success }
+});
+
+// Remove failed notifications
+int removedCount = notifications.RemoveWhere(n => n.Status == DeploymentStatus.Failed);
+
+// Split into batches for parallel processing
+var batches = notifications.Chunk(2);
+foreach (var batch in batches)
+{
+    Console.WriteLine($"Processing batch of {batch.Count} notifications");
+}
+
+// Partition into successful and failed notifications
+var (successful, failed) = notifications.Partition(n => n.Status == DeploymentStatus.Success);
+Console.WriteLine($"Successful: {successful.Count}, Failed: {failed.Count}");
+
+// Get item at specific index safely
+var firstNotification = notifications.GetAtIndexOrDefault(0);
+var outOfRange = notifications.GetAtIndexOrDefault(100); // returns null
+
+// Check if collection has items
+bool hasItems = notifications.HasItems();
+bool isEmpty = notifications.IsNullOrEmpty();
+
+// Convert to comma-separated string
+string projectNames = notifications.Select(n => n.ProjectName).ToCommaSeparatedString();
+
+// Get random notification
+var randomNotification = notifications.GetRandom();
+
+// Shuffle notifications randomly
+notifications.Shuffle();
+
+// Count notifications by status
+var statusCounts = notifications.CountBy(n => n.Status);
+foreach (var kvp in statusCounts)
+{
+    Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+}
+
+// Distinct notifications by project name
+var distinctProjects = notifications.DistinctBy(n => n.ProjectName);
+```
+
 ## Configuration
 
 See `appsettings.example.json` for configuration examples.
