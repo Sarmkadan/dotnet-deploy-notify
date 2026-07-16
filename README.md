@@ -321,6 +321,35 @@ Console.WriteLine($"Cache contains {stats.TotalItems} items");
 Console.WriteLine($"Cache hit rate: {stats.HitRate:F1}%");
 ```
 
+## RetryPolicy
+
+The `RetryPolicy` class provides configuration for retrying failed operations with exponential backoff. It supports customizable retry parameters including maximum attempts, initial delay, backoff multiplier, maximum delay, and custom retry conditions. This policy is used by the `RetryHelper` class to implement resilient operation execution.
+
+Example usage:
+
+```csharp
+// Create a retry policy with custom settings
+var retryPolicy = new RetryPolicy
+{
+    MaxAttempts = 5,
+    InitialDelay = TimeSpan.FromMilliseconds(200),
+    BackoffMultiplier = 2.5,
+    MaxDelay = TimeSpan.FromSeconds(60),
+    ShouldRetry = ex => ex is not HttpRequestException httpEx || httpEx.StatusCode != System.Net.HttpStatusCode.TooManyRequests
+};
+
+// Use with RetryHelper
+var retryHelper = new RetryHelper(logger);
+var result = await retryHelper.ExecuteAsync(async () =>
+{
+    var response = await httpClient.GetAsync("https://api.example.com/data");
+    response.EnsureSuccessStatusCode();
+    return await response.Content.ReadAsStringAsync();
+}, retryPolicy);
+
+Console.WriteLine($"Successfully retrieved data after retries: {result.Length} bytes");
+```
+
 ## ChannelConfigurationBuilder
 
 The `ChannelConfigurationBuilder` class provides a fluent interface for constructing `ChannelConfiguration` instances with a clean, readable API. It enables programmatic configuration of notification channels including Slack, Discord, and Telegram webhooks with support for filtering by environment, status, priority, and other channel-specific settings.
