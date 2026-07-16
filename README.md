@@ -154,6 +154,39 @@ if (result.IsSuccess)
 }
 ```
 
+## NotificationProcessingWorker
+
+The `NotificationProcessingWorker` is a background worker that periodically processes pending notifications from the database, sending them through the configured channels. It runs on a configurable interval (default: 30 seconds) and provides statistics about processed notifications including success rates and uptime.
+
+Example usage:
+```csharp
+// Create services
+var notificationService = new NotificationService(
+    new NotificationRepository(dbContext),
+    new ChannelStrategyResolver(new WebhookClientFactory()),
+    logger);
+
+// Create worker with 1 minute interval
+var worker = new NotificationProcessingWorker(
+    notificationService,
+    logger,
+    TimeSpan.FromMinutes(1));
+
+// Start the worker
+await worker.StartAsync(cancellationToken);
+
+// The worker will automatically process pending notifications every minute
+// You can adjust the interval dynamically
+worker.SetInterval(TimeSpan.FromSeconds(45));
+
+// Stop the worker when needed
+await worker.StopAsync(cancellationToken);
+
+// Get statistics about processed notifications
+var (totalProcessed, successRate, uptime) = worker.GetStatisticsCore();
+Console.WriteLine($"Processed {totalProcessed} notifications with {successRate:P0} success rate over {uptime.TotalMinutes:F0} minutes");
+```
+
 ## Supported Channels
 
 The application currently supports the following notification channels:
