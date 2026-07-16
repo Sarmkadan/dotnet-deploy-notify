@@ -1050,6 +1050,85 @@ Console.WriteLine($"URL validation: {(isValidUrl ? "Valid" : "Invalid")}");
 Console.WriteLine($"Email validation: {(isValidEmail ? "Valid" : "Invalid")}");
 ```
 
+## NotificationServiceTests
+
+The `NotificationServiceTests` class provides comprehensive unit tests for the `NotificationService` class, which manages the core notification functionality including creating notifications, sending them through configured channels, and handling delivery results. These tests verify that notifications are correctly created, validated, and sent, with proper error handling for invalid inputs and edge cases. The test suite covers all public methods of the `NotificationService` class including notification creation, sending operations, retry logic, and result tracking.
+
+Example usage:
+
+```csharp
+// Create required services for the notification service
+var dbContext = new NotificationDbContext(/* connection string */);
+var logger = new Logger<NotificationService>(new LoggerFactory());
+
+var notificationRepository = new NotificationRepository(dbContext);
+var configRepository = new ChannelConfigRepository(dbContext);
+var resultRepository = new NotificationResultRepository(dbContext);
+
+var webhookClientFactory = new WebhookClientFactory();
+var dispatcher = new WebhookDispatcher(webhookClientFactory, logger);
+var validationService = new ValidationService();
+
+// Initialize the notification service
+var notificationService = new NotificationService(
+    notificationRepository,
+    configRepository,
+    resultRepository,
+    dispatcher,
+    validationService,
+    logger
+);
+
+// Test CreateNotificationAsync with valid notification
+var validNotification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = DeploymentStatus.Success,
+    Priority = NotificationPriority.High,
+    TargetEnvironment = "production",
+    CommitAuthor = "vlad",
+    BranchName = "main",
+    Message = "Version 2.0.0 deployed successfully",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord }
+};
+
+var notificationId = await notificationService.CreateNotificationAsync(validNotification);
+Assert.NotNull(notificationId);
+Console.WriteLine($"Created notification with ID: {notificationId}");
+
+// Test SendNotificationAsync with valid notification ID
+var sendResults = await notificationService.SendNotificationAsync(notificationId);
+Assert.NotEmpty(sendResults);
+Console.WriteLine($"Sent notification to {sendResults.Count} channels");
+
+// Test SendNotificationAsync with invalid notification ID (should throw exception)
+await Assert.ThrowsAsync<KeyNotFoundException>(
+    async () => await notificationService.SendNotificationAsync("invalid-id")
+);
+
+// Test SendNotificationAsync with no channels specified (should return empty list)
+var noChannelsNotification = new DeploymentNotification
+{
+    ProjectName = "TestApp",
+    Version = "1.0.0",
+    Status = DeploymentStatus.Success
+};
+var noChannelsId = await notificationService.CreateNotificationAsync(noChannelsNotification);
+var noChannelsResults = await notificationService.SendNotificationAsync(noChannelsId);
+Assert.Empty(noChannelsResults);
+Console.WriteLine("SendNotificationAsync correctly returned empty list for notification with no channels");
+
+// Test RetryFailedDeliveriesAsync with valid notification ID
+var retryResults = await notificationService.RetryFailedDeliveriesAsync(notificationId);
+Console.WriteLine($"Retried {retryResults.Count} failed deliveries");
+
+// Test RetryFailedDeliveriesAsync with invalid notification ID (should throw exception)
+await Assert.ThrowsAsync<KeyNotFoundException>(
+    async () => await notificationService.RetryFailedDeliveriesAsync("invalid-id")
+);
+```
+
 ## NotificationProcessorTests
 
 The `NotificationProcessorTests` class provides comprehensive unit tests for the `NotificationProcessor` class, which handles background processing of deployment notifications. These tests verify batch processing functionality, retry mechanisms for failed deliveries, priority-based processing, and statistics calculation. The test suite covers all public methods of the `NotificationProcessor` class including batch processing with various result scenarios, failed notification retry logic, priority-based processing order, and system statistics retrieval.
