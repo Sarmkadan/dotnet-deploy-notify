@@ -484,6 +484,56 @@ public class CanaryDeploymentService
 ```
 ```
 
+## GuardExtensions
+
+The `GuardExtensions` class provides a comprehensive set of guard clause extension methods for validating method parameters and preventing null reference exceptions. These methods enable defensive programming by throwing descriptive exceptions when validation rules are violated, ensuring consistent validation patterns throughout the application.
+
+Example usage:
+
+```csharp
+// Validate method parameters with clear error messages
+public void ProcessDeployment(string projectName, string version, int timeoutSeconds)
+{
+    projectName.ThrowIfNullOrEmpty("Project name is required");
+    version.ThrowIfNullOrEmpty("Version is required");
+    timeoutSeconds.ThrowIfLessThan(1000, "Timeout must be at least 1000 milliseconds");
+
+    // Process deployment logic...
+}
+
+// Validate collections and strings
+public void SendNotification(string webhookUrl, IEnumerable<string> channels)
+{
+    webhookUrl.ThrowIfInvalidUrl("Invalid webhook URL format");
+    channels.ThrowIfNullOrEmpty("At least one notification channel is required");
+    
+    // Send notification logic...
+}
+
+// Validate business rules
+public void DeployToEnvironment(string environment)
+{
+    environment.ThrowIfNullOrEmpty("Environment name is required");
+    environment.ThrowIfLongerThan(20, "Environment name must be 20 characters or less");
+    
+    if (!environment.IsInRange("dev", "staging", "production"))
+    {
+        throw new ArgumentException("Environment must be one of: dev, staging, production");
+    }
+
+    // Deployment logic...
+}
+
+// Get values safely with fallback
+public string GetConfigValue(string key)
+{
+    var value = _config[key].GetValueOrThrow($"Configuration key '{key}' not found");
+    return value.MatchesPattern("^[a-zA-Z0-9_-]+$")
+        ? value
+        : throw new FormatException("Configuration value contains invalid characters");
+}
+```
+
 ## MathExtensions
 
 The `MathExtensions` class provides a comprehensive set of extension methods for mathematical operations, unit conversions, and statistical calculations. It includes generic methods for value clamping and range checking, percentage calculations, rounding operations, and collection statistics like average and median calculations. The class also provides human-readable formatting for file sizes and time durations, plus financial calculations like compound interest.
