@@ -200,6 +200,40 @@ The application currently supports the following notification channels:
 
 See `appsettings.example.json` for configuration examples.
 
+## IMetricsService
+
+The `IMetricsService` interface provides methods for collecting and analyzing system metrics related to notification delivery performance and system health. It tracks notification creation, delivery attempts, success/failure rates, delivery times, validation failures, and configuration changes across all notification channels.
+
+Example usage:
+
+```csharp
+// Create the metrics service with required logger
+var logger = new Logger<MetricsService>(new LoggerFactory());
+var metricsService = new MetricsService(logger);
+
+// Record metrics as operations occur
+metricsService.RecordNotificationCreated();
+metricsService.RecordDeliveryAttempt(NotificationChannel.Slack, success: true, durationMs: 150);
+metricsService.RecordValidationFailure();
+metricsService.RecordConfigurationChange();
+
+// Get current metrics snapshot
+var metrics = await metricsService.GetMetricsAsync();
+Console.WriteLine($"Total notifications: {metrics.NotificationsCreated}");
+Console.WriteLine($"Success rate: {metrics.GetSuccessRate():F1}%");
+Console.WriteLine($"Average delivery time: {metrics.AverageDeliveryTimeMs}ms");
+Console.WriteLine($"P95 delivery time: {metrics.P95DeliveryTimeMs}ms");
+
+// Get channel-specific metrics
+var slackMetrics = await metricsService.GetChannelMetricsAsync(NotificationChannel.Slack);
+Console.WriteLine(slackMetrics.GetSummary());
+
+// Get metrics for a specific time period
+var yesterday = DateTime.UtcNow.AddDays(-1);
+var todayMetrics = await metricsService.GetMetricsByPeriodAsync(yesterday, DateTime.UtcNow);
+Console.WriteLine($"Yesterday's success rate: {todayMetrics.GetSuccessRate():F1}%");
+```
+
 ## IDeploymentHistoryService
 
 The `IDeploymentHistoryService` interface provides methods for tracking and querying deployment history throughout the application. It records deployment events, stores historical data, and exposes aggregated statistics for monitoring deployment patterns, success rates, and rollback operations across projects and environments.
