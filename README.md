@@ -602,6 +602,89 @@ if (failedResults.Any())
 }
 ```
 
+## IValidationService
+
+The `IValidationService` interface provides validation methods for deployment notifications, channel configurations, and webhook payloads. It ensures data integrity by validating required fields, URL formats, email addresses, and structural correctness before notifications are sent through various channels (Slack, Discord, Telegram, etc.).
+
+Example usage:
+
+```csharp
+// Create validation service
+var validationService = new ValidationService();
+
+// Validate a deployment notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    BranchName = "main",
+    Message = "Version 2.0.0 deployed successfully",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord },
+    Status = DeploymentStatus.Success
+};
+
+var notificationResult = validationService.ValidateNotification(notification);
+if (!notificationResult.IsValid)
+{
+    Console.WriteLine("Notification validation failed:");
+    foreach (var error in notificationResult.Errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Validate a channel configuration
+var channelConfig = new ChannelConfiguration
+{
+    DisplayName = "Production Slack",
+    WebhookUrl = "https://hooks.slack.com/services/...",
+    TargetId = "C123456",
+    ChannelType = NotificationChannel.Slack,
+    TimeoutMs = 5000,
+    MaxRetries = 3
+};
+
+var configResult = validationService.ValidateChannelConfiguration(channelConfig);
+if (!configResult.IsValid)
+{
+    Console.WriteLine("Configuration validation failed:");
+    foreach (var error in configResult.Errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Validate a webhook payload
+var payload = new WebhookPayload
+{
+    EventId = Guid.NewGuid().ToString(),
+    EventType = "deployment.success",
+    Data = new WebhookData
+    {
+        ProjectName = "MyApplication",
+        Version = "2.0.0",
+        Status = "success"
+    }
+};
+
+var payloadResult = validationService.ValidateWebhookPayload(payload);
+if (!payloadResult.IsValid)
+{
+    Console.WriteLine("Webhook payload validation failed:");
+    foreach (var error in payloadResult.Errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Validate individual fields
+bool isValidUrl = validationService.IsValidUrl("https://example.com/webhook");
+bool isValidEmail = validationService.IsValidEmail("admin@example.com");
+
+Console.WriteLine($"URL validation: {(isValidUrl ? "Valid" : "Invalid")}");
+Console.WriteLine($"Email validation: {(isValidEmail ? "Valid" : "Invalid")}");
+```
+
 ## IRollbackNotificationService
 
 The `IRollbackNotificationService` interface provides methods for sending notifications related to deployment rollback operations. It handles dispatching notifications when rollbacks are initiated, completed, or failed, with support for multiple notification channels (Slack, Discord, Telegram, etc.). The service maintains a history of rollback notifications and provides formatted messages for different rollback statuses.
