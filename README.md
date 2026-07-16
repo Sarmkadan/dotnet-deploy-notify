@@ -280,6 +280,62 @@ builder.Services.Configure<DotnetDeployNotifyOptions>(options =>
     };
 });
 
+## ChannelConfigurationBuilder
+
+The `ChannelConfigurationBuilder` class provides a fluent interface for constructing `ChannelConfiguration` instances with a clean, readable API. It enables programmatic configuration of notification channels including Slack, Discord, and Telegram webhooks with support for filtering by environment, status, priority, and other channel-specific settings.
+
+The builder supports method chaining to create complex channel configurations in a single expression, and provides factory methods for common channel types (Slack, Discord, Telegram).
+
+Example usage:
+
+```csharp
+// Create a Slack channel configuration using the builder
+var slackConfig = ChannelConfigurationBuilder.ForSlack()
+    .WithName("Production Slack Alerts")
+    .WithWebhook("https://hooks.slack.com/services/T123/B456/C789")
+    .WithTargetId("C123456")
+    .WithTimeout(5000)
+    .WithRetries(3)
+    .WithMinimumPriority(NotificationPriority.High)
+    .IncludeCommitDetails()
+    .IncludeBuildUrl()
+    .OnlyProduction()
+    .UseSlackBlockKit()
+    .EnableEmojis()
+    .Build();
+
+Console.WriteLine($"Created Slack configuration: {slackConfig.DisplayName}");
+
+// Create a Discord channel configuration with environment filtering
+var discordConfig = ChannelConfigurationBuilder.ForDiscord()
+    .WithName("Development Discord")
+    .WithWebhook("https://discord.com/api/webhooks/789/abc")
+    .WithTargetId("D789012")
+    .WithTimeout(8000)
+    .WithRetries(5)
+    .AllowEnvironments(Environment.Development, Environment.Staging)
+    .OnlyOnSuccess()
+    .Build();
+
+Console.WriteLine($"Created Discord configuration: {discordConfig.DisplayName}");
+
+// Create a Telegram channel configuration with status filtering
+var telegramConfig = ChannelConfigurationBuilder.ForTelegram()
+    .WithName("Critical Alerts Telegram")
+    .WithWebhook("https://api.telegram.org/bot12345:ABC-DEF/sendMessage")
+    .WithTargetId("T987654")
+    .WithTimeout(10000)
+    .WithRetries(2)
+    .WithMinimumPriority(NotificationPriority.Critical)
+    .OnlyOnFailure()
+    .Build();
+
+Console.WriteLine($"Created Telegram configuration: {telegramConfig.DisplayName}");
+
+// Use the configuration with a notification service
+var channelConfigurations = new List<ChannelConfiguration> { slackConfig, discordConfig, telegramConfig };
+```
+
 ## CanaryOptions
 
 The `CanaryOptions` class configures canary deployment monitoring and rollback behavior. It defines thresholds for error rates, latency metrics, and deployment progression settings that determine when a canary deployment should automatically roll back or advance to the next stage.
