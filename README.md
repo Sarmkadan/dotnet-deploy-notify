@@ -685,6 +685,194 @@ Console.WriteLine($"URL validation: {(isValidUrl ? "Valid" : "Invalid")}");
 Console.WriteLine($"Email validation: {(isValidEmail ? "Valid" : "Invalid")}");
 ```
 
+## IChannelConfigRepository
+
+The `IChannelConfigRepository` interface provides data access methods for managing channel configurations in the system. It handles CRUD operations for notification channel configurations including Slack webhooks, Discord channels, Telegram bots, and other messaging platforms. The repository supports querying configurations by channel type, filtering enabled configurations, and pagination for large configuration sets.
+
+Example usage:
+
+```csharp
+// Create repository with logger
+var logger = new Logger<ChannelConfigRepository>(new LoggerFactory());
+var configRepository = new ChannelConfigRepository(logger);
+
+// Create a channel configuration for Slack
+var slackConfig = new ChannelConfiguration
+{
+    Id = Guid.NewGuid().ToString(),
+    DisplayName = "Production Slack",
+    ChannelType = NotificationChannel.Slack,
+    WebhookUrl = "https://hooks.slack.com/services/T123/B456/C789",
+    TargetId = "C123456",
+    IsEnabled = true,
+    TimeoutMs = 5000,
+    MaxRetries = 3,
+    CreatedAt = DateTime.UtcNow
+};
+
+// Store the configuration
+await configRepository.CreateAsync(slackConfig);
+Console.WriteLine($"Created configuration: {slackConfig.DisplayName}");
+
+// Retrieve by ID
+var retrievedConfig = await configRepository.GetByIdAsync(slackConfig.Id);
+if (retrievedConfig != null)
+{
+    Console.WriteLine($"Retrieved config for channel type: {retrievedConfig.ChannelType}");
+}
+
+// Get all configurations for a specific channel (e.g., Slack)
+var slackConfigs = await configRepository.GetByChannelAsync(NotificationChannel.Slack);
+Console.WriteLine($"Found {slackConfigs.Count} Slack configurations");
+
+// Get all enabled configurations
+var enabledConfigs = await configRepository.GetEnabledAsync();
+Console.WriteLine($"Found {enabledConfigs.Count} enabled configurations");
+
+// Update a configuration
+slackConfig.IsEnabled = false;
+slackConfig.MarkAsUpdated();
+await configRepository.UpdateAsync(slackConfig);
+
+// Delete a configuration
+// await configRepository.DeleteAsync(slackConfig.Id);
+
+// Get all configurations with pagination
+var allConfigs = await configRepository.GetAllAsync(skip: 0, take: 100);
+Console.WriteLine($"Total configurations in system: {allConfigs.Count}");
+```
+
+## INotificationRepository
+
+The `INotificationRepository` interface provides data access methods for managing deployment notifications in the system. It serves as the primary contract for persisting, retrieving, updating, and deleting notification records, supporting operations such as fetching notifications by project, environment, status, or processing state. This repository is used throughout the application by services like `NotificationService`, `NotificationProcessingWorker`, and `RollbackService` to manage the lifecycle of deployment notifications.
+
+Example usage:
+
+```csharp
+// Create repository with logger
+var logger = new Logger<NotificationRepository>(new LoggerFactory());
+var notificationRepository = new NotificationRepository(logger);
+
+// Create a deployment notification
+var notification = new DeploymentNotification
+{
+    Id = Guid.NewGuid().ToString(),
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = BuildStatus.Success,
+    TargetEnvironment = Environment.Production,
+    Priority = NotificationPriority.High,
+    Message = "Version 2.0.0 deployed successfully to production",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord },
+    CreatedAt = DateTime.UtcNow,
+    CommitAuthor = "vlad",
+    BranchName = "main",
+    CommitHash = "abc123def456",
+    DurationSeconds = 180,
+    BuildUrl = "https://ci.example.com/build/123"
+};
+
+// Store the notification
+await notificationRepository.CreateAsync(notification);
+Console.WriteLine($"Created notification with ID: {notification.Id}");
+
+// Retrieve by ID
+var retrievedNotification = await notificationRepository.GetByIdAsync(notification.Id);
+if (retrievedNotification != null)
+{
+    Console.WriteLine($"Retrieved notification: {retrievedNotification.ProjectName} v{retrievedNotification.Version}");
+}
+
+// Get all notifications for a project
+var projectNotifications = await notificationRepository.GetByProjectAsync("MyApplication", limit: 50);
+Console.WriteLine($"Found {projectNotifications.Count} notifications for MyApplication");
+
+// Get pending (unprocessed) notifications
+var pendingNotifications = await notificationRepository.GetPendingAsync();
+Console.WriteLine($"Found {pendingNotifications.Count} pending notifications");
+
+// Get notifications by environment
+var productionNotifications = await notificationRepository.GetByEnvironmentAsync(Environment.Production);
+Console.WriteLine($"Found {productionNotifications.Count} production notifications");
+
+// Get notifications by status
+var successNotifications = await notificationRepository.GetByStatusAsync(BuildStatus.Success, limit: 20);
+Console.WriteLine($"Found {successNotifications.Count} successful notifications");
+
+// Update a notification
+notification.IsProcessed = true;
+notification.ProcessedAt = DateTime.UtcNow;
+await notificationRepository.UpdateAsync(notification);
+
+// Delete a notification
+// await notificationRepository.DeleteAsync(notification.Id);
+
+// Get all notifications
+var allNotifications = await notificationRepository.GetAllAsync();
+Console.WriteLine($"Total notifications in system: {allNotifications.Count}");
+```
+
+## INotificationResultRepository
+
+The `INotificationResultRepository` interface provides data access methods for managing notification delivery results in the system. It tracks the outcome of each delivery attempt to different channels, including success/failure status, timestamps, response data, and retry information. This repository enables comprehensive auditing of notification delivery attempts and supports operations like retrieving results by notification ID, channel, or filtering by date ranges.
+
+Example usage:
+
+```csharp
+// Create repository with logger
+var logger = new Logger<NotificationResultRepository>(new LoggerFactory());
+var resultRepository = new NotificationResultRepository(logger);
+
+// Create a notification result for a successful Slack delivery
+var result = new NotificationResult
+{
+    Id = Guid.NewGuid().ToString(),
+    NotificationId = "notification-123",
+    Channel = NotificationChannel.Slack,
+    Status = DeliveryStatus.Success,
+    AttemptedAt = DateTime.UtcNow,
+    ResponseCode = 200,
+    ResponseBody = "ok",
+    DurationMs = 150,
+    RetryCount = 0,
+    ErrorMessage = null
+};
+
+// Store the result
+await resultRepository.CreateAsync(result);
+Console.WriteLine($"Created result with ID: {result.Id} for notification {result.NotificationId}");
+
+// Retrieve by ID
+var retrievedResult = await resultRepository.GetByIdAsync(result.Id);
+if (retrievedResult != null)
+{
+    Console.WriteLine($"Retrieved result: {retrievedResult.Status} for channel {retrievedResult.Channel}");
+}
+
+// Get all results for a notification
+var notificationResults = await resultRepository.GetByNotificationIdAsync(result.NotificationId);
+Console.WriteLine($"Found {notificationResults.Count} results for notification {result.NotificationId}");
+
+// Get failed results for a notification
+var failedResults = await resultRepository.GetFailedByNotificationIdAsync(result.NotificationId);
+Console.WriteLine($"Found {failedResults.Count} failed results for notification {result.NotificationId}");
+
+// Get results by channel
+var slackResults = await resultRepository.GetByChannelAsync(NotificationChannel.Slack, limit: 100);
+Console.WriteLine($"Found {slackResults.Count} Slack delivery results");
+
+// Update a result
+result.Status = DeliveryStatus.Success;
+await resultRepository.UpdateAsync(result);
+
+// Delete old results (older than 30 days)
+// await resultRepository.DeleteOlderThanAsync(DateTime.UtcNow.AddDays(-30));
+
+// Get all results with pagination
+var allResults = await resultRepository.GetAllAsync(skip: 0, take: 100);
+Console.WriteLine($"Total results in system: {allResults.Count}");
+```
+
 ## IRollbackNotificationService
 
 The `IRollbackNotificationService` interface provides methods for sending notifications related to deployment rollback operations. It handles dispatching notifications when rollbacks are initiated, completed, or failed, with support for multiple notification channels (Slack, Discord, Telegram, etc.). The service maintains a history of rollback notifications and provides formatted messages for different rollback statuses.
