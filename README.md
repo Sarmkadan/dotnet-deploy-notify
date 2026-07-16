@@ -1518,6 +1518,72 @@ if (isValid)
 var htmlSafeMessage = templateService.RenderHtmlSafe(template, notification);
 ```
 
+## DeploymentHistoryServiceTests
+
+The `DeploymentHistoryServiceTests` class provides comprehensive unit tests for the `DeploymentHistoryService` class, which manages deployment history tracking and statistics. These tests verify that deployment entries are correctly recorded, queried, and filtered, with proper validation for null and empty inputs. The test suite covers all public methods of the `DeploymentHistoryService` class including deployment recording, history retrieval, statistics calculation, and rollback tracking.
+
+Example usage:
+
+```csharp
+// Initialize the deployment history service with a logger
+var logger = Substitute.For<ILogger<DeploymentHistoryService>>();
+var historyService = new DeploymentHistoryService(logger);
+
+// Record a deployment event
+var deploymentEntry = new DeploymentHistoryEntry
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    TargetEnvironment = Environment.Production,
+    Status = DeploymentStatus.Success,
+    DeployedAt = DateTime.UtcNow,
+    DurationSeconds = 180,
+    CommitSha = "abc123def",
+    TriggeredBy = "vlad",
+    Message = "Version 2.0.0 deployed successfully to production"
+};
+
+await historyService.RecordDeploymentAsync(deploymentEntry);
+
+// Record from a notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.1",
+    Status = DeploymentStatus.Success,
+    TargetEnvironment = "production",
+    CommitAuthor = "vlad",
+    BranchName = "main",
+    Message = "Hotfix deployed"
+};
+
+await historyService.RecordFromNotificationAsync(notification);
+
+// Get project history (returns newest-first)
+var projectHistory = await historyService.GetProjectHistoryAsync("MyApplication", limit: 10);
+Console.WriteLine($"Found {projectHistory.Count} deployments for MyApplication");
+
+// Get recent deployments across all projects
+var recentDeployments = await historyService.GetRecentDeploymentsAsync(limit: 5);
+
+// Get statistics for a project
+var stats = await historyService.GetStatisticsAsync("MyApplication");
+Console.WriteLine($"Success rate: {stats.SuccessRate:P0}");
+Console.WriteLine($"Average duration: {stats.AverageDurationSeconds?.ToString("F0") ?? "N/A"} seconds");
+
+// Get deployments by environment
+var prodDeployments = await historyService.GetByEnvironmentAsync(Environment.Production, limit: 20);
+
+// Get the last successful deployment
+var lastSuccess = await historyService.GetLastSuccessfulDeploymentAsync("MyApplication", Environment.Production);
+
+// Get rollback entries
+var rollbacks = await historyService.GetRollbackEntriesAsync("MyApplication", limit: 10);
+
+// Check if a deployment was successful
+bool isSuccessful = deploymentEntry.IsSuccessful; // true for Success/DeploymentSuccess
+```
+
 ## TypeHelper
 
 The `TypeHelper` class provides a comprehensive set of utilities for working with .NET types and reflection. It includes methods for type checking, conversion, instantiation, and reflection operations, enabling type-safe operations and dynamic type handling throughout the application.
