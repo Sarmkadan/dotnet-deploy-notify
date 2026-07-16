@@ -762,6 +762,116 @@ Assert.True(successTryResult.IsSuccess);
 Assert.Equal(99, successTryResult.Value);
 ```
 
+## NotificationTests
+
+The `NotificationTests` class provides comprehensive unit tests for the notification builder and related notification functionality. These tests verify that notifications are correctly constructed with required fields, handle different statuses and priorities appropriately, validate channel configurations, and properly track delivery results. The test suite covers all public members of the notification system including `NotificationBuilder`, `DeploymentNotification`, `ChannelConfiguration`, `NotificationResult`, and `IValidationService`.
+
+Example usage:
+
+```csharp
+// Create a notification using the builder pattern with all required fields
+var notification = new NotificationBuilder()
+    .WithProject("ApiGateway", "3.1.0")
+    .WithStatus(BuildStatus.Success, "All checks passed")
+    .WithBranch("main", "abc1234", "v.zaiets")
+    .WithChannels(NotificationChannel.Slack, NotificationChannel.Telegram)
+    .WithEnvironment(Environment.Production)
+    .Build();
+
+Console.WriteLine($"Created notification for {notification.ProjectName} v{notification.Version}");
+Console.WriteLine($"Status: {notification.Status}, Priority: {notification.Priority}");
+Console.WriteLine($"Channels: {string.Join(", ", notification.Channels)}");
+
+// Create a failure notification that automatically sets critical priority
+var failureNotification = new NotificationBuilder()
+    .WithProject("PaymentService", "1.5.0")
+    .WithBranch("hotfix/payment-crash")
+    .WithChannels(NotificationChannel.Telegram)
+    .AsFailure()
+    .Build();
+
+Console.WriteLine($"Failure notification - Status: {failureNotification.Status}, Priority: {failureNotification.Priority}");
+
+// Create a deployment success notification with high priority
+var successNotification = new NotificationBuilder()
+    .WithProject("CatalogService", "2.0.0")
+    .WithBranch("release/2.0")
+    .WithChannels(NotificationChannel.Discord)
+    .AsDeploymentSuccess()
+    .Build();
+
+Console.WriteLine($"Success notification - Status: {successNotification.Status}, Priority: {successNotification.Priority}");
+
+// Test channel configuration filtering
+var config = new ChannelConfiguration
+{
+    IsEnabled = true,
+    DisplayName = "Production Slack",
+    WebhookUrl = "https://hooks.slack.com/services/T123/B456/C789",
+    MinimumPriority = NotificationPriority.High
+};
+
+var lowPriorityNotification = new DeploymentNotification
+{
+    Priority = NotificationPriority.Low,
+    Status = BuildStatus.Success
+};
+
+bool shouldSendLow = config.ShouldSendNotification(lowPriorityNotification); // Returns false
+
+var highPriorityNotification = new DeploymentNotification
+{
+    Priority = NotificationPriority.High,
+    Status = BuildStatus.Success
+};
+
+bool shouldSendHigh = config.ShouldSendNotification(highPriorityNotification); // Returns true
+
+// Test notification result tracking
+var result = new NotificationResult
+{
+    NotificationId = Guid.NewGuid().ToString(),
+    ConfigurationId = "cfg-slack-prod",
+    Channel = NotificationChannel.Slack,
+    DurationMs = 142
+};
+
+// Mark as successful
+result.MarkAsSuccessful(200, "{\"ok\":true}");
+Console.WriteLine($"Delivery status: {result.Status}, HTTP: {result.HttpStatusCode}");
+
+// Mark as failed
+result.MarkAsFailed("Connection refused", "HttpRequestException", 503);
+Console.WriteLine($"Error: {result.ErrorMessage}, Exception: {result.ExceptionType}");
+
+// Test metadata handling
+var deploymentNotification = new DeploymentNotification();
+deploymentNotification.SetMetadata("build_number", 42);
+deploymentNotification.SetMetadata("triggered_by", "ci-pipeline");
+
+int buildNumber = deploymentNotification.GetMetadata<int>("build_number");
+string triggeredBy = deploymentNotification.GetMetadata<string>("triggered_by");
+
+// Test delivery attempt tracking
+deploymentNotification.IncrementDeliveryAttempt();
+deploymentNotification.IncrementDeliveryAttempt();
+Console.WriteLine($"Delivery attempts: {deploymentNotification.DeliveryAttempts}");
+
+// Mark as processed
+deploymentNotification.MarkAsProcessed();
+Console.WriteLine($"Is processed: {deploymentNotification.IsProcessed}");
+
+// Mock validation service for testing
+var mockValidation = new Mock<IValidationService>();
+mockValidation
+    .Setup(s => s.ValidateNotification(It.IsAny<DeploymentNotification>()))
+    .Returns(ValidationResult.Failure("Project name is required", "Version is required"));
+
+var incompleteNotification = new DeploymentNotification();
+var validationResult = mockValidation.Object.ValidateNotification(incompleteNotification);
+Console.WriteLine($"Validation errors: {string.Join(", ", validationResult.Errors)}");
+```
+
 ## PayloadBuilderTests
 
 The `PayloadBuilderTests` class provides comprehensive unit tests for the `PayloadBuilder` class, which constructs notification payloads for different messaging channels (Slack, Discord, Telegram). These tests verify that payloads are correctly formatted for each channel type, include appropriate event types based on deployment status, and respect configuration options like emoji formatting, commit details inclusion, and build URL display.
