@@ -2032,6 +2032,74 @@ if (wasCancelled)
 }
 ```
 
+## IntegrationTests
+
+The `IntegrationTests` class contains comprehensive integration tests that verify the end-to-end functionality of the deployment notification system. These tests exercise the complete workflow from notification creation to delivery across various channels, ensuring all components work together correctly in real-world scenarios.
+
+The integration tests cover:
+- Complete end-to-end workflows from notification creation to successful delivery
+- Multi-channel notification delivery to all configured channels
+- Validation failure handling and exception throwing
+- Retry mechanisms for failed deliveries with attempt tracking
+- Concurrent processing of multiple notifications
+- Channel filtering for only configured channels
+- Main use case scenarios matching README documentation
+
+Example usage:
+
+```csharp
+// Create required services and dependencies
+var mockNotificationRepository = Substitute.For<INotificationRepository>();
+var mockConfigRepository = Substitute.For<IChannelConfigRepository>();
+var mockResultRepository = Substitute.For<INotificationResultRepository>();
+var mockDispatcher = Substitute.For<IWebhookDispatcher>();
+var mockValidationService = Substitute.For<IValidationService>();
+var mockLogger = Substitute.For<ILogger<NotificationService>>();
+
+// Initialize the notification service
+var notificationService = new NotificationService(
+    mockNotificationRepository,
+    mockConfigRepository,
+    mockResultRepository,
+    mockDispatcher,
+    mockValidationService,
+    mockLogger);
+
+// Create a deployment notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = BuildStatus.Success,
+    TargetEnvironment = Environment.Production,
+    Message = "Version 2.0.0 deployed successfully",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord }
+};
+
+// Validate and create the notification
+var validationResult = validationService.ValidateNotification(notification);
+if (validationResult.IsValid)
+{
+    var notificationId = await notificationService.CreateNotificationAsync(notification);
+    
+    // Send to all configured channels
+    var deliveryResults = await notificationService.SendNotificationAsync(notificationId);
+    
+    // Check delivery status
+    foreach (var result in deliveryResults)
+    {
+        if (result.IsSuccessful)
+        {
+            Console.WriteLine($"Successfully delivered to {result.Channel}");
+        }
+        else
+        {
+            Console.WriteLine($"Failed to deliver to {result.Channel}: {result.ErrorMessage}");
+        }
+    }
+}
+```
+
 ## IBatchNotificationService
 
 The `IBatchNotificationService` interface provides methods for managing batch notifications, enabling efficient processing of multiple deployment notifications together. It supports creating batches, adding/removing notifications, sending batches to configured channels, and tracking batch statistics including delivery status and success rates.
