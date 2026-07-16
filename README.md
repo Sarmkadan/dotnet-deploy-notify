@@ -779,6 +779,67 @@ bool flag3 = "invalid".ToBooleanSafe(false); // false (default)
 bool flag4 = "1".ToBooleanSafe(); // true
 ```
 
+## ValidationRule
+
+The `ValidationRule<T>` class is the base class for all validation rules in the system. It provides a generic interface for validating values of any type with customizable validation logic and error messages. Concrete validation rules inherit from this base class to implement specific validation behaviors.
+
+The validation system supports:
+- String validation (NotEmptyRule, LengthRule, EmailRule, UrlRule, PatternRule)
+- Numeric validation (RangeRule)
+- Composite validation with multiple rules
+- Clear, descriptive error messages
+
+Example usage:
+
+```csharp
+// Validate a project name is not empty
+var projectNameValidator = new NotEmptyRule("Project name");
+bool isValid = projectNameValidator.Validate("My Application");
+string errorMessage = projectNameValidator.GetErrorMessage();
+Console.WriteLine($"Validation result: {isValid}, Error: {errorMessage}");
+
+// Validate string length (minimum 3 characters, maximum 50)
+var nameValidator = new LengthRule("Name", minLength: 3, maxLength: 50);
+bool nameIsValid = nameValidator.Validate("My Project");
+Console.WriteLine($"Name validation: {nameIsValid}");
+
+// Validate email format
+var emailValidator = new EmailRule("Email address");
+bool emailIsValid = emailValidator.Validate("user@example.com");
+Console.WriteLine($"Email validation: {emailIsValid}");
+
+// Validate URL format
+var urlValidator = new UrlRule("Webhook URL");
+bool urlIsValid = urlValidator.Validate("https://hooks.slack.com/services/T123/B456/C789");
+Console.WriteLine($"URL validation: {urlIsValid}");
+
+// Validate numeric range
+var timeoutValidator = new RangeRule("Timeout", min: 1000, max: 30000);
+bool timeoutIsValid = timeoutValidator.Validate(5000);
+Console.WriteLine($"Timeout validation: {timeoutIsValid}");
+
+// Validate with regex pattern
+var slugValidator = new PatternRule("Slug", "^[a-z0-9-]+$");
+bool slugIsValid = slugValidator.Validate("my-project-name");
+Console.WriteLine($"Slug validation: {slugIsValid}");
+
+// Use composite validator for multiple rules
+var compositeValidator = new CompositeValidator<string>()
+    .AddRule(new NotEmptyRule("Username"))
+    .AddRule(new LengthRule("Username", minLength: 3, maxLength: 20))
+    .AddRule(new PatternRule("Username", "^[a-zA-Z0-9_]+$"));
+
+bool userNameValid = compositeValidator.Validate("john_doe");
+if (!userNameValid)
+{
+    Console.WriteLine("Validation errors:");
+    foreach (var error in compositeValidator.GetErrors())
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+```
+
 ## TypeHelper
 
 The `TypeHelper` class provides a comprehensive set of utilities for working with .NET types and reflection. It includes methods for type checking, conversion, instantiation, and reflection operations, enabling type-safe operations and dynamic type handling throughout the application.
