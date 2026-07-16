@@ -541,6 +541,68 @@ var todayMetrics = await metricsService.GetMetricsByPeriodAsync(yesterday, DateT
 Console.WriteLine($"Yesterday's success rate: {todayMetrics.GetSuccessRate():F1}%");
 ```
 
+## MetricsCollector
+
+The `MetricsCollector` class provides in-memory metric collection and analysis capabilities for tracking custom application metrics. It maintains a collection of metric values over time and provides statistical analysis including count, sum, average, min, max, and median calculations. The collector supports recording metrics, incrementing counters, retrieving individual metrics or all metrics, and clearing/resetting data.
+
+Example usage:
+
+```csharp
+// Create a metrics collector for tracking API response times
+var responseTimeCollector = new MetricsCollector("ApiResponseTimes");
+
+// Record individual metric values
+responseTimeCollector.RecordMetric(125.5);
+responseTimeCollector.RecordMetric(89.2);
+responseTimeCollector.RecordMetric(156.7);
+responseTimeCollector.RecordMetric(95.1);
+
+// Increment a counter metric
+var errorCounter = new MetricsCollector("ApiErrors");
+errorCounter.IncrementCounter();
+errorCounter.IncrementCounter();
+errorCounter.IncrementCounter();
+
+// Get individual metric values
+var metricValue = responseTimeCollector.GetMetric();
+if (metricValue != null)
+{
+    Console.WriteLine($"Metric '{metricValue.Name}' has {metricValue.Count} values");
+    Console.WriteLine($"Average: {metricValue.Average:F2}ms");
+    Console.WriteLine($"Min: {metricValue.Min:F2}ms, Max: {metricValue.Max:F2}ms");
+}
+
+// Get all metrics
+var allMetrics = responseTimeCollector.GetAllMetrics();
+Console.WriteLine($"Collected {allMetrics.Count} metric values");
+
+// Get statistical analysis
+var statistics = responseTimeCollector.GetStatistics();
+if (statistics != null)
+{
+    Console.WriteLine($"Statistics for '{statistics.Name}':");
+    Console.WriteLine($"  Count: {statistics.Count}");
+    Console.WriteLine($"  Sum: {statistics.Sum:F2}");
+    Console.WriteLine($"  Average: {statistics.Average:F2}");
+    Console.WriteLine($"  Min: {statistics.Min:F2}");
+    Console.WriteLine($"  Max: {statistics.Max:F2}");
+    Console.WriteLine($"  Median: {statistics.Median:F2}");
+}
+
+// Access metric properties directly
+Console.WriteLine($"Metric created at: {responseTimeCollector.CreatedAt:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"Last updated: {responseTimeCollector.LastUpdated:yyyy-MM-dd HH:mm:ss}");
+Console.WriteLine($"Total values recorded: {responseTimeCollector.Count}");
+
+// Clear all collected metrics
+responseTimeCollector.Clear();
+Console.WriteLine($"After clear - Count: {responseTimeCollector.Count}");
+
+// Reset a specific metric
+responseTimeCollector.ResetMetric();
+Console.WriteLine($"After reset - Count: {responseTimeCollector.Count}, Name: {responseTimeCollector.Name}");
+```
+
 ## IDeploymentHistoryService
 
 The `IDeploymentHistoryService` interface provides methods for tracking and querying deployment history throughout the application. It records deployment events, stores historical data, and exposes aggregated statistics for monitoring deployment patterns, success rates, and rollback operations across projects and environments.
