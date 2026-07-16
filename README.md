@@ -844,6 +844,68 @@ catch (Exception ex)
 }
 ```
 
+## ITemplateService
+
+The `ITemplateService` interface provides methods for rendering and validating notification message templates. It supports template rendering with deployment notification variables, template validation, and provides access to preset templates for common notification formats. The service enables consistent message formatting across different notification channels.
+
+Example usage:
+
+```csharp
+// Create required logger
+var logger = new Logger<TemplateService>(new LoggerFactory());
+
+// Initialize the template service
+var templateService = new TemplateService(logger);
+
+// Get available template variables
+var availableVariables = templateService.GetAvailableVariables();
+Console.WriteLine($"Available variables: {string.Join(", ", availableVariables)}");
+
+// Get preset templates
+var presetTemplates = templateService.GetPresetTemplates();
+Console.WriteLine($"Available templates: {string.Join(", ", presetTemplates.Keys)}");
+
+// Create a deployment notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = DeploymentStatus.Success,
+    TargetEnvironment = "production",
+    BranchName = "main",
+    CommitHash = "abc123def456789",
+    CommitAuthor = "vlad",
+    Message = "Version 2.0.0 deployed successfully",
+    DurationSeconds = 180,
+    BuildUrl = "https://ci.example.com/build/123"
+};
+
+// Render a template
+var template = presetTemplates["SuccessNotification"];
+var renderedMessage = templateService.RenderTemplate(template, notification);
+Console.WriteLine(renderedMessage);
+
+// Validate a custom template
+var customTemplate = "[{{Status}}] {{ProjectName}} v{{Version}} - {{Environment}}";
+var (isValid, errors) = templateService.ValidateTemplate(customTemplate);
+if (isValid)
+{
+    Console.WriteLine("Template is valid!");
+}
+else
+{
+    Console.WriteLine("Template validation errors:");
+    foreach (var error in errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+
+// Render HTML-safe version for web notifications
+var htmlSafeMessage = templateService.RenderHtmlSafe(template, notification);
+Console.WriteLine($"HTML-safe message: {htmlSafeMessage}");
+```
+
 ## IRollbackService
 
 The `IRollbackService` interface provides methods for initiating and managing deployment rollback operations. It enables one-click rollbacks to previous deployment versions with automatic notification dispatch to all configured channels (Slack, Discord, Telegram, etc.). The service tracks rollback status, maintains history, and provides cancellation capabilities for pending rollbacks.
