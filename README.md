@@ -331,6 +331,46 @@ var eventBus = serviceProvider.GetRequiredService<IEventBus>();
 services.RegisterEventHandlers(eventBus, serviceProvider);
 ```
 
+## CommandParser
+
+The `CommandParser` class provides command-line argument parsing with support for subcommands, options, and flags. It enables structured parsing of CLI arguments into typed command definitions with parameters and options, supporting both short (`-v`) and long (`--verbose`) option formats, required parameter validation, and automatic help text generation.
+
+The parser supports built-in commands like `send`, `list`, `config`, `health`, and `history`, each with their own parameters and options. It returns a `ParsedCommand` object containing the extracted values, success status, and any error messages.
+
+Example usage:
+
+```csharp
+// Create parser with logger
+var logger = new Logger<CommandParser>(new LoggerFactory());
+var commandParser = new CommandParser(logger);
+
+// Parse command-line arguments
+var args = new[] { "send", "my-app", "1.0.0", "--status", "success", "--environment", "production", "-c", "Slack,Discord" };
+var parsedCommand = commandParser.Parse(args);
+
+if (parsedCommand.Success)
+{
+ Console.WriteLine($"Command '{parsedCommand.CommandName}' parsed successfully!");
+ Console.WriteLine($"Project: {parsedCommand.GetParameter("project")}");
+ Console.WriteLine($"Version: {parsedCommand.GetParameter("version")}");
+ Console.WriteLine($"Status: {parsedCommand.GetOption("status")}");
+ Console.WriteLine($"Environment: {parsedCommand.GetOption("environment")}");
+ Console.WriteLine($"Channels: {parsedCommand.GetOption("channels")}");
+}
+else
+{
+ Console.WriteLine($"Error parsing command: {parsedCommand.Error}");
+}
+
+// Get help text
+var helpText = commandParser.GetHelpText();
+Console.WriteLine(helpText);
+
+// Get command-specific help
+var sendHelp = commandParser.GetCommandHelpText("send");
+Console.WriteLine(sendHelp);
+```
+
 ## License
 
 MIT License - see LICENSE file for details.
