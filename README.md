@@ -762,6 +762,40 @@ Assert.True(successTryResult.IsSuccess);
 Assert.Equal(99, successTryResult.Value);
 ```
 
+## MetricsServiceTests
+
+The `MetricsServiceTests` class provides comprehensive unit tests for the `MetricsService` class, which tracks and analyzes metrics related to notification delivery performance and system health. These tests verify that metrics are correctly recorded and retrieved for notifications created, delivery attempts (both successful and failed), validation failures, and configuration changes. The test suite covers all public methods including recording metrics, getting current snapshots, retrieving metrics for specific time periods, and getting channel-specific metrics.
+
+Example usage:
+
+```csharp
+// Create the metrics service with required logger
+var logger = new Logger<MetricsService>(new LoggerFactory());
+var metricsService = new MetricsService(logger);
+
+// Record metrics as operations occur
+metricsService.RecordNotificationCreated();
+metricsService.RecordDeliveryAttempt(NotificationChannel.Slack, success: true, durationMs: 150);
+metricsService.RecordValidationFailure();
+metricsService.RecordConfigurationChange();
+
+// Get current metrics snapshot
+var metrics = await metricsService.GetMetricsAsync();
+Console.WriteLine($"Total notifications: {metrics.NotificationsCreated}");
+Console.WriteLine($"Success rate: {metrics.GetSuccessRate():F1}%");
+Console.WriteLine($"Average delivery time: {metrics.AverageDeliveryTimeMs}ms");
+Console.WriteLine($"P95 delivery time: {metrics.P95DeliveryTimeMs}ms");
+
+// Get channel-specific metrics
+var slackMetrics = await metricsService.GetChannelMetricsAsync(NotificationChannel.Slack);
+Console.WriteLine(slackMetrics.GetSummary());
+
+// Get metrics for a specific time period
+var yesterday = DateTime.UtcNow.AddDays(-1);
+var todayMetrics = await metricsService.GetMetricsByPeriodAsync(yesterday, DateTime.UtcNow);
+Console.WriteLine($"Yesterday's success rate: {todayMetrics.GetSuccessRate():F1}%");
+```
+
 ## StringExtensions
 
 The `StringExtensions` class provides a comprehensive set of extension methods for string manipulation and formatting. These methods enable common string operations like truncation, case conversion, slug generation, sensitive data masking, and text normalization, providing utility for consistent string handling throughout the application.
