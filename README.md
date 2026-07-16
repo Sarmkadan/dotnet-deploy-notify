@@ -762,6 +762,72 @@ Assert.True(successTryResult.IsSuccess);
 Assert.Equal(99, successTryResult.Value);
 ```
 
+## RollbackNotificationServiceTests
+
+The `RollbackNotificationServiceTests` class provides comprehensive unit tests for the `RollbackNotificationService` class, which handles sending notifications related to deployment rollback operations. These tests verify message formatting for different channels (Slack, Discord, Telegram), notification dispatch functionality, and history tracking. The test suite covers all public methods including message formatting with various rollback statuses, notification sending methods, and history retrieval with filtering capabilities.
+
+Example usage:
+
+```csharp
+// Create mock notification service and logger
+var notificationService = Substitute.For<INotificationService>();
+var logger = Substitute.For<ILogger<RollbackNotificationService>>();
+
+// Initialize the rollback notification service
+var rollbackNotificationService = new RollbackNotificationService(notificationService, logger);
+
+// Create a rollback request
+var rollbackRequest = new RollbackRequest
+{
+    ProjectName = "MyApplication",
+    CurrentVersion = "2.1.0",
+    TargetVersion = "2.0.5",
+    TargetEnvironment = Environment.Production,
+    RequestedBy = "vlad",
+    Reason = "Critical regression in version 2.1.0",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord },
+    Priority = NotificationPriority.Critical
+};
+
+// Test message formatting for different channels
+string slackMessage = rollbackNotificationService.FormatRollbackMessage(
+    rollbackRequest, 
+    RollbackStatus.InProgress, 
+    NotificationChannel.Slack
+);
+
+string discordMessage = rollbackNotificationService.FormatRollbackMessage(
+    rollbackRequest, 
+    RollbackStatus.Completed, 
+    NotificationChannel.Discord
+);
+
+string telegramMessage = rollbackNotificationService.FormatRollbackMessage(
+    rollbackRequest, 
+    RollbackStatus.Failed, 
+    NotificationChannel.Telegram,
+    "Database migration failed"
+);
+
+// Test notification sending methods
+var initiatedResults = await rollbackNotificationService.NotifyRollbackInitiatedAsync(rollbackRequest);
+var completedResults = await rollbackNotificationService.NotifyRollbackCompletedAsync(
+    rollbackRequest,
+    new RollbackResult { Status = RollbackStatus.Completed }
+);
+var failedResults = await rollbackNotificationService.NotifyRollbackFailedAsync(
+    rollbackRequest, 
+    "Deployment script timeout"
+);
+
+// Test history retrieval
+var history = await rollbackNotificationService.GetRollbackNotificationHistoryAsync("MyApplication");
+var filteredHistory = await rollbackNotificationService.GetRollbackNotificationHistoryAsync(
+    "MyApplication", 
+    limit: 10
+);
+```
+
 ## MetricsServiceTests
 
 The `MetricsServiceTests` class provides comprehensive unit tests for the `MetricsService` class, which tracks and analyzes metrics related to notification delivery performance and system health. These tests verify that metrics are correctly recorded and retrieved for notifications created, delivery attempts (both successful and failed), validation failures, and configuration changes. The test suite covers all public methods including recording metrics, getting current snapshots, retrieving metrics for specific time periods, and getting channel-specific metrics.
