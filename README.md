@@ -2168,6 +2168,80 @@ int businessDays = deploymentTime.GetBusinessDaysBetween(futureDate);
 Console.WriteLine($"Business days between: {businessDays}");
 ```
 
+## ObjectExtensions
+
+The `ObjectExtensions` class provides a comprehensive set of extension methods for working with objects in a safe and functional way. These methods enable common object operations like null checking, type casting, property access, mapping, copying, and validation without modifying the original objects. The extension methods handle null values gracefully and provide utility for consistent object handling throughout the application.
+
+Example usage:
+
+```csharp
+// Create a sample deployment configuration object
+var deploymentConfig = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = DeploymentStatus.Success,
+    TargetEnvironment = "production",
+    Priority = NotificationPriority.High,
+    Message = "Version 2.0.0 deployed successfully"
+};
+
+// Null checking
+if (deploymentConfig.IsNotNull())
+{
+    Console.WriteLine($"Processing deployment: {deploymentConfig.ProjectName}");
+}
+
+if (deploymentConfig.IsNull())
+{
+    Console.WriteLine("Configuration is null");
+}
+
+// Safe casting
+var configObject = (object)deploymentConfig;
+var castConfig = configObject.SafeCast<DeploymentNotification>();
+Console.WriteLine($"Cast successful: {castConfig?.ProjectName}");
+
+// Property access
+var projectName = deploymentConfig.GetPropertyValue("ProjectName");
+Console.WriteLine($"Project: {projectName}");
+
+// Set property value
+deploymentConfig.SetPropertyValue("Message", "Version 2.0.0 deployed successfully to production");
+
+// Map to another type
+var configDict = deploymentConfig.Map(config => config.ToDictionary());
+Console.WriteLine($"Config has {configDict?.Count} properties");
+
+// Shallow copy
+var configCopy = deploymentConfig.ShallowCopy();
+Console.WriteLine($"Copy created: {configCopy?.ProjectName}");
+
+// Check if equals any value
+deploymentConfig.Priority.EqualsAny(NotificationPriority.Low, NotificationPriority.Normal, NotificationPriority.High);
+
+// Check if default
+int defaultValue = 0;
+bool isDefault = defaultValue.IsDefault(); // Returns true
+
+// Get value or default
+int? nullableValue = null;
+int result = nullableValue.GetValueOrDefault(42); // Returns 42
+
+// Chain operations
+deploymentConfig
+    .Chain(c => Console.WriteLine($"Chained: {c.ProjectName}"))
+    .Chain(c => c.Validate(x => !string.IsNullOrEmpty(x.ProjectName)));
+
+// Convert to string safely
+string safeString = deploymentConfig.ToStringSafe();
+string nullString = ((object?)null).ToStringSafe("default"); // Returns "default"
+
+// Get type information
+string typeName = deploymentConfig.GetTypeName();
+string fullTypeName = deploymentConfig.GetFullTypeName();
+```
+
 ## License
 
 MIT License - see LICENSE file for details.
