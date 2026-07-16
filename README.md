@@ -1213,6 +1213,61 @@ var todayMetrics = await metricsService.GetMetricsByPeriodAsync(yesterday, DateT
 Console.WriteLine($"Yesterday's success rate: {todayMetrics.GetSuccessRate():F1}%");
 ```
 
+## CustomTemplateEngineTests
+
+The `CustomTemplateEngineTests` class provides comprehensive unit tests for the `CustomTemplateEngine` class, which manages custom template registration, retrieval, rendering, and deletion. These tests verify that templates are correctly stored, retrieved, updated, filtered, and rendered with various formatting options including case conversion filters.
+
+Example usage:
+
+```csharp
+// Create template engine instance
+var engine = new CustomTemplateEngine();
+
+// Register a template with a name
+engine.RegisterTemplate("deployment-message", "Project {{ProjectName}} version {{Version}} deployed to {{Environment}}");
+
+// Retrieve a template by name
+var template = engine.GetTemplate("deployment-message");
+Assert.NotNull(template);
+
+// Render template with variables
+var variables = new Dictionary<string, string>
+{
+    {"ProjectName", "MyApplication"},
+    {"Version", "2.0.0"},
+    {"Environment", "Production"}
+};
+
+string rendered = engine.RenderInline("deployment-message", variables);
+Console.WriteLine(rendered);
+// Output: "Project MyApplication version 2.0.0 deployed to Production"
+
+// Update an existing template
+engine.RegisterTemplate("deployment-message", "Project {{ProjectName}} v{{Version}} deployed to {{Environment}}");
+
+// Delete a template
+bool deleted = engine.DeleteTemplate("deployment-message");
+Assert.True(deleted);
+
+// List all active templates
+var templates = engine.ListTemplates();
+foreach (var t in templates)
+{
+    Console.WriteLine($"Template: {t.Name}");
+}
+
+// Use case conversion filters
+engine.RegisterTemplate("upper-template", "{{ProjectName | upper}}");
+engine.RegisterTemplate("lower-template", "{{ProjectName | lower}}");
+engine.RegisterTemplate("trim-template", "{{Message | trim}}");
+
+string upperResult = engine.RenderInline("upper-template", new Dictionary<string, string> { {"ProjectName", "  MyApp  "} });
+// Output: "MYAPP"
+
+string lowerResult = engine.RenderInline("lower-template", new Dictionary<string, string> { {"ProjectName", "MyApp"} });
+// Output: "myapp"
+```
+
 ## StringExtensions
 
 The `StringExtensions` class provides a comprehensive set of extension methods for string manipulation and formatting. These methods enable common string operations like truncation, case conversion, slug generation, sensitive data masking, and text normalization, providing utility for consistent string handling throughout the application.
