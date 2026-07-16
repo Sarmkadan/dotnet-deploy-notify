@@ -865,6 +865,92 @@ var sendHelp = commandParser.GetCommandHelpText("send");
 Console.WriteLine(sendHelp);
 ```
 
+## IAuditService
+
+The `IAuditService` interface provides comprehensive auditing capabilities for tracking all notification-related operations within the system. It records detailed audit logs for notification creation, delivery attempts, configuration changes, validation failures, and system operations, enabling complete traceability and compliance monitoring across all notification channels.
+
+Audit logs include timestamps, operation types, entity information, actors, statuses, and extensible metadata for detailed tracking of system activities.
+
+Example usage:
+
+```csharp
+// Create required logger
+var logger = new Logger<IAuditService>(new LoggerFactory());
+
+// Create audit service
+var auditService = new AuditService(logger);
+
+// Log a notification creation event
+var notificationId = Guid.NewGuid().ToString();
+await auditService.LogNotificationCreatedAsync(
+    notificationId,
+    "DeploymentNotification",
+    "vlad",
+    new Dictionary<string, object>
+    {
+        { "projectName", "MyApplication" },
+        { "version", "2.0.0" },
+        { "targetEnvironment", "production" },
+        { "priority", "High" }
+    }
+);
+
+// Log a delivery attempt
+var deliveryAttempt = await auditService.LogDeliveryAttemptAsync(
+    notificationId,
+    NotificationChannel.Slack,
+    true,
+    150,
+    "Webhook delivered successfully",
+    new Dictionary<string, object>
+    {
+        { "responseCode", 200 },
+        { "retryCount", 0 }
+    }
+);
+
+// Log a configuration change
+await auditService.LogConfigurationChangeAsync(
+    "ChannelStrategyResolver",
+    "Configuration updated: Added new Slack webhook",
+    new Dictionary<string, object>
+    {
+        { "oldWebhookUrl", "https://hooks.slack.com/old" },
+        { "newWebhookUrl", "https://hooks.slack.com/new" },
+        { "channelType", NotificationChannel.Slack }
+    },
+    "vlad"
+);
+
+// Log a validation failure
+await auditService.LogValidationFailureAsync(
+    notificationId,
+    "DeploymentNotification",
+    "Invalid project name format",
+    new Dictionary<string, object>
+    {
+        { "projectName", "Invalid@Project!" },
+        { "validationRule", "alphanumeric with hyphens" }
+    }
+);
+
+// Retrieve audit logs for a specific notification
+var notificationLogs = await auditService.GetAuditLogsAsync(notificationId);
+Console.WriteLine($"Found {notificationLogs.Count} audit entries for notification {notificationId}");
+
+// Retrieve notification-specific audit logs
+var notificationAuditLogs = await auditService.GetNotificationAuditLogsAsync(notificationId);
+foreach (var log in notificationAuditLogs)
+{
+    Console.WriteLine($"[{log.Timestamp:yyyy-MM-dd HH:mm:ss}] {log.Operation}: {log.Status}");
+    Console.WriteLine($"  Entity: {log.EntityType}/{log.EntityId}, Actor: {log.Actor}");
+}
+
+// Clear old audit logs (older than 90 days)
+await auditService.ClearOldLogsAsync(TimeSpan.FromDays(90));
+Console.WriteLine("Old audit logs cleared successfully");
+```
+
 ## License
 
 MIT License - see LICENSE file for details.
