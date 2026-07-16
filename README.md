@@ -279,6 +279,83 @@ builder.Services.Configure<DotnetDeployNotifyOptions>(options =>
         }
     };
 });
+
+## CanaryOptions
+
+The `CanaryOptions` class configures canary deployment monitoring and rollback behavior. It defines thresholds for error rates, latency metrics, and deployment progression settings that determine when a canary deployment should automatically roll back or advance to the next stage.
+
+Example usage:
+
+```csharp
+// Configure CanaryOptions in appsettings.json
+{
+  "CanaryOptions": {
+    "Enabled": true,
+    "AutoRollbackOnFailure": true,
+    "AutoAdvanceOnSuccess": true,
+    "LinearStepCount": 5,
+    "StepSoakDuration": "00:05:00",
+    "MaxDeploymentDuration": "02:00:00",
+    "Thresholds": {
+      "MaxErrorRatePercent": 1.5,
+      "MaxP95LatencyMs": 500,
+      "MaxP99LatencyMs": 1000
+    },
+    "AlertPriority": "High",
+    "ErrorRateMultiplier": 2.0,
+    "LatencyDegradationPercent": 30.0
+  }
+}
+
+// Or configure programmatically in Program.cs
+builder.Services.Configure<CanaryOptions>(options =>
+{
+  options.Enabled = true;
+  options.AutoRollbackOnFailure = true;
+  options.AutoAdvanceOnSuccess = true;
+  options.LinearStepCount = 5;
+  options.StepSoakDuration = TimeSpan.FromMinutes(5);
+  options.MaxDeploymentDuration = TimeSpan.FromHours(2);
+  
+  options.Thresholds = new CanaryThresholds
+  {
+    MaxErrorRatePercent = 1.5,
+    MaxP95LatencyMs = 500,
+    MaxP99LatencyMs = 1000
+  };
+  
+  options.AlertPriority = NotificationPriority.High;
+  options.ErrorRateMultiplier = 2.0;
+  options.LatencyDegradationPercent = 30.0;
+});
+
+// Usage in a deployment service
+public class CanaryDeploymentService
+{
+  private readonly CanaryOptions _options;
+  
+  public CanaryDeploymentService(IOptions<CanaryOptions> options)
+  {
+    _options = options.Value;
+  }
+  
+  public bool ShouldRollback(int errorCount, int totalRequests, double p95LatencyMs, double p99LatencyMs)
+  {
+    if (!_options.Enabled || !_options.AutoRollbackOnFailure)
+      return false;
+    
+    var errorRate = (double)errorCount / totalRequests * 100;
+    return errorRate > _options.Thresholds.MaxErrorRatePercent * _options.ErrorRateMultiplier ||
+           p95LatencyMs > _options.Thresholds.MaxP95LatencyMs ||
+           p99LatencyMs > _options.Thresholds.MaxP99LatencyMs;
+  }
+  
+  public bool ShouldAdvance()
+  {
+    return _options.Enabled && _options.AutoAdvanceOnSuccess;
+  }
+}
+```
 ```
 
 ## Configuration
