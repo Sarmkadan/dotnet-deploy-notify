@@ -292,6 +292,80 @@ Console.WriteLine($"Pending: {stats.PendingCount}");
 Console.WriteLine($"Health: {stats.HealthPercentage:F1}%");
 ```
 
+## INotificationService
+
+The `INotificationService` interface defines the contract for managing deployment notifications throughout the application. It provides methods for creating notifications, sending them to configured channels, retrieving notification history, and managing delivery results. This service serves as the primary entry point for working with deployment notifications in the system.
+
+Example usage:
+
+```csharp
+// Create required dependencies
+var dbContext = new NotificationDbContext(/* connection string */);
+var logger = new Logger<NotificationService>(new LoggerFactory());
+
+// Create repositories
+var notificationRepository = new NotificationRepository(dbContext);
+var configRepository = new ChannelConfigRepository(dbContext);
+var resultRepository = new NotificationResultRepository(dbContext);
+
+// Create dispatcher and validation service
+var webhookClientFactory = new WebhookClientFactory();
+var dispatcher = new WebhookDispatcher(webhookClientFactory, logger);
+var validationService = new ValidationService();
+
+// Initialize the notification service
+var notificationService = new NotificationService(
+    notificationRepository,
+    configRepository,
+    resultRepository,
+    dispatcher,
+    validationService,
+    logger
+);
+
+// Create a new deployment notification
+var notification = new DeploymentNotification
+{
+    Id = Guid.NewGuid().ToString(),
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = DeploymentStatus.Success,
+    Priority = NotificationPriority.High,
+    TargetEnvironment = "production",
+    CommitAuthor = "vlad",
+    BranchName = "main",
+    Message = "Version 2.0.0 deployed to production",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord }
+};
+
+// Create and queue the notification
+var notificationId = await notificationService.CreateNotificationAsync(notification);
+Console.WriteLine($"Created notification with ID: {notificationId}");
+
+// Send pending notifications (processes all pending notifications)
+var sendResults = await notificationService.SendPendingNotificationsAsync();
+Console.WriteLine($"Sent {sendResults.Count} notifications");
+
+// Get notification history for a project
+var history = await notificationService.GetNotificationHistoryAsync("MyApplication", limit: 10);
+Console.WriteLine($"Found {history.Count} notifications for MyApplication");
+
+// Get delivery results for a specific notification
+var deliveryResults = await notificationService.GetDeliveryResultsAsync(notificationId);
+foreach (var result in deliveryResults)
+{
+    Console.WriteLine($"Channel {result.Channel}: {result.Status}");
+}
+
+// Retry failed deliveries if any
+var failedResults = deliveryResults.Where(r => !r.IsSuccessful).ToList();
+if (failedResults.Any())
+{
+    var retryResults = await notificationService.RetryFailedDeliveriesAsync(notificationId);
+    Console.WriteLine($"Retried {retryResults.Count} failed deliveries");
+}
+```
+
 ## ServiceCollectionExtensions
 
 The `ServiceCollectionExtensions` class provides extension methods for configuring application services in the dependency injection container. It offers a comprehensive set of methods to register all core services including CLI support, caching, formatting, serialization, event bus, middleware, integration, and background workers. The extension methods follow the standard Microsoft.Extensions.DependencyInjection pattern and return the `IServiceCollection` for method chaining.
