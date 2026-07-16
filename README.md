@@ -200,6 +200,54 @@ The application currently supports the following notification channels:
 
 See `appsettings.example.json` for configuration examples.
 
+## IPayloadBuilder
+
+The `IPayloadBuilder` interface defines the contract for building notification payloads for different messaging channels (Slack, Discord, Telegram, etc.). It provides methods to construct channel-specific message formats and webhook payloads from deployment notifications and channel configurations, enabling consistent formatting across multiple notification destinations.
+
+Example usage:
+
+```csharp
+// Create payload builder with logger
+var logger = new Logger<PayloadBuilder>(new LoggerFactory());
+var payloadBuilder = new PayloadBuilder(logger);
+
+// Create a deployment notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = DeploymentStatus.Success,
+    TargetEnvironment = "production",
+    BranchName = "main",
+    CommitHash = "abc123def456",
+    CommitAuthor = "vlad",
+    Message = "Version 2.0.0 deployed successfully",
+    CreatedAt = DateTime.UtcNow,
+    DurationSeconds = 180,
+    BuildUrl = "https://ci.example.com/build/123"
+};
+
+// Create channel configuration
+var slackConfig = new ChannelConfiguration
+{
+    ChannelType = NotificationChannel.Slack,
+    WebhookUrl = "https://hooks.slack.com/services/...",
+    UseSlackBlockKit = true,
+    IncludeCommitDetails = true,
+    IncludeBuildUrl = true
+};
+
+// Build payloads for different channels
+var webhookPayload = payloadBuilder.BuildPayload(notification, slackConfig);
+var telegramMessage = payloadBuilder.BuildTelegramMessage(notification, slackConfig);
+var slackPayload = payloadBuilder.BuildSlackPayload(notification, slackConfig);
+var discordPayload = payloadBuilder.BuildDiscordPayload(notification, slackConfig);
+
+Console.WriteLine($"Telegram message length: {telegramMessage.Length} characters");
+Console.WriteLine($"Slack payload type: {slackPayload.GetType().Name}");
+Console.WriteLine($"Discord payload type: {discordPayload.GetType().Name}");
+```
+
 ## IMetricsService
 
 The `IMetricsService` interface provides methods for collecting and analyzing system metrics related to notification delivery performance and system health. It tracks notification creation, delivery attempts, success/failure rates, delivery times, validation failures, and configuration changes across all notification channels.
