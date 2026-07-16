@@ -455,6 +455,56 @@ public class CanaryDeploymentService
 ```
 ```
 
+## MathExtensions
+
+The `MathExtensions` class provides a comprehensive set of extension methods for mathematical operations, unit conversions, and statistical calculations. It includes generic methods for value clamping and range checking, percentage calculations, rounding operations, and collection statistics like average and median calculations. The class also provides human-readable formatting for file sizes and time durations, plus financial calculations like compound interest.
+
+Example usage:
+
+```csharp
+// Clamp a value between minimum and maximum
+int clampedValue = 15.Clamp(10, 20); // Returns 15
+int clampedLow = 5.Clamp(10, 20);   // Returns 10
+int clampedHigh = 25.Clamp(10, 20);  // Returns 20
+
+// Check if a value is between two bounds
+bool isBetween = 15.IsBetween(10, 20); // Returns true
+bool isOutside = 5.IsBetween(10, 20);   // Returns false
+
+// Calculate percentages
+int successCount = 85;
+int totalCount = 100;
+double successRate = successCount.ToPercentage(totalCount); // Returns 85.0
+
+// Round to specific decimal places
+decimal roundedMoney = 123.4567m.RoundTo(2); // Returns 123.46
+double roundedValue = 3.14159.RoundTo(3);    // Returns 3.142
+
+// Calculate statistics from collections
+var numbers = new List<int> { 10, 20, 30, 40, 50 };
+double average = numbers.Average(); // Returns 30.0
+double median = numbers.Median();   // Returns 30.0
+int sum = numbers.SafeSum();       // Returns 150
+
+// Convert bytes to human-readable format
+long fileSize = 1572864; // 1.5MB
+string readableSize = fileSize.ToHumanReadableSize(); // Returns "1.5 MB"
+
+// Convert milliseconds to human-readable duration
+int durationMs = 125000;
+string readableDuration = durationMs.ToHumanReadableDuration(); // Returns "2.08m"
+
+// Calculate compound interest
+decimal principal = 1000m;
+decimal rate = 0.05m; // 5%
+int periods = 12;
+decimal futureValue = principal.CalculateCompoundInterest(rate, periods); // Returns ~1795.86
+
+// Generate random numbers
+var random = new Random();
+int randomNumber = random.RandomBetween(1, 100); // Returns random integer between 1-100
+```
+
 ## CollectionExtensions
 
 The `CollectionExtensions` class provides a comprehensive set of extension methods for working with collections and enumerables in a functional and efficient way. These methods enable common collection operations like adding items conditionally, batch processing, partitioning, and statistical analysis without modifying the original collections.
