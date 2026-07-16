@@ -650,6 +650,75 @@ foreach (var kvp in statusCounts)
 var distinctProjects = notifications.DistinctBy(n => n.ProjectName);
 ```
 
+## EnumExtensions
+
+The `EnumExtensions` class provides a comprehensive set of extension methods for working with enum types in .NET applications. These methods enable common enum operations like retrieving description attributes, checking flags, parsing strings to enums, generating human-readable names, and working with enum values in collections.
+
+The extension methods support any enum type and provide safe operations that handle null values and edge cases appropriately.
+
+Example usage:
+
+```csharp
+// Define an enum with Description attributes
+public enum DeploymentStatus
+{
+    [System.ComponentModel.Description("Build started")]
+    Started,
+    
+    [System.ComponentModel.Description("Build completed successfully")]
+    Success,
+    
+    [System.ComponentModel.Description("Build failed")]
+    Failed
+}
+
+// Get description from enum value
+DeploymentStatus status = DeploymentStatus.Success;
+string description = status.GetDescription(); // "Build completed successfully"
+
+// Check if enum has a specific flag (for flag enums)
+[System.Flags]
+public enum NotificationChannels
+{
+    None = 0,
+    Slack = 1,
+    Discord = 2,
+    Telegram = 4,
+    All = Slack | Discord | Telegram
+}
+
+var channels = NotificationChannels.Slack | NotificationChannels.Discord;
+bool hasSlack = channels.HasFlag(NotificationChannels.Slack); // true
+bool hasTelegram = channels.HasFlag(NotificationChannels.Telegram); // false
+
+// Get all values of an enum
+List<DeploymentStatus> allStatuses = EnumExtensions.GetAllValues<DeploymentStatus>();
+foreach (var status in allStatuses)
+{
+    Console.WriteLine($"Status: {status} - {status.GetDescription()}");
+}
+
+// Convert enum to human-readable string
+DeploymentStatus status = DeploymentStatus.Success;
+string humanReadable = status.ToHumanReadable(); // "Success"
+
+// Safely parse string to enum
+string statusText = "Success";
+DeploymentStatus? parsedStatus = EnumExtensions.TryParse<DeploymentStatus>(statusText);
+if (parsedStatus.HasValue)
+{
+    Console.WriteLine($"Parsed status: {parsedStatus.Value}");
+}
+
+// Get random enum value
+DeploymentStatus randomStatus = EnumExtensions.GetRandomValue<DeploymentStatus>();
+Console.WriteLine($"Random status: {randomStatus}");
+
+// Check if enum value is in a list
+var validStatuses = new[] { DeploymentStatus.Started, DeploymentStatus.Success };
+bool isValid = status.IsIn(validStatuses); // true
+```
+
 ## StringExtensions
 
 The `StringExtensions` class provides a comprehensive set of extension methods for string manipulation and formatting. These methods enable common string operations like truncation, case conversion, slug generation, sensitive data masking, and text normalization, providing utility for consistent string handling throughout the application.
