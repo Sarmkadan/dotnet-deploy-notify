@@ -200,6 +200,56 @@ The application currently supports the following notification channels:
 
 See `appsettings.example.json` for configuration examples.
 
+## NotificationPipeline
+
+The `NotificationPipeline` class provides a flexible middleware pipeline for processing deployment notifications through a series of processors. It enables validation, enrichment, filtering, and transformation of notifications before they are sent to channels, ensuring data integrity and compliance with channel-specific requirements.
+
+The pipeline follows a fluent interface pattern, allowing processors to be chained together in a clean and readable way. Each processor validates or transforms the notification data, and the pipeline collects any errors that occur during processing.
+
+Example usage:
+```csharp
+// Create pipeline with required logger
+var logger = new Logger<NotificationPipeline>(new LoggerFactory());
+var pipeline = new NotificationPipeline(logger);
+
+// Add processors to the pipeline
+pipeline.Use(new ValidationProcessor(logger))
+     .Use(new EnrichmentProcessor())
+     .Use(new FilterProcessor(configRepository, logger))
+     .Use(new SanitizationProcessor());
+
+// Execute the pipeline with a notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.1.0",
+    Status = DeploymentStatus.Success,
+    Priority = NotificationPriority.High,
+    TargetEnvironment = "production",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord },
+    CommitAuthor = "vlad",
+    BranchName = "main",
+    Message = "Release 2.1.0 deployed successfully"
+};
+
+var result = await pipeline.ExecuteAsync(notification);
+
+if (result.Success)
+{
+    Console.WriteLine("Pipeline processed notification successfully!");
+    Console.WriteLine($"Processed notification ID: {result.ProcessedNotification?.Id}");
+    Console.WriteLine($"Filtered channels: {string.Join(", ", result.ProcessedNotification?.Channels ?? new List<NotificationChannel>())}");
+}
+else
+{
+    Console.WriteLine("Pipeline processing failed:");
+    foreach (var error in result.Errors)
+    {
+        Console.WriteLine($"- {error}");
+    }
+}
+```
+
 ## ServiceCollectionExtensions
 
 The `ServiceCollectionExtensions` class provides extension methods for configuring application services in the dependency injection container. It offers a comprehensive set of methods to register all core services including CLI support, caching, formatting, serialization, event bus, middleware, integration, and background workers. The extension methods follow the standard Microsoft.Extensions.DependencyInjection pattern and return the `IServiceCollection` for method chaining.
