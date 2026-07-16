@@ -1,6 +1,117 @@
 # DotNetDeployNotify
 
 A .NET-based notification system for deployment events and operational alerts.
+It formats deployment and rollback events for Slack, Telegram, Discord and generic
+webhooks, applies per-channel filters, and can preview payloads without sending them.
+
+## Quickstart
+
+Requires the .NET 10 SDK.
+
+```bash
+# restore, build and run the test suite
+dotnet build dotnet-deploy-notify.sln
+dotnet test dotnet-deploy-notify.sln
+```
+
+Send a deployment notification from the CLI:
+
+```bash
+dotnet run --project dotnet-deploy-notify.csproj -- \
+  send Checkout.Api 3.2.1 \
+  --status DeploymentSuccess \
+  --environment Production \
+  --channels Slack,Telegram \
+  --message "Deploy finished"
+```
+
+Preview exactly what would be sent, without dispatching anything, by adding
+`--dry-run`. It renders the channel-specific payload (JSON for Slack/Discord/webhook,
+HTML text for Telegram), masks any token embedded in the target URL, and shows which
+channels a filter would suppress:
+
+```bash
+dotnet run --project dotnet-deploy-notify.csproj -- \
+  send Checkout.Api 3.2.1 --status DeploymentSuccess --channels Slack --dry-run
+```
+
+Initiate a rollback (also supports `--dry-run`):
+
+```bash
+dotnet run --project dotnet-deploy-notify.csproj -- \
+  rollback Checkout.Api 3.1.0 \
+  --current-version 3.2.0 --environment Production \
+  --channels Slack --reason "elevated 5xx" --dry-run
+```
+
+Wire the services into your own host through dependency injection:
+
+```csharp
+var services = new ServiceCollection();
+services.AddLogging();
+services.AddNotificationServices(configuration); // extension in DotNetDeployNotify.Infrastructure
+
+var provider = services.BuildServiceProvider();
+var notifications = provider.GetRequiredService<INotificationService>();
+```
+
+## Channel configuration reference
+
+Channels are configured under the `DotnetDeployNotify:Notification:EnvironmentChannels`
+section of `appsettings.json` (see `appsettings.example.json`). Each entry maps an
+environment name to a channel:
+
+```json
+{
+  "DotnetDeployNotify": {
+    "Notification": {
+      "MaxRetries": 3,
+      "WebhookTimeoutMs": 10000,
+      "IncludeCommitDetails": true,
+      "IncludeBuildUrl": true,
+      "DefaultPriority": "Normal",
+      "EnvironmentChannels": {
+        "Production": {
+          "WebhookUrl": "https://hooks.slack.com/services/T000/B000/XXXX",
+          "ChannelType": "Slack",
+          "DisplayName": "Production Alerts",
+          "TargetId": "prod-channel-id"
+        },
+        "Staging": {
+          "WebhookUrl": "https://api.telegram.org/bot<token>/sendMessage",
+          "ChannelType": "Telegram",
+          "DisplayName": "Staging Bot",
+          "TargetId": "-1001234567890"
+        }
+      }
+    }
+  }
+}
+```
+
+A channel configuration (`ChannelConfiguration`) supports the following fields:
+
+| Field | Type | Default | Purpose |
+| --- | --- | --- | --- |
+| `ChannelType` | `Telegram` \| `Slack` \| `Discord` \| `Webhook` \| `Email` | - | Transport / payload format |
+| `WebhookUrl` | string | - | Endpoint the payload is POSTed to (required) |
+| `DisplayName` | string | - | Human-readable name shown in logs and dry-run output (required) |
+| `TargetId` | string | `""` | Chat / channel id specific to the platform |
+| `IsEnabled` | bool | `true` | Disable a channel without deleting it |
+| `IncludeCommitDetails` | bool | `true` | Add commit hash / author to the message |
+| `IncludeBuildUrl` | bool | `true` | Add a link to the build |
+| `MinimumPriority` | `Low` \| `Normal` \| `High` \| `Critical` | `Low` | Suppress notifications below this priority |
+| `AllowedEnvironments` | list of environments | empty (all) | Only send for these environments |
+| `AllowedStatuses` | list of build statuses | empty (all) | Only send for these statuses |
+| `MaxRetries` | int | `3` | Delivery retry attempts |
+| `TimeoutMs` | int | `10000` | Per-request timeout in milliseconds |
+| `CustomHeaders` | map | empty | Extra HTTP headers forwarded on every request |
+| `UseSlackBlockKit` | bool | `false` | Render Slack messages with Block Kit instead of legacy attachments |
+| `EnableEmojis` | bool | `true` | Include emoji status indicators |
+
+When a notification is dispatched, each configured channel evaluates
+`MinimumPriority`, `AllowedEnvironments` and `AllowedStatuses` before sending;
+`--dry-run` reports the reason whenever a channel would be skipped.
 
 ## WebhookPayload
 
