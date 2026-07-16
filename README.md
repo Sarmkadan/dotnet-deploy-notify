@@ -250,6 +250,48 @@ else
 }
 ```
 
+## INotificationProcessor
+
+The `INotificationProcessor` interface defines the contract for background notification processing in the system. It provides methods for processing notifications in batches, retrying failed deliveries, and prioritizing notifications by importance level. Implementations handle the core logic of sending notifications through configured channels and tracking delivery statistics.
+
+Example usage:
+```csharp
+// Create required services
+var notificationService = new NotificationService(
+    new NotificationRepository(dbContext),
+    new ChannelStrategyResolver(new WebhookClientFactory()),
+    logger);
+
+var configRepository = new ChannelConfigRepository(dbContext);
+var resultRepository = new NotificationResultRepository(dbContext);
+
+// Create processor
+var processor = new NotificationProcessor(
+    notificationService,
+    new NotificationRepository(dbContext),
+    configRepository,
+    resultRepository,
+    logger);
+
+// Process batch of notifications
+var batchResult = await processor.ProcessBatchAsync(100);
+Console.WriteLine(batchResult.GetSummary());
+
+// Process failed notifications (up to 3 retry attempts)
+var retryResult = await processor.ProcessFailedAsync(3);
+Console.WriteLine($"Retried {retryResult.TotalProcessed} notifications");
+
+// Process by priority (Critical > High > Normal > Low)
+var priorityResult = await processor.ProcessByPriorityAsync();
+Console.WriteLine($"Priority processing: {priorityResult.SuccessRate:P0} success rate");
+
+// Get system statistics
+var stats = await processor.GetStatisticsAsync();
+Console.WriteLine($"Total notifications: {stats.TotalNotifications}");
+Console.WriteLine($"Pending: {stats.PendingCount}");
+Console.WriteLine($"Health: {stats.HealthPercentage:F1}%");
+```
+
 ## ServiceCollectionExtensions
 
 The `ServiceCollectionExtensions` class provides extension methods for configuring application services in the dependency injection container. It offers a comprehensive set of methods to register all core services including CLI support, caching, formatting, serialization, event bus, middleware, integration, and background workers. The extension methods follow the standard Microsoft.Extensions.DependencyInjection pattern and return the `IServiceCollection` for method chaining.
