@@ -18,8 +18,14 @@ public static class ResultExtensions
     /// <summary>
     /// Tries to execute a function and returns a result
     /// </summary>
+    /// <typeparam name="T">The type of value returned by the function</typeparam>
+    /// <param name="func">The function to execute</param>
+    /// <returns>A successful result containing the function's return value if successful, otherwise a failed result with the exception message</returns>
+    /// <exception cref="ArgumentNullException">Thrown when func is null</exception>
     public static Result<T> Try<T>(Func<T> func)
     {
+        ArgumentNullException.ThrowIfNull(func);
+
         try
         {
             return Result<T>.Ok(func());
@@ -33,8 +39,14 @@ public static class ResultExtensions
     /// <summary>
     /// Tries to execute an async function and returns a result
     /// </summary>
+    /// <typeparam name="T">The type of value returned by the async function</typeparam>
+    /// <param name="func">The async function to execute</param>
+    /// <returns>A successful result containing the function's return value if successful, otherwise a failed result with the exception message</returns>
+    /// <exception cref="ArgumentNullException">Thrown when func is null</exception>
     public static async Task<Result<T>> TryAsync<T>(Func<Task<T>> func)
     {
+        ArgumentNullException.ThrowIfNull(func);
+
         try
         {
             var value = await func();
@@ -49,8 +61,13 @@ public static class ResultExtensions
     /// <summary>
     /// Tries to execute an action and returns a result
     /// </summary>
+    /// <param name="action">The action to execute</param>
+    /// <returns>A successful result if the action completes without exception, otherwise a failed result with the exception message</returns>
+    /// <exception cref="ArgumentNullException">Thrown when action is null</exception>
     public static Result Try(Action action)
     {
+        ArgumentNullException.ThrowIfNull(action);
+
         try
         {
             action();
@@ -65,6 +82,23 @@ public static class ResultExtensions
     /// <summary>
     /// Tries to execute an async action and returns a result
     /// </summary>
+    /// <param name="action">The async action to execute</param>
+    /// <returns>A successful result if the action completes without exception, otherwise a failed result with the exception message</returns>
+    /// <exception cref="ArgumentNullException">Thrown when action is null</exception>
+    public static async Task<Result> TryAsync(Func<Task> action)
+    {
+        ArgumentNullException.ThrowIfNull(action);
+
+        try
+        {
+            await action();
+            return Result.Ok();
+        }
+        catch (Exception ex)
+        {
+            return Result.Fail(ex.Message);
+        }
+    }
 
     /// <summary>
     /// Combines multiple results into a single result with all errors.
@@ -149,6 +183,7 @@ public static class ResultExtensions
     /// <param name="errorMessage">The error message to use if the predicate fails</param>
     /// <returns>The filtered result</returns>
     /// <exception cref="ArgumentNullException">Thrown when result or predicate is null</exception>
+    /// <exception cref="ArgumentException">Thrown when errorMessage is null or empty</exception>
     public static Result<T> Where<T>(this Result<T> result, Func<T, bool> predicate, string errorMessage)
     {
         ArgumentNullException.ThrowIfNull(result);
