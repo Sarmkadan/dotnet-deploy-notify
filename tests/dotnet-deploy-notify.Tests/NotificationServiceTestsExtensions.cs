@@ -12,14 +12,19 @@ namespace DotNetDeployNotify.Tests;
 /// </summary>
 public static class NotificationServiceTestsExtensions
 {
+
     /// <summary>
     /// Creates a valid deployment notification for testing purposes.
     /// </summary>
-    /// <param name="projectName">The project name.</param>
-    /// <param name="version">The version number.</param>
+    /// <param name="projectName">The project name. Cannot be null or empty.</param>
+    /// <param name="version">The version number. Cannot be null or empty.</param>
     /// <param name="environment">The target environment.</param>
     /// <param name="status">The build status.</param>
     /// <returns>A configured <see cref="DeploymentNotification"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="projectName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="projectName"/> is empty.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="version"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="version"/> is empty.</exception>
     public static DeploymentNotification CreateTestNotification(
         this NotificationServiceTests _,
         string projectName = "TestProject",
@@ -52,9 +57,13 @@ public static class NotificationServiceTestsExtensions
     /// Creates a valid channel configuration for testing purposes.
     /// </summary>
     /// <param name="channelType">The notification channel type.</param>
-    /// <param name="webhookUrl">The webhook URL.</param>
-    /// <param name="displayName">The display name.</param>
+    /// <param name="webhookUrl">The webhook URL. Cannot be null or empty.</param>
+    /// <param name="displayName">The display name. Cannot be null or empty.</param>
     /// <returns>A configured <see cref="ChannelConfiguration"/> instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="webhookUrl"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="webhookUrl"/> is empty.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="displayName"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="displayName"/> is empty.</exception>
     public static ChannelConfiguration CreateTestChannelConfiguration(
         this NotificationServiceTests _,
         global::DotNetDeployNotify.Core.NotificationChannel channelType = global::DotNetDeployNotify.Core.NotificationChannel.Slack,
@@ -84,10 +93,14 @@ public static class NotificationServiceTestsExtensions
     /// <summary>
     /// Creates a successful notification result for testing purposes.
     /// </summary>
-    /// <param name="notificationId">The notification ID.</param>
+    /// <param name="notificationId">The notification ID. Cannot be null or empty.</param>
     /// <param name="channel">The notification channel.</param>
-    /// <param name="configurationId">The configuration ID.</param>
+    /// <param name="configurationId">The configuration ID. Cannot be null or empty.</param>
     /// <returns>A configured <see cref="NotificationResult"/> instance marked as successful.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="notificationId"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="notificationId"/> is empty.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="configurationId"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="configurationId"/> is empty.</exception>
     public static NotificationResult CreateSuccessfulResult(
         this NotificationServiceTests _,
         string notificationId,
@@ -117,11 +130,17 @@ public static class NotificationServiceTestsExtensions
     /// <summary>
     /// Creates a failed notification result for testing purposes.
     /// </summary>
-    /// <param name="notificationId">The notification ID.</param>
+    /// <param name="notificationId">The notification ID. Cannot be null or empty.</param>
     /// <param name="channel">The notification channel.</param>
-    /// <param name="configurationId">The configuration ID.</param>
-    /// <param name="errorMessage">The error message.</param>
+    /// <param name="configurationId">The configuration ID. Cannot be null or empty.</param>
+    /// <param name="errorMessage">The error message. Cannot be null or empty.</param>
     /// <returns>A configured <see cref="NotificationResult"/> instance marked as failed.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="notificationId"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="notificationId"/> is empty.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="configurationId"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="configurationId"/> is empty.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="errorMessage"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="errorMessage"/> is empty.</exception>
     public static NotificationResult CreateFailedResult(
         this NotificationServiceTests _,
         string notificationId,
@@ -157,6 +176,8 @@ public static class NotificationServiceTestsExtensions
     /// </summary>
     /// <param name="mock">The mocked notification repository.</param>
     /// <param name="expectedNotification">The expected notification.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="mock"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="expectedNotification"/> is null.</exception>
     public static void VerifyNotificationCreated(
         this NotificationServiceTests _,
         Mock<INotificationRepository> mock,
@@ -178,6 +199,8 @@ public static class NotificationServiceTestsExtensions
     /// </summary>
     /// <param name="mock">The mocked notification repository.</param>
     /// <param name="expectedNotification">The expected notification.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="mock"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="expectedNotification"/> is null.</exception>
     public static void VerifyNotificationUpdated(
         this NotificationServiceTests _,
         Mock<INotificationRepository> mock,
@@ -197,6 +220,8 @@ public static class NotificationServiceTestsExtensions
     /// </summary>
     /// <param name="mock">The mocked result repository.</param>
     /// <param name="expectedResult">The expected result.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="mock"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="expectedResult"/> is null.</exception>
     public static void VerifyResultCreated(
         this NotificationServiceTests _,
         Mock<INotificationResultRepository> mock,
@@ -218,6 +243,8 @@ public static class NotificationServiceTestsExtensions
     /// <param name="mock">The mocked validation service.</param>
     /// <param name="isValid">Whether the validation should pass.</param>
     /// <param name="errors">Optional error messages if validation should fail.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="mock"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="errors"/> is null.</exception>
     public static void SetupValidationResult(
         this NotificationServiceTests _,
         Mock<IValidationService> mock,
@@ -225,12 +252,13 @@ public static class NotificationServiceTestsExtensions
         IEnumerable<string>? errors = null)
     {
         ArgumentNullException.ThrowIfNull(mock);
+        ArgumentNullException.ThrowIfNull(errors);
 
         mock.Setup(v => v.ValidateNotification(It.IsAny<DeploymentNotification>()))
             .Returns(new ValidationResult
             {
                 IsValid = isValid,
-                Errors = errors?.ToList() ?? new List<string>()
+                Errors = errors.ToList()
             });
     }
 
@@ -239,6 +267,8 @@ public static class NotificationServiceTestsExtensions
     /// </summary>
     /// <param name="mock">The mocked channel config repository.</param>
     /// <param name="configurations">The configurations to return.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="mock"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="configurations"/> is null.</exception>
     public static void SetupChannelConfigurations(
         this NotificationServiceTests _,
         Mock<IChannelConfigRepository> mock,
@@ -256,6 +286,8 @@ public static class NotificationServiceTestsExtensions
     /// </summary>
     /// <param name="mock">The mocked webhook dispatcher.</param>
     /// <param name="result">The result to return.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="mock"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="result"/> is null.</exception>
     public static void SetupWebhookDispatch(
         this NotificationServiceTests _,
         Mock<IWebhookDispatcher> mock,
