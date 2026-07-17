@@ -121,7 +121,10 @@ public static class NotificationProcessingWorkerExtensionsValidation
     /// <returns><see langword="true"/> if the configuration is valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="worker"/> is <see langword="null"/>.</exception>
     public static bool IsWorkerExtensionsValid(this NotificationProcessingWorker? worker)
-        => worker.ValidateWorkerExtensions().Count == 0;
+    {
+        ArgumentNullException.ThrowIfNull(worker);
+        return worker.ValidateWorkerExtensions().Count == 0;
+    }
 
     /// <summary>
     /// Ensures that the notification processing worker configuration is valid.
@@ -141,7 +144,7 @@ public static class NotificationProcessingWorkerExtensionsValidation
 
         throw new ArgumentException(
             $"NotificationProcessingWorker configuration is invalid:{System.Environment.NewLine}- {
-            string.Join($"{System.Environment.NewLine}- ", problems)
+                string.Join($"{System.Environment.NewLine}- ", problems)
             }");
     }
 
