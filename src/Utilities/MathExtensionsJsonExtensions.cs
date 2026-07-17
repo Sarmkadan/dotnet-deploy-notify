@@ -29,7 +29,7 @@ public static class MathExtensionsJsonExtensions
     /// Serializes MathExtensions type information to JSON string
     /// </summary>
     /// <param name="indented">Whether to format the JSON with indentation</param>
-    /// <returns>JSON string representation of MathExtensions metadata</returns>
+    /// <returns>JSON string representation of MathExtensions metadata containing type, namespace, assembly, and available methods</returns>
     public static string ToJson(bool indented = false)
     {
         var options = new JsonSerializerOptions(_jsonOptions)
@@ -110,22 +110,22 @@ public static class MathExtensionsJsonExtensions
     public sealed class MathExtensionsMetadata
     {
         /// <summary>
-        /// Gets or sets the type identifier
+        /// Gets or sets the type identifier (e.g., "MathExtensions")
         /// </summary>
         public string? Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the namespace
+        /// Gets or sets the namespace where the MathExtensions class is defined
         /// </summary>
         public string? Namespace { get; set; }
 
         /// <summary>
-        /// Gets or sets the assembly name
+        /// Gets or sets the assembly name where the MathExtensions class is defined
         /// </summary>
         public string? Assembly { get; set; }
 
         /// <summary>
-        /// Gets or sets the array of method names
+        /// Gets or sets the array of method names available in the MathExtensions class
         /// </summary>
         public string[]? Methods { get; set; }
     }
