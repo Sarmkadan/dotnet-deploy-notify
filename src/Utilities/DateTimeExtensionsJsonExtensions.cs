@@ -28,8 +28,8 @@ public static class DateTimeExtensionsJsonExtensions
     /// <summary>
     /// Serializes DateTimeExtensions type information to JSON string
     /// </summary>
-    /// <param name="indented">Whether to format the JSON with indentation</param>
-    /// <returns>JSON string representation of DateTimeExtensions metadata</returns>
+        /// <param name="indented">Whether to format the JSON with indentation for better readability</param>
+        /// <returns>JSON string representation of DateTimeExtensions metadata with camelCase property names</returns>
     public static string ToJson(bool indented = false)
     {
         var options = new JsonSerializerOptions(_jsonOptions)
@@ -114,26 +114,55 @@ public static class DateTimeExtensionsJsonExtensions
     /// <summary>
     /// Metadata representation of the DateTimeExtensions class for JSON serialization
     /// </summary>
+    /// <remarks>
+    /// This class is sealed to prevent inheritance, as it's a simple DTO for JSON serialization.
+    /// All properties are nullable to handle missing data during deserialization scenarios.
+    /// </remarks>
     public sealed class DateTimeExtensionsMetadata
     {
+        private string? _type;
+        private string? _namespace;
+        private string? _assembly;
+        private string[]? _methods;
+
         /// <summary>
         /// Gets or sets the type identifier
         /// </summary>
-        public string? Type { get; set; }
+        /// <exception cref="ArgumentException">Thrown when value is empty or whitespace</exception>
+        public string? Type
+        {
+            get => _type;
+            set => _type = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
         /// <summary>
         /// Gets or sets the namespace
         /// </summary>
-        public string? Namespace { get; set; }
+        /// <exception cref="ArgumentException">Thrown when value is empty or whitespace</exception>
+        public string? Namespace
+        {
+            get => _namespace;
+            set => _namespace = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
         /// <summary>
         /// Gets or sets the assembly name
         /// </summary>
-        public string? Assembly { get; set; }
+        /// <exception cref="ArgumentException">Thrown when value is empty or whitespace</exception>
+        public string? Assembly
+        {
+            get => _assembly;
+            set => _assembly = string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+        }
 
         /// <summary>
         /// Gets or sets the array of method names
         /// </summary>
-        public string[]? Methods { get; set; }
+        /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+        public string[]? Methods
+        {
+            get => _methods;
+            set => _methods = value is { Length: 0 } ? null : value;
+        }
     }
 }
