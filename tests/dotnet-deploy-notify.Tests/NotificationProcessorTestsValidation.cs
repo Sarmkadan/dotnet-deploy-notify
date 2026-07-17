@@ -35,8 +35,10 @@ public static class NotificationProcessorTestsValidation
     /// </summary>
     /// <param name="value">The instance to check.</param>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this NotificationProcessorTests value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return Validate(value).Count == 0;
     }
 
@@ -45,6 +47,7 @@ public static class NotificationProcessorTestsValidation
     /// throwing an <see cref="ArgumentException"/> with detailed validation messages if not.
     /// </summary>
     /// <param name="value">The instance to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not valid.</exception>
     public static void EnsureValid(this NotificationProcessorTests value)
     {
