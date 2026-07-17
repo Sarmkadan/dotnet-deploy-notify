@@ -284,6 +284,58 @@ builder.Services.Configure<DotnetDeployNotifyOptions>(options =>
     };
 });
 
+## CanaryDeploymentEngineExtensionsJsonExtensions
+
+The `CanaryDeploymentEngineExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for the `CanaryDeploymentEngineExtensions` class metadata. It enables converting canary deployment engine extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+This extension class is particularly useful for persisting canary deployment engine configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides methods for serialization (`ToJson()`), deserialization (`FromJson()`), and safe deserialization with error handling (`TryFromJson()`).
+
+Example usage:
+
+```csharp
+// Serialize to JSON string (compact format)
+string jsonCompact = CanaryDeploymentEngineExtensionsJsonExtensions.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"type":"CanaryDeploymentEngineExtensions","namespace":"DotNetDeployNotify.Canary","assembly":"DotNetDeployNotify","methods":["TryAdvanceRolloutAsync","TryPromoteAsync","TryAbortAsync","GetCanaryPercentageNormalizedAsync"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = CanaryDeploymentEngineExtensionsJsonExtensions.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "CanaryDeploymentEngineExtensions",
+  "namespace": "DotNetDeployNotify.Canary",
+  "assembly": "DotNetDeployNotify",
+  "methods": [
+    "TryAdvanceRolloutAsync",
+    "TryPromoteAsync",
+    "TryAbortAsync",
+    "GetCanaryPercentageNormalizedAsync"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = CanaryDeploymentEngineExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+  Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+  Console.WriteLine($"Namespace: {deserializedMetadata.Namespace}");
+  Console.WriteLine($"Assembly: {deserializedMetadata.Assembly}");
+  Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (CanaryDeploymentEngineExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+  Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+  Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ## CanaryServiceExtensionsJsonExtensions
 
 The `CanaryServiceExtensionsJsonExtensions` class provides JSON serialization and deserialization utilities for `CanaryServiceExtensionsMetadata` objects. It enables converting canary service extension metadata to and from JSON format with configurable formatting options, supporting both strict and tolerant parsing scenarios.
