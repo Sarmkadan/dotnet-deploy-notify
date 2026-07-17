@@ -158,6 +158,72 @@ if (result.IsSuccess)
 }
 ```
 
+## ResultValidation
+
+The `ResultValidation` class provides validation helpers for `Result` and `Result<T>` types to ensure data integrity when working with functional error handling patterns. It offers methods to validate result instances, check their validity, and throw exceptions when invalid results are encountered.
+
+The validation methods verify that successful results have appropriate null/default values and failed results have proper error messages, ensuring the `Result` type is used correctly throughout the application.
+
+Example usage:
+
+```csharp
+// Create a successful result
+var successResult = Result<int>.Ok(42);
+
+// Validate the result - returns empty list if valid
+var validationProblems = successResult.Validate();
+if (validationProblems.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var problem in validationProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+
+// Check if valid using the IsValid extension method
+bool isValid = successResult.IsValid(); // Returns true
+bool isValidNonGeneric = ((Result)successResult).IsValid(); // Returns true
+
+// Create a failed result
+var failureResult = Result<string>.Fail("Division by zero error");
+
+// Validate the failed result
+validationProblems = failureResult.Validate();
+if (validationProblems.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var problem in validationProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+
+// Check if failed result is valid (returns false)
+isValid = failureResult.IsValid(); // Returns false
+
+// Use EnsureValid to throw exceptions on invalid results
+try
+{
+    failureResult.EnsureValid(); // Throws ArgumentException
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
+
+// Validate a generic Result<T> with custom type
+var complexResult = Result<DeploymentNotification>.Ok(
+    new DeploymentNotification { ProjectName = "MyApp", Version = "1.0.0" }
+);
+
+if (complexResult.IsValid<DeploymentNotification>())
+{
+    var notification = complexResult.Value;
+    Console.WriteLine($"Valid notification for {notification.ProjectName}");
+}
+```
+
 ## NotificationProcessingWorker
 
 The `NotificationProcessingWorker` is a background worker that periodically processes pending notifications from the database, sending them through the configured channels. It runs on a configurable interval (default: 30 seconds) and provides statistics about processed notifications including success rates and uptime.
