@@ -2008,6 +2008,81 @@ Example usage:
 // Assume worker is an instance of NotificationProcessingWorker
 var worker = new NotificationProcessingWorker(notificationService, logger, TimeSpan.FromSeconds(30));
 
+## NotificationPipelineExtensions
+
+The `NotificationPipelineExtensions` class provides extension methods for the `NotificationPipeline` type that simplify common pipeline operations. These extensions enable fluent, readable code for executing notification pipelines and accessing results without directly working with the pipeline's internal state.
+
+The extension methods handle null checking, provide convenient access to processed notifications and metadata, and offer helper methods for common result analysis patterns.
+
+Example usage:
+
+```csharp
+// Create a notification pipeline with middleware
+var pipeline = new NotificationPipeline(
+    new List<INotificationMiddleware> {
+        new ValidationMiddleware(validationService),
+        new ChannelRoutingMiddleware(configRepository),
+        new WebhookDispatchMiddleware(dispatcher)
+    }
+);
+
+// Create a deployment notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyWebApp",
+    Version = "2.0.0",
+    Status = DeploymentStatus.Success,
+    Priority = NotificationPriority.High,
+    TargetEnvironment = Environment.Production,
+    BranchName = "main",
+    CommitHash = "abc123def456",
+    CommitAuthor = "vlad",
+    Message = "Version 2.0.0 deployed successfully",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord }
+};
+
+// Execute the pipeline and get result with metadata
+var result = await pipeline.ExecuteWithMetadataAsync(notification);
+
+// Check if execution was successful
+if (result.IsSuccessful())
+{
+    Console.WriteLine("Pipeline executed successfully!");
+    
+    // Get the processed notification
+    var processedNotification = result.GetProcessedNotification();
+    Console.WriteLine($"Processed {result.GetChannelCount()} channels");
+    
+    // Get original notification
+    var original = result.GetOriginalNotification();
+    Console.WriteLine($"Original notification: {original?.ProjectName} v{original?.Version}");
+}
+else
+{
+    // Get formatted validation errors
+    string errors = result.GetValidationErrors();
+    Console.WriteLine($"Pipeline failed with errors:\n{errors}");
+}
+
+// Execute and get only successful notifications (returns null on failure)
+var successfulNotification = await pipeline.ExecuteSuccessfullyAsync(notification);
+if (successfulNotification != null)
+{
+    Console.WriteLine($"Successfully processed notification for {successfulNotification.ProjectName}");
+}
+else
+{
+    Console.WriteLine("Processing failed");
+}
+
+// Create custom pipeline results
+var successResult = pipeline.CreateResult(notification, success: true);
+var failureResult = pipeline.CreateResult(notification, new[] { "Validation failed", "Channel not configured" });
+```
+
+// Assume worker is an instance of NotificationProcessingWorker
+var worker = new NotificationProcessingWorker(notificationService, logger, TimeSpan.FromSeconds(30))
+
 // Validate using extension methods and get detailed problems
 var problems = worker.ValidateWorkerExtensions();
 if (problems.Count > 0)
