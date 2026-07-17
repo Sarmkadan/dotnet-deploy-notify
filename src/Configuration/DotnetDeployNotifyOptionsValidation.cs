@@ -218,6 +218,7 @@ public static class DotnetDeployNotifyOptionsValidation
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static bool IsValid(this DotnetDeployNotifyOptions value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return value.Validate().Count == 0;
     }
 
@@ -236,7 +237,7 @@ public static class DotnetDeployNotifyOptionsValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                $"DotnetDeployNotifyOptions validation failed:{"\n"}{string.Join("\n", problems)}");
+                $"DotnetDeployNotifyOptions validation failed:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, problems)}");
         }
     }
 }
