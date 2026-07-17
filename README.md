@@ -559,6 +559,102 @@ catch (ArgumentException ex)
 }
 ```
 
+## NotificationExceptionExtensions
+
+The `NotificationExceptionExtensions` class provides extension methods for notification-related exceptions that enhance error handling and diagnostics. It offers functionality to format error messages, categorize exceptions, determine error severity, and extract diagnostic information for logging and monitoring systems.
+
+This extension class is particularly useful for implementing robust error handling in notification delivery systems, allowing applications to respond appropriately to different types of failures (configuration errors, delivery failures, validation errors) and provide detailed diagnostic information to monitoring tools.
+
+Example usage:
+
+```csharp
+// Create and throw a notification exception
+try
+{
+    var channelConfig = new ChannelConfiguration
+    {
+        ChannelType = NotificationChannel.Slack,
+        WebhookUrl = "https://hooks.slack.com/services/T123/B456/C789",
+        TargetId = "C123456"
+    };
+    
+    if (string.IsNullOrEmpty(channelConfig.WebhookUrl))
+    {
+        throw new ChannelConfigurationException(
+            "Webhook URL is required for Slack channel",
+            NotificationChannel.Slack,
+            "C123456"
+        );
+    }
+}
+catch (NotificationException ex)
+{
+    // Format the error message for user-friendly display
+    string formattedMessage = ex.ToFormattedErrorMessage();
+    Console.WriteLine($"Error: {formattedMessage}");
+    
+    // Check if it's a configuration error (can be fixed by updating config)
+    bool isConfigError = ex.IsConfigurationError();
+    if (isConfigError)
+    {
+        Console.WriteLine("Configuration error detected - check channel settings");
+    }
+    
+    // Check if it's a delivery failure (might succeed on retry)
+    bool isDeliveryFailure = ex.IsDeliveryFailure();
+    if (isDeliveryFailure)
+    {
+        Console.WriteLine("Delivery failure - may succeed on retry");
+    }
+    
+    // Check if it's a validation error (requires data fix)
+    bool isValidationError = ex.IsValidationError();
+    if (isValidationError)
+    {
+        Console.WriteLine("Validation error - check input data");
+    }
+    
+    // Get error category for monitoring/alerting systems
+    string errorCategory = ex.GetErrorCategory();
+    Console.WriteLine($"Error category: {errorCategory}");
+    
+    // Get severity level (0-100) for prioritization
+    int severityLevel = ex.GetSeverityLevel();
+    Console.WriteLine($"Severity level: {severityLevel}");
+    
+    // Extract diagnostic information for logging
+    var diagnostics = ex.GetDiagnosticInfo();
+    foreach (var kvp in diagnostics)
+    {
+        Console.WriteLine($"{kvp.Key}: {kvp.Value}");
+    }
+}
+
+// Example with webhook delivery failure
+try
+{
+    throw new WebhookDeliveryException(
+        "Failed to deliver notification to Discord",
+        NotificationChannel.Discord,
+        3,
+        403
+    );
+}
+catch (NotificationException ex)
+{
+    Console.WriteLine($"\nWebhook delivery error: {ex.ToFormattedErrorMessage()}");
+    Console.WriteLine($"Is delivery failure: {ex.IsDeliveryFailure()}");
+    Console.WriteLine($"Error category: {ex.GetErrorCategory()}");
+    Console.WriteLine($"Severity level: {ex.GetSeverityLevel()}");
+    
+    var diagnostics = ex.GetDiagnosticInfo();
+    Console.WriteLine($"\nDiagnostics:");
+    Console.WriteLine($"  Channel: {diagnostics["Channel"]}");
+    Console.WriteLine($"  Attempts: {diagnostics["Attempts"]}");
+    Console.WriteLine($"  LastStatusCode: {diagnostics["LastStatusCode"]}");
+}
+```
+
 ## ServiceExtensionsMetadataJsonExtensions
 
 The `ServiceExtensionsMetadataJsonExtensions` class provides JSON serialization and deserialization utilities for `ServiceExtensions` type information. It enables converting service extension metadata to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
