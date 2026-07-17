@@ -1485,6 +1485,115 @@ var maskedConfig = ChannelConfigurationBuilder.ForSlack()
 Console.WriteLine($"Masked config display: {maskedConfig.DisplayName}");
 ```
 
+## DotnetDeployNotifyOptionsValidation
+
+The `DotnetDeployNotifyOptionsValidation` class provides validation helpers for the `DotnetDeployNotifyOptions` configuration class. It validates all aspects of the deployment notification system configuration including notification settings, canary deployment thresholds, environment-specific channel configurations, and storage options.
+
+This validation class ensures that configuration values fall within acceptable ranges and that required fields are properly set before the application starts, preventing runtime errors from invalid configuration.
+
+Example usage:
+
+```csharp
+// Configure DotnetDeployNotifyOptions in appsettings.json
+{
+"DotnetDeployNotifyOptions": {
+"Notification": {
+"MaxRetries": 3,
+"WebhookTimeoutMs": 10000,
+"RetryDelayMs": 2000,
+"ProcessingIntervalSeconds": 30,
+"StorageType": "Database",
+"DefaultPriority": "Normal",
+"RetentionDays": 30,
+"EnvironmentChannels": {
+"Production": {
+"ChannelType": "Slack",
+"WebhookUrl": "https://hooks.slack.com/services/T123/B456/C789",
+"DisplayName": "Production Alerts",
+"TargetId": "C123456"
+}
+}
+},
+"Canary": {
+"Enabled": true,
+"AutoRollbackOnFailure": true,
+"LinearStepCount": 5,
+"Thresholds": {
+"MaxErrorRatePercent": 1.5,
+"MaxP95LatencyMs": 500,
+"MaxP99LatencyMs": 1000
+}
+}
+}
+}
+}
+
+// Or configure programmatically in Program.cs
+builder.Services.Configure<DotnetDeployNotifyOptions>(options =>
+{
+options.MaxRetries = 3;
+options.WebhookTimeoutMs = 10000;
+options.RetryDelayMs = 2000;
+options.ProcessingIntervalSeconds = 30;
+options.StorageType = "Database";
+options.DefaultPriority = "Normal";
+options.RetentionDays = 30;
+
+options.EnvironmentChannels = new Dictionary<string, EnvironmentChannelConfig>
+{
+["Production"] = new EnvironmentChannelConfig
+{
+ChannelType = "Slack",
+WebhookUrl = "https://hooks.slack.com/services/T123/B456/C789",
+DisplayName = "Production Alerts",
+TargetId = "C123456"
+}
+};
+
+options.Canary = new CanaryOptions
+{
+Enabled = true,
+AutoRollbackOnFailure = true,
+LinearStepCount = 5,
+Thresholds = new CanaryThresholds
+{
+MaxErrorRatePercent = 1.5,
+MaxP95LatencyMs = 500,
+MaxP99LatencyMs = 1000
+}
+};
+});
+
+// Validate configuration before starting the application
+var options = services.BuildServiceProvider().GetRequiredService<IOptions<DotnetDeployNotifyOptions>>().Value;
+
+// Get validation problems (returns empty list if valid)
+var validationProblems = options.Validate();
+if (validationProblems.Count > 0)
+{
+foreach (var problem in validationProblems)
+{
+Console.WriteLine($"Configuration error: {problem}");
+}
+return;
+}
+
+// Check if configuration is valid
+bool isValid = options.IsValid();
+Console.WriteLine($"Configuration is valid: {isValid}");
+
+// Ensure configuration is valid (throws ArgumentException if invalid)
+try
+{
+options.EnsureValid();
+Console.WriteLine("Configuration validation passed!");
+}
+catch (ArgumentException ex)
+{
+Console.WriteLine($"Configuration validation failed: {ex.Message}");
+}
+```
+
 ## CanaryOptions
 
 The `CanaryOptions` class configures canary deployment monitoring and rollback behavior. It defines thresholds for error rates, latency metrics, and deployment progression settings that determine when a canary deployment should automatically roll back or advance to the next stage.
