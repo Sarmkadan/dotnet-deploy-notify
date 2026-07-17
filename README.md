@@ -1040,6 +1040,64 @@ var mockDispatcher = new Mock<IWebhookDispatcher>();
 this.SetupWebhookDispatch(mockDispatcher, successResult);
 ```
 
+## PayloadBuilderTestsExtensions
+
+The `PayloadBuilderTestsExtensions` class provides extension methods for `PayloadBuilderTests` to simplify unit test creation for webhook payload building functionality. It includes factory methods for creating test deployment notifications and channel configurations with various settings, along with fluent-style builder methods for modifying existing objects. These extensions make tests more readable and maintainable by encapsulating common test setup patterns for payload builder scenarios.
+
+Example usage:
+
+```csharp
+// Create a basic test notification
+var notification = this.CreateTestNotification();
+
+// Create channel configurations for different platforms
+var slackConfig = this.CreateSlackChannelConfig();
+var discordConfig = this.CreateDiscordChannelConfig();
+var telegramConfig = this.CreateTelegramChannelConfig();
+
+// Modify notification properties using fluent builders
+var failedNotification = notification.WithStatus(BuildStatus.DeploymentFailed);
+var stagingNotification = notification.WithEnvironment(Environment.Staging);
+var longRunningNotification = notification.WithDuration(300); // 5 minutes
+
+// Modify channel configuration properties
+var emojiConfig = slackConfig.WithEmojisEnabled();
+var minimalConfig = telegramConfig.WithoutCommitDetails().WithoutBuildUrl();
+var blockKitConfig = discordConfig.WithSlackBlockKit();
+
+// Test payload building
+var payloadBuilder = new PayloadBuilder();
+var payload = payloadBuilder.BuildPayload(notification, slackConfig);
+
+// Assert payload contains expected properties
+payload.ShouldHaveEventType("DeploymentNotification");
+payload.ShouldContainCustomProperty("projectName", "TestApp");
+payload.ShouldContainCustomProperty("version", "1.0.0");
+```
+
+```csharp
+// Test Slack payload with custom properties
+var notification = this.CreateTestNotification();
+var slackConfig = this.CreateSlackChannelConfig();
+
+// Build payload and verify Slack-specific formatting
+var payload = new PayloadBuilder().BuildPayload(notification, slackConfig);
+
+// Verify Slack formatting
+var slackFormat = payload.Data.CustomProperties.GetProperty("slack_format");
+slackFormat.GetProperty("attachments")[0].GetProperty("color").GetString()
+  .Should().Be("#00ff00"); // Success color
+
+// Test Discord payload
+var discordPayload = new PayloadBuilder().BuildPayload(notification, this.CreateDiscordChannelConfig());
+
+// Test Telegram payload
+var telegramPayload = new PayloadBuilder().BuildPayload(notification, this.CreateTelegramChannelConfig());
+var telegramText = telegramPayload.Data.CustomProperties.GetProperty("telegram_text").GetString();
+telegramText.ShouldContainProjectAndVersion("TestApp", "1.0.0");
+telegramText.ShouldContainCommitInfo("abc1234", "Test User");
+```
+
 ## ChannelPayloadTests
 
 The `ChannelPayloadTests` class verifies per-channel payload formatting by driving the real `WebhookDispatcher` and `PayloadBuilder` through a `FakeWebhookTransport` and asserting on the captured wire payload. These tests ensure that notifications sent to different channels (Slack, Discord, Telegram, generic webhooks) are properly formatted according to each platform's requirements.
