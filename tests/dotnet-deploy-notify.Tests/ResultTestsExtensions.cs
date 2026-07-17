@@ -17,10 +17,10 @@ public static class ResultTestsExtensions
     /// <summary>
     /// Asserts that a result is successful and contains the expected value.
     /// </summary>
-    /// <typeparam name="T">The type of the result value</typeparam>
-    /// <param name="result">The result to assert</param>
-    /// <param name="expectedValue">The expected value</param>
-    /// <exception cref="ArgumentNullException">Thrown when result is null</exception>
+    /// <typeparam name="T">The type of the result value.</typeparam>
+    /// <param name="result">The result to assert.</param>
+    /// <param name="expectedValue">The expected value.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
     public static void ShouldBeSuccessWithValue<T>(this Result<T> result, T expectedValue)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -33,10 +33,10 @@ public static class ResultTestsExtensions
     /// <summary>
     /// Asserts that a result is failed and contains the expected error message.
     /// </summary>
-    /// <typeparam name="T">The type of the result value</typeparam>
-    /// <param name="result">The result to assert</param>
-    /// <param name="expectedError">The expected error message</param>
-    /// <exception cref="ArgumentNullException">Thrown when result is null</exception>
+    /// <typeparam name="T">The type of the result value.</typeparam>
+    /// <param name="result">The result to assert.</param>
+    /// <param name="expectedError">The expected error message.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="result"/> is <see langword="null"/>.</exception>
     public static void ShouldBeFailureWithError<T>(this Result<T> result, string expectedError)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -49,10 +49,10 @@ public static class ResultTestsExtensions
     /// <summary>
     /// Asserts that a result contains all expected errors.
     /// </summary>
-    /// <typeparam name="T">The type of the result value</typeparam>
-    /// <param name="result">The result to assert</param>
-    /// <param name="expectedErrors">The expected error messages</param>
-    /// <exception cref="ArgumentNullException">Thrown when result or expectedErrors is null</exception>
+    /// <typeparam name="T">The type of the result value.</typeparam>
+    /// <param name="result">The result to assert.</param>
+    /// <param name="expectedErrors">The expected error messages.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="result"/> or <paramref name="expectedErrors"/> is <see langword="null"/>.</exception>
     public static void ShouldContainErrors<T>(this Result<T> result, IReadOnlyList<string> expectedErrors)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -63,17 +63,17 @@ public static class ResultTestsExtensions
 
         foreach (var expectedError in expectedErrors)
         {
-            result.Error.Should().Contain(expectedError, "Expected error message to contain: {0}", expectedError);
+            result.Errors.Should().Contain(expectedError, "Expected error message to contain: {0}", expectedError);
         }
     }
 
     /// <summary>
     /// Asserts that a result is successful and the value matches a predicate.
     /// </summary>
-    /// <typeparam name="T">The type of the result value</typeparam>
-    /// <param name="result">The result to assert</param>
-    /// <param name="predicate">The predicate that the value should satisfy</param>
-    /// <exception cref="ArgumentNullException">Thrown when result or predicate is null</exception>
+    /// <typeparam name="T">The type of the result value.</typeparam>
+    /// <param name="result">The result to assert.</param>
+    /// <param name="predicate">The predicate that the value should satisfy.</param>
+    /// <exception cref="ArgumentNullException"><paramref name="result"/> or <paramref name="predicate"/> is <see langword="null"/>.</exception>
     public static void ShouldBeSuccessAndSatisfy<T>(this Result<T> result, Func<T, bool> predicate)
     {
         ArgumentNullException.ThrowIfNull(result);
