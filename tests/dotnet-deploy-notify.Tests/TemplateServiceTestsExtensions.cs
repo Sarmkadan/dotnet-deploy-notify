@@ -20,6 +20,7 @@ public static class TemplateServiceTestsExtensions
     /// <param name="version">The version to use in the notification.</param>
     /// <param name="status">The build status to use in the notification.</param>
     /// <returns>A configured <see cref="DeploymentNotification"/> instance.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="projectName"/> or <paramref name="version"/> is null or empty.</exception>
     public static DeploymentNotification CreateTestNotification(
         this TemplateServiceTests _,
         string projectName = "TestApp",
@@ -54,6 +55,8 @@ public static class TemplateServiceTestsExtensions
     /// <param name="template">The template to render.</param>
     /// <param name="notification">The deployment notification.</param>
     /// <param name="expected">The expected rendered result.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="template"/> or <paramref name="expected"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="notification"/> is null.</exception>
     public static void ShouldRenderTemplateCorrectly(
         this TemplateServiceTests templateServiceTests,
         string template,
@@ -74,6 +77,7 @@ public static class TemplateServiceTestsExtensions
     /// <param name="templateServiceTests">The test instance.</param>
     /// <param name="projectName">The project name.</param>
     /// <returns>A notification with null duration.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="projectName"/> is null or empty.</exception>
     public static DeploymentNotification CreateNotificationWithNullDuration(
         this TemplateServiceTests templateServiceTests,
         string projectName = "TestApp")
@@ -143,6 +147,9 @@ public static class TemplateServiceTestsExtensions
     /// <summary>
     /// Gets the template service instance from the test class.
     /// </summary>
+    /// <param name="test">The test instance.</param>
+    /// <returns>The <see cref="TemplateService"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="test"/> is null.</exception>
     public static TemplateService TemplateService(this TemplateServiceTests test)
     {
         ArgumentNullException.ThrowIfNull(test);
@@ -152,6 +159,9 @@ public static class TemplateServiceTestsExtensions
     /// <summary>
     /// Gets the mock logger instance from the test class.
     /// </summary>
+    /// <param name="test">The test instance.</param>
+    /// <returns>The mock logger instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="test"/> is null.</exception>
     public static ILogger<TemplateService> MockLogger(this TemplateServiceTests test)
     {
         ArgumentNullException.ThrowIfNull(test);
@@ -164,6 +174,9 @@ public static class TemplateServiceTestsExtensions
     /// <typeparam name="T">The field type.</typeparam>
     /// <param name="fieldName">The field name.</param>
     /// <returns>The field value.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="test"/> or <paramref name="fieldName"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="fieldName"/> is empty or whitespace.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the field is not found or has the wrong type.</exception>
     private static T GetFieldValue<T>(this TemplateServiceTests test, string fieldName)
     {
         ArgumentNullException.ThrowIfNull(test);
@@ -173,8 +186,10 @@ public static class TemplateServiceTestsExtensions
             fieldName,
             System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
 
-        return field?.GetValue(test) is T value ? value : throw new InvalidOperationException(
-            $"Field '{fieldName}' not found or has wrong type. Expected: {typeof(T).Name}");
+        return field?.GetValue(test) is T value
+            ? value
+            : throw new InvalidOperationException(
+                $"Field '{fieldName}' not found or has wrong type. Expected: {typeof(T).Name}");
     }
 
     /// <summary>
@@ -183,6 +198,7 @@ public static class TemplateServiceTestsExtensions
     /// <param name="templateServiceTests">The test instance.</param>
     /// <param name="message">The custom message.</param>
     /// <returns>A notification with the specified message.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="message"/> is null or empty.</exception>
     public static DeploymentNotification CreateNotificationWithMessage(
         this TemplateServiceTests templateServiceTests,
         string message)
@@ -208,6 +224,7 @@ public static class TemplateServiceTestsExtensions
     /// <param name="templateServiceTests">The test instance.</param>
     /// <param name="repositoryUrl">The repository URL.</param>
     /// <returns>A notification with the specified repository URL.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="repositoryUrl"/> is null or empty.</exception>
     public static DeploymentNotification CreateNotificationWithRepositoryUrl(
         this TemplateServiceTests templateServiceTests,
         string repositoryUrl)
