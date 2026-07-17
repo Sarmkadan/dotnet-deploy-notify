@@ -36,16 +36,19 @@ public static class ServiceCollectionExtensionsJsonExtensions
     public static string ToJson(this ServiceConfigurationBuilder value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
-
-        var options = indented
-            ? new JsonSerializerOptions(_jsonOptions)
-            {
-                WriteIndented = true
-            }
-            : _jsonOptions;
-
-        return JsonSerializer.Serialize(value, options);
+        return JsonSerializer.Serialize(value, CreateJsonSerializerOptions(indented));
     }
+
+    /// <summary>
+    /// Creates a new <see cref="JsonSerializerOptions"/> instance based on the provided parameters.
+    /// </summary>
+    /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
+    /// <returns>A configured <see cref="JsonSerializerOptions"/> instance.</returns>
+    private static JsonSerializerOptions CreateJsonSerializerOptions(bool indented) =>
+        new(_jsonOptions)
+        {
+            WriteIndented = indented
+        };
 
     /// <summary>
     /// Deserializes a JSON string to a <see cref="ServiceConfigurationBuilder"/> instance.
@@ -57,7 +60,6 @@ public static class ServiceCollectionExtensionsJsonExtensions
     public static ServiceConfigurationBuilder? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
-
         return JsonSerializer.Deserialize<ServiceConfigurationBuilder>(json, _jsonOptions);
     }
 
