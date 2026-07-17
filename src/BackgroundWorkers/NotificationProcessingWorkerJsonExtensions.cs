@@ -8,9 +8,12 @@ namespace DotNetDeployNotify.BackgroundWorkers;
 /// <summary>
 /// Provides JSON (de)serialization extensions for <see cref="NotificationProcessingWorker"/>.
 /// </summary>
+/// <remarks>
+/// This class is static and cannot be inherited.
+/// </remarks>
 public static class NotificationProcessingWorkerJsonExtensions
 {
-    private static readonly JsonSerializerOptions Options = new(JsonSerializerDefaults.Web)
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
@@ -18,43 +21,50 @@ public static class NotificationProcessingWorkerJsonExtensions
     /// <summary>
     /// Serializes the <see cref="NotificationProcessingWorker"/> instance to a JSON string.
     /// </summary>
-    /// <param name="value">The worker instance to serialize.</param>
-    /// <param name="indented">If <c>true</c>, the output JSON will be formatted with indentation.</param>
-    /// <returns>A JSON representation of <paramref name="value"/>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.</exception>
+    /// <param name="value">The <see cref="NotificationProcessingWorker"/> instance to serialize.</param>
+    /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
+    /// <returns>A JSON string representation of the <see cref="NotificationProcessingWorker"/> instance.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
     public static string ToJson(this NotificationProcessingWorker value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
-        var opts = new JsonSerializerOptions(Options) { WriteIndented = indented };
-        return JsonSerializer.Serialize(value, opts);
+
+        var options = indented
+            ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
+            : _jsonOptions;
+
+        return JsonSerializer.Serialize(value, options);
     }
 
     /// <summary>
-    /// Deserializes a JSON string into a <see cref="NotificationProcessingWorker"/> instance.
+    /// Deserializes a JSON string to a <see cref="NotificationProcessingWorker"/> instance.
     /// </summary>
-    /// <param name="json">The JSON string representing a <see cref="NotificationProcessingWorker"/>.</param>
-    /// <returns>The deserialized <see cref="NotificationProcessingWorker"/>, or <c>null</c> if the JSON is empty.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="json"/> is <c>null</c>.</exception>
-    /// <exception cref="JsonException">The JSON is invalid or cannot be deserialized into a <see cref="NotificationProcessingWorker"/>.</exception>
+    /// <param name="json">The JSON string to deserialize.</param>
+    /// <returns>A <see cref="NotificationProcessingWorker"/> instance populated from the JSON string,
+    /// or <see langword="null"/> if the JSON represents a null value.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static NotificationProcessingWorker? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
-        return JsonSerializer.Deserialize<NotificationProcessingWorker>(json, Options);
+        return JsonSerializer.Deserialize<NotificationProcessingWorker>(json, _jsonOptions);
     }
 
     /// <summary>
-    /// Attempts to deserialize a JSON string into a <see cref="NotificationProcessingWorker"/> instance.
+    /// Attempts to deserialize a JSON string to a <see cref="NotificationProcessingWorker"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">When this method returns, contains the deserialized <see cref="NotificationProcessingWorker"/> if the operation succeeded; otherwise, <c>null</c>.</param>
-    /// <returns><c>true</c> if deserialization succeeded; otherwise, <c>false</c>.</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="json"/> is <c>null</c>.</exception>
+    /// <param name="value">Receives the deserialized <see cref="NotificationProcessingWorker"/> instance,
+    /// or <see langword="null"/> if deserialization fails.</param>
+    /// <returns><see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     public static bool TryFromJson(string json, out NotificationProcessingWorker? value)
     {
         ArgumentNullException.ThrowIfNull(json);
+
         try
         {
-            value = FromJson(json);
+            value = JsonSerializer.Deserialize<NotificationProcessingWorker>(json, _jsonOptions);
             return true;
         }
         catch (JsonException)
