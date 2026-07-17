@@ -349,6 +349,72 @@ Example usage:
 
 [...previous content...]
 
+## ObjectExtensionsJsonExtensions
+
+The `ObjectExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for `ObjectExtensions` metadata. It enables converting object extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+
+This extension class is particularly useful for persisting object extension configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
+
+Example usage:
+
+```csharp
+// Serialize to JSON string (compact format)
+string jsonCompact = ObjectExtensionsJsonExtensions.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"type":"ObjectExtensions","namespace":"DotNetDeployNotify.Utilities","assembly":"DotNetDeployNotify","methods":["SafeCast","IsNull","IsNotNull","IfNotNull","Map","ShallowCopy","GetPropertyValue","SetPropertyValue","ToDictionary","EqualsAny","IsDefault","GetValueOrDefault","ToStringSafe","GetTypeName","GetFullTypeName","Chain","Validate"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = ObjectExtensionsJsonExtensions.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "ObjectExtensions",
+  "namespace": "DotNetDeployNotify.Utilities",
+  "assembly": "DotNetDeployNotify",
+  "methods": [
+    "SafeCast",
+    "IsNull",
+    "IsNotNull",
+    "IfNotNull",
+    "Map",
+    "ShallowCopy",
+    "GetPropertyValue",
+    "SetPropertyValue",
+    "ToDictionary",
+    "EqualsAny",
+    "IsDefault",
+    "GetValueOrDefault",
+    "ToStringSafe",
+    "GetTypeName",
+    "GetFullTypeName",
+    "Chain",
+    "Validate"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = ObjectExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+    Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+    Console.WriteLine($"Namespace: {deserializedMetadata.Namespace}");
+    Console.WriteLine($"Assembly: {deserializedMetadata.Assembly}");
+    Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (ObjectExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+    Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+    Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ## CollectionExtensionsJsonExtensions
 
 The `CollectionExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for collection metadata. It enables converting collection extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
