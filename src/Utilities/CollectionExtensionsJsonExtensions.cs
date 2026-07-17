@@ -4,6 +4,7 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -39,28 +40,27 @@ public static class CollectionExtensionsJsonExtensions
 
         var metadata = new CollectionExtensionsMetadata
         {
-            Type = "CollectionExtensions",
+            Type = typeof(CollectionExtensions).Name,
             Namespace = typeof(CollectionExtensions).Namespace ?? "DotNetDeployNotify.Utilities",
             Assembly = typeof(CollectionExtensions).Assembly.GetName().Name ?? "DotNetDeployNotify",
-            Methods = [
-                "AddIfNotExists",
-                "AddRange",
-                "RemoveWhere",
-                "Chunk",
-                "DistinctBy",
-                "Partition",
-                "GetAtIndexOrDefault",
-                "IsNullOrEmpty",
-                "HasItems",
-                "ToCommaSeparatedString",
-                "GetRandom",
-                "Shuffle",
-                "CountBy",
-                "Flatten"
-            ]
+            Methods = GetPublicStaticMethodNames(typeof(CollectionExtensions))
         };
 
         return JsonSerializer.Serialize(metadata, options);
+    }
+
+    /// <summary>
+    /// Gets the names of all public static methods in a type
+    /// </summary>
+    /// <param name="type">The type to inspect</param>
+    /// <returns>Array of method names</returns>
+    private static string[] GetPublicStaticMethodNames(Type type)
+    {
+        return type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(m => !m.IsSpecialName) // Exclude property accessors, operators, etc.
+            .Select(m => m.Name)
+            .OrderBy(name => name)
+            .ToArray();
     }
 
     /// <summary>
