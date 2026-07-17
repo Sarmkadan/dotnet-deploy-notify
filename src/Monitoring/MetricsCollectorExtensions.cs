@@ -1,4 +1,5 @@
 #nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -21,9 +22,8 @@ public static class MetricsCollectorExtensions
     {
         ArgumentNullException.ThrowIfNull(collector);
         return collector.GetAllMetrics()
-                        .Select(m => m.Name)
-                        .ToList()
-                        .AsReadOnly();
+            .Select(m => m.Name)
+            .ToList();
     }
 
     /// <summary>
@@ -40,10 +40,9 @@ public static class MetricsCollectorExtensions
         ArgumentOutOfRangeException.ThrowIfLessThan(count, 1);
 
         return collector.GetAllMetrics()
-                        .OrderByDescending(m => m.Average)
-                        .Take(count)
-                        .ToList()
-                        .AsReadOnly();
+            .OrderByDescending(m => m.Average)
+            .Take(count)
+            .ToList();
     }
 
     /// <summary>
