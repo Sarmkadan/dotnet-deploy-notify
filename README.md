@@ -1625,6 +1625,58 @@ var maskedConfig = ChannelConfigurationBuilder.ForSlack()
 Console.WriteLine($"Masked config display: {maskedConfig.DisplayName}");
 ```
 
+## CacheEntryExtensionsJsonExtensions
+
+The `CacheEntryExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for `CacheEntryExtensions` metadata. It enables converting cache entry extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+This extension class is particularly useful for persisting cache extension configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
+
+Example usage:
+
+```csharp
+// Serialize to JSON string (compact format)
+string jsonCompact = CacheEntryExtensionsJsonExtensions.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"type":"CacheEntryExtensions","namespace":"DotNetDeployNotify.Caching","assembly":"DotNetDeployNotify","methods":["GetTimeToLive","IsValid","GetAge","GetExpirationPercentage"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = CacheEntryExtensionsJsonExtensions.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "CacheEntryExtensions",
+  "namespace": "DotNetDeployNotify.Caching",
+  "assembly": "DotNetDeployNotify",
+  "methods": [
+    "GetTimeToLive",
+    "IsValid",
+    "GetAge",
+    "GetExpirationPercentage"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = CacheEntryExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+    Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+    Console.WriteLine($"Namespace: {deserializedMetadata.Namespace}");
+    Console.WriteLine($"Assembly: {deserializedMetadata.Assembly}");
+    Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (CacheEntryExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+    Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+    Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ## DotnetDeployNotifyOptionsValidation
 
 The `DotnetDeployNotifyOptionsValidation` class provides validation helpers for the `DotnetDeployNotifyOptions` configuration class. It validates all aspects of the deployment notification system configuration including notification settings, canary deployment thresholds, environment-specific channel configurations, and storage options.
