@@ -3,7 +3,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System.Globalization;
 
@@ -60,13 +60,14 @@ public static class DomainEventExtensions
     {
         ArgumentNullException.ThrowIfNull(@event);
 
+        return !includeDetails
+            ? @event.ToString()
+            : FormatForLogWithDetails(@event);
+    }
+
+    private static string FormatForLogWithDetails(DomainEvent @event)
+    {
         var baseInfo = @event.ToString();
-
-        if (!includeDetails)
-        {
-            return baseInfo;
-        }
-
         var details = new List<string> { baseInfo };
 
         switch (@event)
@@ -114,7 +115,7 @@ public static class DomainEventExtensions
         DateTime endUtc)
     {
         ArgumentNullException.ThrowIfNull(@event);
-        ArgumentOutOfRangeException.ThrowIfLessThan(endUtc, startUtc);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(startUtc, endUtc);
 
         return @event.OccurredAt >= startUtc && @event.OccurredAt <= endUtc;
     }
