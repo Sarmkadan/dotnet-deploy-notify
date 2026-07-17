@@ -89,20 +89,30 @@ public static class NotificationBuilderJsonExtensions
     }
 
     /// <summary>
-    /// Helper method to populate a NotificationBuilder from a deserialized DeploymentNotification
+    /// Populates a NotificationBuilder from a deserialized DeploymentNotification
     /// </summary>
+    /// <param name="builder">The NotificationBuilder instance to populate</param>
+    /// <param name="notification">The DeploymentNotification containing the data</param>
+    /// <returns>The populated NotificationBuilder instance</returns>
+    /// <exception cref="ArgumentNullException">Thrown when builder or notification is null</exception>
     private static NotificationBuilder WithNotification(this NotificationBuilder builder, DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(builder);
+        ArgumentNullException.ThrowIfNull(notification);
+
         return builder
-            .WithProject(notification.ProjectName, notification.Version ?? "")
+            .WithProject(notification.ProjectName, notification.Version ?? string.Empty)
             .WithStatus(notification.Status, notification.Message)
             .WithEnvironment(notification.TargetEnvironment)
-            .WithBranch(notification.BranchName ?? "", notification.CommitHash, notification.CommitAuthor)
-            .WithRepository(notification.RepositoryUrl ?? "")
-            .WithBuildUrl(notification.BuildUrl ?? "")
+            .WithBranch(
+                notification.BranchName ?? string.Empty,
+                notification.CommitHash ?? string.Empty,
+                notification.CommitAuthor ?? string.Empty)
+            .WithRepository(notification.RepositoryUrl ?? string.Empty)
+            .WithBuildUrl(notification.BuildUrl ?? string.Empty)
             .WithDuration(notification.DurationSeconds ?? 0)
             .WithChannels(notification.Channels ?? [])
             .WithPriority(notification.Priority)
-            .WithMetadata(notification.Metadata);
+            .WithMetadata(notification.Metadata ?? new Dictionary<string, object>());
     }
 }
