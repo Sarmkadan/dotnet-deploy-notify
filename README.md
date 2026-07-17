@@ -618,6 +618,58 @@ Console.WriteLine("Failed to deserialize metadata");
 }
 ```
 
+## SearchCriteriaExtensionsJsonExtensions
+
+The `SearchCriteriaExtensionsJsonExtensions` class provides JSON serialization and deserialization utilities for `SearchCriteriaExtensionsMetadata` objects. It enables converting search criteria extension metadata to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+This extension class is particularly useful for persisting search criteria extension configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
+
+Example usage:
+
+```csharp
+// Serialize SearchCriteriaExtensions metadata to JSON string (compact format)
+string jsonCompact = SearchCriteriaExtensionsJsonExtensions.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"type":"SearchCriteriaExtensions","namespace":"DotNetDeployNotify.Search","assembly":"DotNetDeployNotify","methods":["Search","Find","Filter","GetResults"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = SearchCriteriaExtensionsJsonExtensions.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "SearchCriteriaExtensions",
+  "namespace": "DotNetDeployNotify.Search",
+  "assembly": "DotNetDeployNotify",
+  "methods": [
+    "Search",
+    "Find",
+    "Filter",
+    "GetResults"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = SearchCriteriaExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+  Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+  Console.WriteLine($"Namespace: {deserializedMetadata.Namespace}");
+  Console.WriteLine($"Assembly: {deserializedMetadata.Assembly}");
+  Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (SearchCriteriaExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+  Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+  Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ## CacheEntry
 
 The `CacheEntry<T>` class represents a single cache entry in the in-memory cache system. It stores a cached value along with metadata such as expiration time and creation timestamp, enabling time-to-live (TTL) functionality for cache entries.
