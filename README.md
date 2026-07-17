@@ -458,6 +458,87 @@ TrafficSplitterExtensionsValidation.EnsureValidCreateExponentialCanaryDeployment
 );
 ```
 
+## DomainEventExtensions
+
+The `DomainEventExtensions` class provides extension methods for working with `DomainEvent` objects in the deployment notification system. These methods offer convenient utilities for checking event status, extracting channel information, formatting events for logging, and accessing event-specific data without needing to cast to concrete event types.
+
+The extension methods handle null checks and provide consistent behavior across different event types including `NotificationCreatedEvent`, `NotificationProcessedEvent`, and `ChannelDeliveryFailedEvent`.
+
+Example usage:
+
+```csharp
+// Create a notification created event
+var createdEvent = new NotificationCreatedEvent(
+    notificationId: Guid.NewGuid().ToString(),
+    projectName: "MyApplication",
+    version: "2.0.0",
+    channels: new List<string> { "Slack", "Discord", "Telegram" },
+    occurredAt: DateTime.UtcNow
+);
+
+// Use extension methods to work with the event
+bool hasChannels = createdEvent.HasChannels();
+Console.WriteLine($"Event has channels: {hasChannels}"); // true
+
+IReadOnlyList<string> channels = createdEvent.GetChannels();
+Console.WriteLine($"Channels: {string.Join(", ", channels)}");
+
+string? notificationId = createdEvent.GetNotificationId();
+Console.WriteLine($"Notification ID: {notificationId}");
+
+// Check if event occurred within a time window
+bool occurredBetween = createdEvent.OccurredBetween(
+    DateTime.UtcNow.AddHours(-1),
+    DateTime.UtcNow.AddMinutes(-30)
+);
+Console.WriteLine($"Occurred between window: {occurredBetween}");
+
+// Format event for logging
+string logMessage = createdEvent.FormatForLog(includeDetails: true);
+Console.WriteLine(logMessage);
+
+// Process a notification processed event
+var processedEvent = new NotificationProcessedEvent(
+    notificationId: Guid.NewGuid().ToString(),
+    projectName: "MyApplication",
+    version: "2.0.0",
+    channels: new List<string> { "Slack", "Discord" },
+    success: true,
+    occurredAt: DateTime.UtcNow
+);
+
+// Check if processing was successful
+bool isSuccess = processedEvent.IsSuccess();
+Console.WriteLine($"Processing successful: {isSuccess}"); // true
+
+// Get error message if any
+string? errorMessage = processedEvent.GetErrorMessage();
+Console.WriteLine($"Error message: {errorMessage ?? "None"}");
+
+// Process a failed delivery event
+var failedEvent = new ChannelDeliveryFailedEvent(
+    notificationId: Guid.NewGuid().ToString(),
+    projectName: "MyApplication",
+    version: "2.0.0",
+    channelName: "Slack",
+    attemptNumber: 1,
+    errorMessage: "Webhook URL not responding",
+    occurredAt: DateTime.UtcNow
+);
+
+// Get error message from failed delivery
+string? failedError = failedEvent.GetErrorMessage();
+Console.WriteLine($"Failed delivery error: {failedError}");
+
+// Check if event has channels
+bool failedHasChannels = failedEvent.HasChannels();
+Console.WriteLine($"Failed event has channels: {failedHasChannels}"); // false
+
+// Get notification ID from any event type
+string? anyNotificationId = failedEvent.GetNotificationId();
+Console.WriteLine($"Notification ID from failed event: {anyNotificationId}");
+```
+
 ## ServiceExtensionsMetadataJsonExtensions
 
 The `ServiceExtensionsMetadataJsonExtensions` class provides JSON serialization and deserialization utilities for `ServiceExtensions` type information. It enables converting service extension metadata to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
