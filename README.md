@@ -1307,6 +1307,71 @@ Console.WriteLine($"Created Telegram configuration: {telegramConfig.DisplayName}
 var channelConfigurations = new List<ChannelConfiguration> { slackConfig, discordConfig, telegramConfig };
 ```
 
+## ChannelConfigurationBuilderExtensions
+
+The `ChannelConfigurationBuilderExtensions` class provides extension methods for the `ChannelConfigurationBuilder` that add additional configuration options and convenience methods for building channel configurations. These extensions enable more expressive and readable configuration code by providing methods for setting API tokens, custom headers, settings, timeouts in different units, and channel-specific formatting options.
+
+Example usage:
+
+```csharp
+// Create a Slack channel configuration with API token and custom headers
+var slackConfig = ChannelConfigurationBuilder.ForSlack()
+    .WithApiToken("xoxb-slack-token-123")
+    .WithCustomHeader("X-Custom-Header", "custom-value")
+    .WithDisplayName("Production Slack Alerts")
+    .WithWebhook("https://hooks.slack.com/services/T123/B456/C789")
+    .WithTimeoutSeconds(10)
+    .UseSlackBlockKit()
+    .EnableEmojis()
+    .WithMinimumPriority(NotificationPriority.High)
+    .AllowEnvironments(Environment.Production)
+    .AllowStatuses(BuildStatus.Success, BuildStatus.Failed)
+    .Build();
+
+Console.WriteLine($"Slack config - Display: {slackConfig.DisplayName}, " +
+                $"Priority: {slackConfig.MinimumPriority}, " +
+                $"Environments: {string.Join(", ", slackConfig.AllowedEnvironments)}");
+
+// Create a Discord channel configuration with timeout in minutes
+var discordConfig = ChannelConfigurationBuilder.ForDiscord()
+    .WithDisplayName("Development Discord")
+    .WithWebhook("https://discord.com/api/webhooks/789/abc")
+    .WithTimeoutMinutes(2)
+    .WithSetting("theme", "dark")
+    .WithIsEnabled(true)
+    .Build();
+
+Console.WriteLine($"Discord config created with {discordConfig.Settings?.Count ?? 0} settings");
+
+// Create a generic webhook configuration
+var webhookConfig = ChannelConfigurationBuilderExtensions.ForWebhook(builder =>
+{
+    builder.WithDisplayName("Generic Webhook")
+          .WithWebhook("https://webhook.example.com/endpoint")
+          .WithTimeoutSeconds(5)
+          .WithCustomHeader("Authorization", "Bearer token123")
+          .WithSetting("format", "json");
+});
+
+Console.WriteLine($"Webhook config created: {webhookConfig.DisplayName}");
+
+// Validate configuration before use
+var isValid = ChannelConfigurationBuilderExtensions.ForWebhook(builder =>
+{
+    builder.WithWebhook("https://webhook.example.com/endpoint");
+}).IsValid();
+
+Console.WriteLine($"Configuration is valid: {isValid}");
+
+// Get masked configuration for logging (hides sensitive data)
+var maskedConfig = ChannelConfigurationBuilder.ForSlack()
+    .WithWebhook("https://hooks.slack.com/services/T123/B456/C789")
+    .WithApiToken("xoxb-secret-token")
+    .GetMaskedConfiguration();
+
+Console.WriteLine($"Masked config display: {maskedConfig.DisplayName}");
+```
+
 ## CanaryOptions
 
 The `CanaryOptions` class configures canary deployment monitoring and rollback behavior. It defines thresholds for error rates, latency metrics, and deployment progression settings that determine when a canary deployment should automatically roll back or advance to the next stage.
