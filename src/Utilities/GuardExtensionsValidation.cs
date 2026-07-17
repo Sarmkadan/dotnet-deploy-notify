@@ -20,6 +20,7 @@ public static class GuardExtensionsValidation
     /// <param name="value">The object reference to validate</param>
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidateObject(this object? value, string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -40,6 +41,7 @@ public static class GuardExtensionsValidation
     /// <param name="value">The string to validate</param>
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidateString(this string? value, string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -65,6 +67,7 @@ public static class GuardExtensionsValidation
     /// <param name="value">The collection to validate</param>
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidateCollection<T>(this IEnumerable<T>? value, string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -90,6 +93,7 @@ public static class GuardExtensionsValidation
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <param name="message">The error message to use if condition is false</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> or <paramref name="message"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidateCondition(this bool condition, string paramName, string message)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -112,6 +116,7 @@ public static class GuardExtensionsValidation
     /// <param name="minimum">The minimum allowed value (inclusive)</param>
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidateMinimum(this int value, int minimum, string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -133,6 +138,7 @@ public static class GuardExtensionsValidation
     /// <param name="maxLength">The maximum allowed length</param>
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidateMaxLength(this string? value, int maxLength, string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -153,6 +159,7 @@ public static class GuardExtensionsValidation
     /// <param name="value">The URL string to validate</param>
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidateUrl(this string? value, string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -186,6 +193,7 @@ public static class GuardExtensionsValidation
     /// <param name="value">The nullable value to check</param>
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidateNotNull<T>(this T? value, string paramName) where T : class
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -208,6 +216,7 @@ public static class GuardExtensionsValidation
     /// <param name="max">The maximum value (inclusive)</param>
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidateRange(this int value, int min, int max, string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -229,6 +238,7 @@ public static class GuardExtensionsValidation
     /// <param name="pattern">The regular expression pattern</param>
     /// <param name="paramName">The name of the parameter being validated</param>
     /// <returns>An enumerable of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="paramName"/> or <paramref name="pattern"/> is null or empty</exception>
     public static IReadOnlyList<string> ValidatePattern(this string? value, string pattern, string paramName)
     {
         ArgumentException.ThrowIfNullOrEmpty(paramName, nameof(paramName));
@@ -267,20 +277,14 @@ public static class GuardExtensionsValidation
     /// </summary>
     /// <param name="value">The object reference to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this object? value)
-    {
-        return value is not null;
-    }
+    public static bool IsValid(this object? value) => value is not null;
 
     /// <summary>
     /// Checks if a string is valid
     /// </summary>
     /// <param name="value">The string to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this string? value)
-    {
-        return !string.IsNullOrWhiteSpace(value);
-    }
+    public static bool IsValid(this string? value) => !string.IsNullOrWhiteSpace(value);
 
     /// <summary>
     /// Checks if a collection is valid
@@ -288,20 +292,14 @@ public static class GuardExtensionsValidation
     /// <typeparam name="T">The type of elements in the collection</typeparam>
     /// <param name="value">The collection to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid<T>(this IEnumerable<T>? value)
-    {
-        return value is not null && value.Any();
-    }
+    public static bool IsValid<T>(this IEnumerable<T>? value) => value is not null && value.Any();
 
     /// <summary>
     /// Checks if a boolean condition is valid
     /// </summary>
     /// <param name="condition">The condition to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValid(this bool condition)
-    {
-        return condition;
-    }
+    public static bool IsValid(this bool condition) => condition;
 
     /// <summary>
     /// Checks if an integer is valid (meets minimum threshold)
@@ -309,10 +307,7 @@ public static class GuardExtensionsValidation
     /// <param name="value">The integer value to check</param>
     /// <param name="minimum">The minimum allowed value (inclusive)</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValidMinimum(this int value, int minimum)
-    {
-        return value >= minimum;
-    }
+    public static bool IsValidMinimum(this int value, int minimum) => value >= minimum;
 
     /// <summary>
     /// Checks if a string length is valid (doesn't exceed maximum)
@@ -320,10 +315,7 @@ public static class GuardExtensionsValidation
     /// <param name="value">The string to check</param>
     /// <param name="maxLength">The maximum allowed length</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValidMaxLength(this string? value, int maxLength)
-    {
-        return value?.Length <= maxLength;
-    }
+    public static bool IsValidMaxLength(this string? value, int maxLength) => value?.Length <= maxLength;
 
     /// <summary>
     /// Checks if a URL string is valid
@@ -347,10 +339,7 @@ public static class GuardExtensionsValidation
     /// <typeparam name="T">The type of the value</typeparam>
     /// <param name="value">The nullable value to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValidNotNull<T>(this T? value) where T : class
-    {
-        return value is not null;
-    }
+    public static bool IsValidNotNull<T>(this T? value) where T : class => value is not null;
 
     /// <summary>
     /// Checks if an integer is within a range
@@ -359,10 +348,7 @@ public static class GuardExtensionsValidation
     /// <param name="min">The minimum value (inclusive)</param>
     /// <param name="max">The maximum value (inclusive)</param>
     /// <returns>True if valid, false otherwise</returns>
-    public static bool IsValidRange(this int value, int min, int max)
-    {
-        return value >= min && value <= max;
-    }
+    public static bool IsValidRange(this int value, int min, int max) => value >= min && value <= max;
 
     /// <summary>
     /// Checks if a string matches a regular expression pattern
