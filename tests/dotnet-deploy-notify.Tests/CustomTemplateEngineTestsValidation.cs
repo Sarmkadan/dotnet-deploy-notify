@@ -12,34 +12,29 @@ using NSubstitute;
 namespace DotNetDeployNotify.Tests;
 
 /// <summary>
-/// Validation extension methods for <see cref="CustomTemplateEngine"/> instances
+/// Provides validation extension methods for <see cref="CustomTemplateEngine"/>, <see cref="CustomTemplate"/>, and <see cref="DeploymentNotification"/> instances.
 /// </summary>
 public static class CustomTemplateEngineTestsValidation
 {
     /// <summary>
-    /// Validates a CustomTemplateEngine instance and returns a list of human-readable problems
+    /// Validates a <see cref="CustomTemplateEngine"/> instance and returns a list of human-readable problems.
     /// </summary>
-    /// <param name="value">The engine instance to validate</param>
-    /// <returns>List of validation problems; empty list if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <param name="value">The engine instance to validate.</param>
+    /// <returns>List of validation problems; empty list if valid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
     public static IReadOnlyList<string> Validate(this CustomTemplateEngine? value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var problems = new List<string>();
-
-        // Validate that the engine has a logger (should not be null)
-        // This is validated by the constructor
-
-        return problems.AsReadOnly();
+        return [];
     }
 
     /// <summary>
-    /// Checks if a CustomTemplateEngine instance is valid
+    /// Checks if a <see cref="CustomTemplateEngine"/> instance is valid.
     /// </summary>
-    /// <param name="value">The engine instance to check</param>
-    /// <returns>True if valid; false otherwise</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <param name="value">The engine instance to check.</param>
+    /// <returns>True if valid; false otherwise.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
     public static bool IsValid(this CustomTemplateEngine value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -47,11 +42,11 @@ public static class CustomTemplateEngineTestsValidation
     }
 
     /// <summary>
-    /// Ensures that a CustomTemplateEngine instance is valid, throwing an exception if not
+    /// Ensures that a <see cref="CustomTemplateEngine"/> instance is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="value">The engine instance to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if value is not valid, containing the list of problems</exception>
+    /// <param name="value">The engine instance to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not valid, containing the list of problems.</exception>
     public static void EnsureValid(this CustomTemplateEngine value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -65,11 +60,11 @@ public static class CustomTemplateEngineTestsValidation
     }
 
     /// <summary>
-    /// Validates a CustomTemplate instance and returns a list of human-readable problems
+    /// Validates a <see cref="CustomTemplate"/> instance and returns a list of human-readable problems.
     /// </summary>
-    /// <param name="value">The template to validate</param>
-    /// <returns>List of validation problems; empty list if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <param name="value">The template to validate.</param>
+    /// <returns>List of validation problems; empty list if valid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
     public static IReadOnlyList<string> Validate(this CustomTemplate? value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -110,11 +105,11 @@ public static class CustomTemplateEngineTestsValidation
     }
 
     /// <summary>
-    /// Checks if a CustomTemplate instance is valid
+    /// Checks if a <see cref="CustomTemplate"/> instance is valid.
     /// </summary>
-    /// <param name="value">The template to check</param>
-    /// <returns>True if valid; false otherwise</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <param name="value">The template to check.</param>
+    /// <returns>True if valid; false otherwise.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
     public static bool IsValid(this CustomTemplate value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -122,11 +117,11 @@ public static class CustomTemplateEngineTestsValidation
     }
 
     /// <summary>
-    /// Ensures that a CustomTemplate instance is valid, throwing an exception if not
+    /// Ensures that a <see cref="CustomTemplate"/> instance is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="value">The template to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if value is not valid, containing the list of problems</exception>
+    /// <param name="value">The template to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not valid, containing the list of problems.</exception>
     public static void EnsureValid(this CustomTemplate value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -140,11 +135,11 @@ public static class CustomTemplateEngineTestsValidation
     }
 
     /// <summary>
-    /// Validates a DeploymentNotification instance and returns a list of human-readable problems
+    /// Validates a <see cref="DeploymentNotification"/> instance and returns a list of human-readable problems.
     /// </summary>
-    /// <param name="value">The notification to validate</param>
-    /// <returns>List of validation problems; empty list if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <param name="value">The notification to validate.</param>
+    /// <returns>List of validation problems; empty list if valid.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
     public static IReadOnlyList<string> Validate(this DeploymentNotification? value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -211,18 +206,15 @@ public static class CustomTemplateEngineTestsValidation
             problems.Add("DeploymentNotification TargetEnvironment has default/uninitialized value");
         }
 
-        // Validate Status: should be a valid enum value (always valid if set)
-        // Validate Priority: should be a valid enum value (always valid if set)
-
         return problems.AsReadOnly();
     }
 
     /// <summary>
-    /// Checks if a DeploymentNotification instance is valid
+    /// Checks if a <see cref="DeploymentNotification"/> instance is valid.
     /// </summary>
-    /// <param name="value">The notification to check</param>
-    /// <returns>True if valid; false otherwise</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <param name="value">The notification to check.</param>
+    /// <returns>True if valid; false otherwise.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
     public static bool IsValid(this DeploymentNotification value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -230,11 +222,11 @@ public static class CustomTemplateEngineTestsValidation
     }
 
     /// <summary>
-    /// Ensures that a DeploymentNotification instance is valid, throwing an exception if not
+    /// Ensures that a <see cref="DeploymentNotification"/> instance is valid, throwing an exception if not.
     /// </summary>
-    /// <param name="value">The notification to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if value is not valid, containing the list of problems</exception>
+    /// <param name="value">The notification to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not valid, containing the list of problems.</exception>
     public static void EnsureValid(this DeploymentNotification value)
     {
         ArgumentNullException.ThrowIfNull(value);
