@@ -458,85 +458,105 @@ TrafficSplitterExtensionsValidation.EnsureValidCreateExponentialCanaryDeployment
 );
 ```
 
-## DomainEventExtensions
+## DomainEventValidation
 
-The `DomainEventExtensions` class provides extension methods for working with `DomainEvent` objects in the deployment notification system. These methods offer convenient utilities for checking event status, extracting channel information, formatting events for logging, and accessing event-specific data without needing to cast to concrete event types.
+The `DomainEventValidation` class provides validation helpers for domain events to ensure data integrity throughout the deployment notification system. It offers extension methods that validate domain events (`DomainEvent`), notification created events (`NotificationCreatedEvent`), notification processed events (`NotificationProcessedEvent`), and channel delivery failed events (`ChannelDeliveryFailedEvent`).
 
-The extension methods handle null checks and provide consistent behavior across different event types including `NotificationCreatedEvent`, `NotificationProcessedEvent`, and `ChannelDeliveryFailedEvent`.
+The validation methods check for null values, empty strings, GUID format validity, date/time ranges, and collection constraints, returning detailed error messages for any validation failures. This ensures that domain events contain valid data before being processed or stored.
 
 Example usage:
 
 ```csharp
-// Create a notification created event
-var createdEvent = new NotificationCreatedEvent(
-    notificationId: Guid.NewGuid().ToString(),
-    projectName: "MyApplication",
-    version: "2.0.0",
-    channels: new List<string> { "Slack", "Discord", "Telegram" },
-    occurredAt: DateTime.UtcNow
-);
+// Create a valid domain event
+var domainEvent = new DomainEvent
+{
+    EventId = Guid.NewGuid().ToString(),
+    AggregateId = "deployment-123",
+    OccurredAt = DateTime.UtcNow
+};
 
-// Use extension methods to work with the event
-bool hasChannels = createdEvent.HasChannels();
-Console.WriteLine($"Event has channels: {hasChannels}"); // true
+// Validate and get list of problems
+var problems = domainEvent.Validate();
+if (problems.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var problem in problems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
 
-IReadOnlyList<string> channels = createdEvent.GetChannels();
-Console.WriteLine($"Channels: {string.Join(", ", channels)}");
+// Check if valid (returns true/false)
+bool isValid = domainEvent.IsValid();
+Console.WriteLine($"DomainEvent is valid: {isValid}");
 
-string? notificationId = createdEvent.GetNotificationId();
-Console.WriteLine($"Notification ID: {notificationId}");
+// Ensure valid (throws ArgumentException if invalid)
+DomainEventValidation.EnsureValid(domainEvent);
 
-// Check if event occurred within a time window
-bool occurredBetween = createdEvent.OccurredBetween(
-    DateTime.UtcNow.AddHours(-1),
-    DateTime.UtcNow.AddMinutes(-30)
-);
-Console.WriteLine($"Occurred between window: {occurredBetween}");
+// Create a valid NotificationCreatedEvent
+var createdEvent = new NotificationCreatedEvent
+{
+    EventId = Guid.NewGuid().ToString(),
+    AggregateId = "notification-456",
+    OccurredAt = DateTime.UtcNow,
+    NotificationId = Guid.NewGuid().ToString(),
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Channels = new List<string> { "Slack", "Discord", "Telegram" }
+};
 
-// Format event for logging
-string logMessage = createdEvent.FormatForLog(includeDetails: true);
-Console.WriteLine(logMessage);
+// Validate notification created event
+var createdProblems = createdEvent.Validate();
+if (createdProblems.Count == 0)
+{
+    Console.WriteLine("NotificationCreatedEvent is valid!");
+}
 
-// Process a notification processed event
-var processedEvent = new NotificationProcessedEvent(
-    notificationId: Guid.NewGuid().ToString(),
-    projectName: "MyApplication",
-    version: "2.0.0",
-    channels: new List<string> { "Slack", "Discord" },
-    success: true,
-    occurredAt: DateTime.UtcNow
-);
+// Validate NotificationProcessedEvent
+var processedEvent = new NotificationProcessedEvent
+{
+    EventId = Guid.NewGuid().ToString(),
+    AggregateId = "notification-789",
+    OccurredAt = DateTime.UtcNow,
+    NotificationId = Guid.NewGuid().ToString(),
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Channels = new List<string> { "Slack", "Discord" },
+    Success = true
+};
 
-// Check if processing was successful
-bool isSuccess = processedEvent.IsSuccess();
-Console.WriteLine($"Processing successful: {isSuccess}"); // true
+var processedProblems = processedEvent.Validate();
+bool processedIsValid = processedEvent.IsValid();
+Console.WriteLine($"NotificationProcessedEvent valid: {processedIsValid}");
 
-// Get error message if any
-string? errorMessage = processedEvent.GetErrorMessage();
-Console.WriteLine($"Error message: {errorMessage ?? "None"}");
+// Validate ChannelDeliveryFailedEvent
+var failedEvent = new ChannelDeliveryFailedEvent
+{
+    EventId = Guid.NewGuid().ToString(),
+    AggregateId = "delivery-101",
+    OccurredAt = DateTime.UtcNow,
+    NotificationId = Guid.NewGuid().ToString(),
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    ChannelName = "Slack",
+    ErrorMessage = "Webhook connection timeout",
+    AttemptNumber = 1
+};
 
-// Process a failed delivery event
-var failedEvent = new ChannelDeliveryFailedEvent(
-    notificationId: Guid.NewGuid().ToString(),
-    projectName: "MyApplication",
-    version: "2.0.0",
-    channelName: "Slack",
-    attemptNumber: 1,
-    errorMessage: "Webhook URL not responding",
-    occurredAt: DateTime.UtcNow
-);
+var failedProblems = failedEvent.Validate();
+bool failedIsValid = failedEvent.IsValid();
+Console.WriteLine($"ChannelDeliveryFailedEvent valid: {failedIsValid}");
 
-// Get error message from failed delivery
-string? failedError = failedEvent.GetErrorMessage();
-Console.WriteLine($"Failed delivery error: {failedError}");
-
-// Check if event has channels
-bool failedHasChannels = failedEvent.HasChannels();
-Console.WriteLine($"Failed event has channels: {failedHasChannels}"); // false
-
-// Get notification ID from any event type
-string? anyNotificationId = failedEvent.GetNotificationId();
-Console.WriteLine($"Notification ID from failed event: {anyNotificationId}");
+// Use EnsureValid to throw exceptions on invalid events
+try
+{
+    DomainEventValidation.EnsureValid(createdEvent);
+    Console.WriteLine("Event validation passed!");
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
 ```
 
 ## ServiceExtensionsMetadataJsonExtensions
