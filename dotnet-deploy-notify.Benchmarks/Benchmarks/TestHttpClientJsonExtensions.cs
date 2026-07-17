@@ -32,19 +32,12 @@ public static class TestHttpClientJsonExtensions
     /// Attempts to deserialize a JSON string into a <see cref="TestHttpClient"/>.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A deserialized <see cref="TestHttpClient"/> or null if deserialization fails.</returns>
+    /// <returns>A deserialized <see cref="TestHttpClient"/> if successful; otherwise, null.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is null or empty.</exception>
     public static TestHttpClient? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
-        try
-        {
-            return JsonSerializer.Deserialize<TestHttpClient>(json, _jsonSerializerOptions);
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
+    return JsonSerializer.Deserialize<TestHttpClient>(json, _jsonSerializerOptions);
     }
 
     /// <summary>
@@ -54,18 +47,18 @@ public static class TestHttpClientJsonExtensions
     /// <param name="value">The deserialized <see cref="TestHttpClient"/> if successful.</param>
     /// <returns>True if deserialization is successful; otherwise, false.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is null or empty.</exception>
-    public static bool TryFromJson(string json, out TestHttpClient? value)
+public static bool TryFromJson(string json, out TestHttpClient? value)
+{
+    ArgumentException.ThrowIfNullOrEmpty(json);
+    try
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
-        try
-        {
-            value = JsonSerializer.Deserialize<TestHttpClient>(json, _jsonSerializerOptions);
-            return value is not null;
-        }
-        catch (JsonException)
-        {
-            value = null;
-            return false;
-        }
+        value = JsonSerializer.Deserialize<TestHttpClient>(json, _jsonSerializerOptions);
+        return value is not null;
     }
+    catch (JsonException)
+    {
+        value = null;
+        return false;
+    }
+}
 }
