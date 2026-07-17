@@ -5,8 +5,11 @@ using System.Text.Json;
 namespace DotNetDeployNotify.Tests;
 
 /// <summary>
-/// Provides JSON serialization extensions for the <see cref="DeploymentHistoryServiceTests"/> class.
+/// Provides JSON serialization utilities for <see cref="DeploymentHistoryServiceTests"/> test instances.
 /// </summary>
+/// <remarks>
+/// This class cannot be inherited.
+/// </remarks>
 public static class DeploymentHistoryServiceTestsJsonExtensions
 {
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web)
@@ -39,11 +42,16 @@ public static class DeploymentHistoryServiceTestsJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>A <see cref="DeploymentHistoryServiceTests"/> instance deserialized from JSON.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or whitespace.</exception>
-    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty, whitespace, or invalid JSON.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized into a <see cref="DeploymentHistoryServiceTests"/> instance.</exception>
     public static DeploymentHistoryServiceTests? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new ArgumentException("JSON string cannot be whitespace only.", nameof(json));
+        }
 
         return JsonSerializer.Deserialize<DeploymentHistoryServiceTests>(json, _jsonSerializerOptions);
     }
