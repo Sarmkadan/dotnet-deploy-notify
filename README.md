@@ -284,6 +284,63 @@ builder.Services.Configure<DotnetDeployNotifyOptions>(options =>
     };
 });
 
+## CanaryServiceExtensionsJsonExtensions
+
+The `CanaryServiceExtensionsJsonExtensions` class provides JSON serialization and deserialization utilities for `CanaryServiceExtensionsMetadata` objects. It enables converting canary service extension metadata to and from JSON format with configurable formatting options, supporting both strict and tolerant parsing scenarios.
+
+This extension class is particularly useful for persisting canary deployment configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory.
+
+Example usage:
+
+```csharp
+// Create canary service extensions metadata
+var metadata = new CanaryServiceExtensionsJsonExtensions.CanaryServiceExtensionsMetadata
+{
+    Type = "CanaryServiceExtensions",
+    Namespace = "DotNetDeployNotify.Infrastructure",
+    Assembly = "DotNetDeployNotify.Infrastructure",
+    Methods = new[] { "AddCanaryServices", "ConfigureCanaryOptions" }
+};
+
+// Serialize to JSON string (compact format)
+string jsonCompact = CanaryServiceExtensionsJsonExtensions.ToJson(metadata);
+Console.WriteLine(jsonCompact);
+// Output: {"type":"CanaryServiceExtensions","namespace":"DotNetDeployNotify.Infrastructure","assembly":"DotNetDeployNotify.Infrastructure","methods":["AddCanaryServices","ConfigureCanaryOptions"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = CanaryServiceExtensionsJsonExtensions.ToJson(metadata, indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "CanaryServiceExtensions",
+  "namespace": "DotNetDeployNotify.Infrastructure",
+  "assembly": "DotNetDeployNotify.Infrastructure",
+  "methods": [
+    "AddCanaryServices",
+    "ConfigureCanaryOptions"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = CanaryServiceExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+    Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+    Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (CanaryServiceExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+    Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+    Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ## CacheEntry
 
 The `CacheEntry<T>` class represents a single cache entry in the in-memory cache system. It stores a cached value along with metadata such as expiration time and creation timestamp, enabling time-to-live (TTL) functionality for cache entries.
