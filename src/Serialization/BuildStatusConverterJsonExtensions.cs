@@ -2,7 +2,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// ===================================================================
 
 using System.Text.Json;
 using DotNetDeployNotify.Core;
@@ -20,7 +20,6 @@ public static class BuildStatusConverterJsonExtensions
         WriteIndented = false
     };
 
-
     /// <summary>
     /// Converts a <see cref="BuildStatusConverter"/> instance to a JSON string representation.
     /// </summary>
@@ -33,47 +32,42 @@ public static class BuildStatusConverterJsonExtensions
         ArgumentNullException.ThrowIfNull(value);
 
         var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions)
-            {
-                WriteIndented = true
-            }
+            ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
             : _jsonSerializerOptions;
 
         return JsonSerializer.Serialize(value, options);
     }
 
     /// <summary>
-    /// Deserializes a JSON string to a <see cref="BuildStatusConverter"/> instance.
+    /// Deserializes a JSON string to a <see cref="BuildStatus"/> value.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A <see cref="BuildStatusConverter"/> instance, or null if the JSON is null or empty.</returns>
-    /// <exception cref="JsonException">Thrown when the JSON is invalid.</exception>
-    public static BuildStatusConverter? FromJson(string json)
+    /// <returns>A <see cref="BuildStatus"/> value parsed from JSON.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized to a valid <see cref="BuildStatus"/> value.</exception>
+    public static BuildStatus FromJson(string json)
     {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return null;
-        }
+        ArgumentException.ThrowIfNullOrEmpty(json, nameof(json));
 
         try
         {
-            return JsonSerializer.Deserialize<BuildStatusConverter>(json, _jsonSerializerOptions);
+            return JsonSerializer.Deserialize<BuildStatus>(json, _jsonSerializerOptions);
         }
         catch (JsonException ex)
         {
-            throw new JsonException($"Failed to deserialize BuildStatusConverter from JSON: {ex.Message}", ex);
+            throw new JsonException($"Failed to deserialize BuildStatus from JSON: {ex.Message}", ex);
         }
     }
 
     /// <summary>
-    /// Attempts to deserialize a JSON string to a <see cref="BuildStatusConverter"/> instance.
+    /// Attempts to deserialize a JSON string to a <see cref="BuildStatus"/> value.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized converter instance, or null if deserialization fails.</param>
+    /// <param name="value">Receives the deserialized BuildStatus value if successful.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
-    public static bool TryFromJson(string json, out BuildStatusConverter? value)
+    public static bool TryFromJson(string json, out BuildStatus value)
     {
-        value = null;
+        value = BuildStatus.Started; // Default value
 
         if (string.IsNullOrWhiteSpace(json))
         {
@@ -82,7 +76,7 @@ public static class BuildStatusConverterJsonExtensions
 
         try
         {
-            value = JsonSerializer.Deserialize<BuildStatusConverter>(json, _jsonSerializerOptions);
+            value = JsonSerializer.Deserialize<BuildStatus>(json, _jsonSerializerOptions);
             return true;
         }
         catch (JsonException)
