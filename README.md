@@ -1340,6 +1340,159 @@ Example usage:
 // Create a valid MetricsSnapshot
 var metrics = new MetricsSnapshot
 {
+  Timestamp = DateTime.UtcNow,
+  NotificationsCreated = 150,
+  DeliveryAttempts = 145,
+  SuccessfulDeliveries = 140,
+  FailedDeliveries = 5,
+  ValidationFailures = 2,
+  ConfigurationChanges = 1,
+  AverageDeliveryTimeMs = 1250,
+  MinDeliveryTimeMs = 200,
+  MaxDeliveryTimeMs = 3500,
+  P95DeliveryTimeMs = 2800,
+  P99DeliveryTimeMs = 3200,
+  ChannelMetrics = new Dictionary<NotificationChannel, ChannelMetrics>
+  {
+    [NotificationChannel.Slack] = new ChannelMetrics
+    {
+      Channel = NotificationChannel.Slack,
+      DeliveryAttempts = 80,
+      SuccessfulDeliveries = 78,
+      FailedDeliveries = 2,
+      AverageDeliveryTimeMs = 1100,
+      TotalNotifications = 80,
+      LastDeliveryAt = DateTime.UtcNow.AddMinutes(-5)
+    },
+    [NotificationChannel.Discord] = new ChannelMetrics
+    {
+      Channel = NotificationChannel.Discord,
+      DeliveryAttempts = 65,
+      SuccessfulDeliveries = 62,
+      FailedDeliveries = 3,
+      AverageDeliveryTimeMs = 1400,
+      TotalNotifications = 65,
+      LastDeliveryAt = DateTime.UtcNow.AddMinutes(-10)
+    }
+  }
+};
+
+// Validate the metrics - returns empty list if valid
+var validationProblems = metrics.Validate();
+if (validationProblems.Any())
+{
+  foreach (var problem in validationProblems)
+  {
+    Console.WriteLine(problem);
+  }
+}
+
+// Quick validation check
+if (metrics.IsValid())
+{
+  Console.WriteLine("MetricsSnapshot is valid for testing");
+}
+
+// Exception-throwing validation
+try
+{
+  metrics.EnsureValid();
+  Console.WriteLine("Metrics validation passed");
+}
+catch (ArgumentException ex)
+{
+  Console.WriteLine($"Validation failed: {ex.Message}");
+}
+
+// Validate individual ChannelMetrics
+foreach (var channelMetric in metrics.ChannelMetrics.Values)
+{
+  var channelProblems = channelMetric.Validate();
+  if (channelProblems.Any())
+  {
+    Console.WriteLine($"Channel {channelMetric.Channel} has validation issues:");
+    foreach (var problem in channelProblems)
+    {
+      Console.WriteLine($" - {problem}");
+    }
+  }
+}
+```
+
+## DryRunRendererTests
+
+The `DryRunRendererTests` class tests the `DryRunRenderer` functionality, which previews channel payloads without dispatching them. These tests verify that the renderer produces correct JSON payloads for Slack, HTML-formatted text for Telegram, masks sensitive tokens in URLs, and properly handles skip conditions based on priority and environment filters.
+
+Example usage:
+
+```csharp
+// Create a test notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "Billing.Worker",
+    Version = "5.0.0",
+    Status = BuildStatus.DeploymentSuccess,
+    Message = "Deployed",
+    TargetEnvironment = Environment.Production,
+    BranchName = "main",
+    CommitHash = "0123456789ab",
+    CommitAuthor = "bob@example.com",
+    Priority = NotificationPriority.High
+};
+
+// Create a Slack channel configuration
+var slackConfig = new ChannelConfiguration
+{
+    ChannelType = NotificationChannel.Slack,
+    DisplayName = "Production Slack",
+    WebhookUrl = "https://hooks.slack.com/services/T/B/XYZ",
+    TimeoutMs = 5000,
+    IncludeCommitDetails = true
+};
+
+// Render the payload for preview (would not actually send)
+var renderer = new DryRunRenderer(new PayloadBuilder(), logger);
+var result = renderer.Render(notification, slackConfig);
+
+// Verify the result
+if (result.WouldSend)
+{
+    Console.WriteLine("Notification would be sent");
+    Console.WriteLine($"Payload preview: {result.RenderedPayload.Substring(0, Math.Min(100, result.RenderedPayload.Length))}...");
+}
+else
+{
+    Console.WriteLine($"Notification skipped: {result.SkipReason}");
+}
+
+// Test with Telegram channel
+var telegramConfig = new ChannelConfiguration
+{
+    ChannelType = NotificationChannel.Telegram,
+    DisplayName = "Production Telegram",
+    WebhookUrl = "https://api.telegram.org/bot123456:secret/sendMessage"
+};
+
+var telegramResult = renderer.Render(notification, telegramConfig);
+Console.WriteLine($"Telegram HTML preview: {telegramResult.RenderedPayload}");
+
+// Test skip conditions
+var lowPriorityConfig = new ChannelConfiguration
+{
+    ChannelType = NotificationChannel.Slack,
+    MinimumPriority = NotificationPriority.Critical
+};
+
+var lowPriorityResult = renderer.Render(notification with { Priority = NotificationPriority.Normal }, lowPriorityConfig);
+Console.WriteLine($"Low priority skipped: {lowPriorityResult.WouldSend}");
+```
+
+## MetricsServiceTestsValidation
+
+```csharp
+// Create a valid MetricsSnapshot
+var metrics = new MetricsSnapshot
+{
     Timestamp = DateTime.UtcNow,
     NotificationsCreated = 150,
     DeliveryAttempts = 145,
