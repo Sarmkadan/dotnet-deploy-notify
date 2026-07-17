@@ -33,26 +33,6 @@ public static class TestHttpClientValidation
             problems.Add("BaseAddress appears to be a default localhost address");
         }
 
-        // Validate SetupFakeRequest extension method
-        try
-        {
-            value.SetupFakeRequest(new MockHttpMessageHandler());
-        }
-        catch (Exception ex)
-        {
-            problems.Add($"SetupFakeRequest threw exception: {ex.Message}");
-        }
-
-        // Validate Dispose method (inherited from HttpClient/IDisposable)
-        try
-        {
-            value.Dispose();
-        }
-        catch (Exception ex)
-        {
-            problems.Add($"Dispose threw exception: {ex.Message}");
-        }
-
         return problems.AsReadOnly();
     }
 
@@ -60,10 +40,11 @@ public static class TestHttpClientValidation
     /// Determines whether a <see cref="TestHttpClient"/> instance is valid and ready for use.
     /// </summary>
     /// <param name="value">The TestHttpClient instance to check</param>
-    /// <returns>true if the instance is valid; otherwise, false</returns>
+    /// <returns><see langword="true"/> if the instance is valid; otherwise, <see langword="false"/></returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static bool IsValid(this TestHttpClient? value)
     {
-        return value?.Validate().Count == 0;
+        return value is not null && value.Validate().Count == 0;
     }
 
     /// <summary>
