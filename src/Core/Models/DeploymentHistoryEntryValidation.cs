@@ -8,6 +8,8 @@
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
 using System.Globalization;
+using System;
+using SystemEnvironment = System.Environment;
 
 namespace DotNetDeployNotify.Core.Models;
 
@@ -111,13 +113,13 @@ public static class DeploymentHistoryEntryValidation
         }
 
         // Validate DurationSeconds
-        if (value.DurationSeconds.HasValue)
+        if (value.DurationSeconds is { } duration)
         {
-            if (value.DurationSeconds <= 0)
+            if (duration <= 0)
             {
                 errors.Add("DurationSeconds must be positive when specified.");
             }
-            else if (value.DurationSeconds > 86400) // 24 hours in seconds
+            else if (duration > 86400) // 24 hours in seconds
             {
                 errors.Add("DurationSeconds cannot exceed 86400 seconds (24 hours).");
             }
@@ -158,9 +160,7 @@ public static class DeploymentHistoryEntryValidation
     /// <returns>True if valid; otherwise, false</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static bool IsValid(this DeploymentHistoryEntry? value)
-    {
-        return value is not null && Validate(value).Count == 0;
-    }
+	=> value is not null && !Validate(value).Any();
 
     /// <summary>
     /// Ensures that a <see cref="DeploymentHistoryEntry"/> is valid, throwing an exception if not
@@ -176,16 +176,14 @@ public static class DeploymentHistoryEntryValidation
         if (errors.Count > 0)
         {
             throw new ArgumentException(
-                $"DeploymentHistoryEntry is invalid. Validation errors:\n{string.Join("\n", errors)}");
+                $"DeploymentHistoryEntry is invalid. Validation errors:{SystemEnvironment.NewLine}{string.Join(SystemEnvironment.NewLine, errors)}");
         }
     }
 
     private static bool IsFailureStatus(BuildStatus status)
-    {
-        return status is BuildStatus.Failed
+        => status is BuildStatus.Failed
             or BuildStatus.Cancelled
             or BuildStatus.DeploymentFailed;
-    }
 
     private static bool IsValidSemanticVersion(string version)
     {
