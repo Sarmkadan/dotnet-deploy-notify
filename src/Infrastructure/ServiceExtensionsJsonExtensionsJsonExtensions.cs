@@ -6,14 +6,13 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using DotNetDeployNotify.Infrastructure;
 
 namespace DotNetDeployNotify.Infrastructure;
 
 /// <summary>
-/// Provides System.Text.Json serialization extensions for ServiceExtensions metadata
+/// Provides System.Text.Json serialization extensions for ServiceExtensionsMetadata
 /// </summary>
-public static class ServiceExtensionsJsonExtensionsJsonExtensions
+public static class ServiceExtensionsMetadataJsonExtensions
 {
     /// <summary>
     /// JsonSerializerOptions with camelCase naming policy for consistent serialization
