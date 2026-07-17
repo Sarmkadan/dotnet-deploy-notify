@@ -15,29 +15,19 @@ public static class MathExtensionsValidation
     /// Validates the <see cref="MathExtensions"/> class for common issues
     /// </summary>
     /// <returns>A list of validation problems (empty if valid)</returns>
-    public static IReadOnlyList<string> Validate()
-    {
-        // MathExtensions is stateless and always valid
-        return Array.Empty<string>();
-    }
+    public static IReadOnlyList<string> Validate() => Array.Empty<string>();
 
     /// <summary>
     /// Checks if the <see cref="MathExtensions"/> class is valid
     /// </summary>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/></returns>
-    public static bool IsValid()
-    {
-        return true; // MathExtensions is stateless and always valid
-    }
+    public static bool IsValid() => true;
 
     /// <summary>
     /// Ensures the <see cref="MathExtensions"/> class is valid, throwing if not
     /// </summary>
     /// <exception cref="InvalidOperationException">Thrown if validation fails</exception>
-    public static void EnsureValid()
-    {
-        // MathExtensions is stateless and always valid
-    }
+    public static void EnsureValid() { }
 
     /// <summary>
     /// Validates parameters for <see cref="MathExtensions.Clamp{T}"/> method
@@ -105,16 +95,11 @@ public static class MathExtensionsValidation
     /// <param name="value">The numerator value</param>
     /// <param name="total">The denominator value</param>
     /// <returns>A list of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="total"/> is negative</exception>
     public static IReadOnlyList<string> ValidateToPercentage(this int value, int total)
     {
-        var problems = new List<string>();
-
-        if (total < 0)
-        {
-            problems.Add("Total cannot be negative.");
-        }
-
-        return problems.AsReadOnly();
+        ArgumentOutOfRangeException.ThrowIfNegative(total);
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -123,16 +108,11 @@ public static class MathExtensionsValidation
     /// <param name="value">The numerator value</param>
     /// <param name="total">The denominator value</param>
     /// <returns>A list of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="total"/> is negative</exception>
     public static IReadOnlyList<string> ValidateToPercentage(this double value, double total)
     {
-        var problems = new List<string>();
-
-        if (total < 0)
-        {
-            problems.Add("Total cannot be negative.");
-        }
-
-        return problems.AsReadOnly();
+        ArgumentOutOfRangeException.ThrowIfNegative(total);
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -141,16 +121,11 @@ public static class MathExtensionsValidation
     /// <param name="value">The value to round</param>
     /// <param name="decimalPlaces">The number of decimal places to round to</param>
     /// <returns>A list of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="decimalPlaces"/> is negative</exception>
     public static IReadOnlyList<string> ValidateRoundTo(this decimal value, int decimalPlaces)
     {
-        var problems = new List<string>();
-
-        if (decimalPlaces < 0)
-        {
-            problems.Add("Decimal places cannot be negative.");
-        }
-
-        return problems.AsReadOnly();
+        ArgumentOutOfRangeException.ThrowIfNegative(decimalPlaces);
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -159,16 +134,11 @@ public static class MathExtensionsValidation
     /// <param name="value">The value to round</param>
     /// <param name="decimalPlaces">The number of decimal places to round to</param>
     /// <returns>A list of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="decimalPlaces"/> is negative</exception>
     public static IReadOnlyList<string> ValidateRoundTo(this double value, int decimalPlaces)
     {
-        var problems = new List<string>();
-
-        if (decimalPlaces < 0)
-        {
-            problems.Add("Decimal places cannot be negative.");
-        }
-
-        return problems.AsReadOnly();
+        ArgumentOutOfRangeException.ThrowIfNegative(decimalPlaces);
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -226,26 +196,18 @@ public static class MathExtensionsValidation
     /// </summary>
     /// <param name="bytes">The number of bytes to convert</param>
     /// <returns>A list of validation problems (empty if valid)</returns>
-    public static IReadOnlyList<string> ValidateToHumanReadableSize(this long bytes)
-    {
-        return Array.Empty<string>();
-    }
+    public static IReadOnlyList<string> ValidateToHumanReadableSize(this long bytes) => Array.Empty<string>();
 
     /// <summary>
     /// Validates parameters for <see cref="MathExtensions.ToHumanReadableDuration(int)"/> method
     /// </summary>
     /// <param name="milliseconds">The duration in milliseconds</param>
     /// <returns>A list of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="milliseconds"/> is negative</exception>
     public static IReadOnlyList<string> ValidateToHumanReadableDuration(this int milliseconds)
     {
-        var problems = new List<string>();
-
-        if (milliseconds < 0)
-        {
-            problems.Add("Milliseconds cannot be negative.");
-        }
-
-        return problems.AsReadOnly();
+        ArgumentOutOfRangeException.ThrowIfNegative(milliseconds);
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -253,10 +215,7 @@ public static class MathExtensionsValidation
     /// </summary>
     /// <param name="timeSpan">The TimeSpan to convert</param>
     /// <returns>A list of validation problems (empty if valid)</returns>
-    public static IReadOnlyList<string> ValidateToHumanReadableDuration(this TimeSpan timeSpan)
-    {
-        return Array.Empty<string>();
-    }
+    public static IReadOnlyList<string> ValidateToHumanReadableDuration(this TimeSpan timeSpan) => Array.Empty<string>();
 
     /// <summary>
     /// Validates parameters for <see cref="MathExtensions.CalculateCompoundInterest(decimal, decimal, int)"/> method
@@ -265,24 +224,16 @@ public static class MathExtensionsValidation
     /// <param name="rate">The interest rate per period</param>
     /// <param name="periods">The number of periods</param>
     /// <returns>A list of validation problems (empty if valid)</returns>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="rate"/> is negative</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="periods"/> is negative</exception>
     public static IReadOnlyList<string> ValidateCalculateCompoundInterest(
         this decimal principal,
         decimal rate,
         int periods)
     {
-        var problems = new List<string>();
-
-        if (rate < 0)
-        {
-            problems.Add("Interest rate cannot be negative.");
-        }
-
-        if (periods < 0)
-        {
-            problems.Add("Number of periods cannot be negative.");
-        }
-
-        return problems.AsReadOnly();
+        ArgumentOutOfRangeException.ThrowIfNegative(rate);
+        ArgumentOutOfRangeException.ThrowIfNegative(periods);
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -299,15 +250,8 @@ public static class MathExtensionsValidation
         int max)
     {
         ArgumentNullException.ThrowIfNull(random);
-
-        var problems = new List<string>();
-
-        if (min > max)
-        {
-            problems.Add("Minimum value cannot be greater than maximum value.");
-        }
-
-        return problems.AsReadOnly();
+        ArgumentOutOfRangeException.ThrowIfLessThan(max, min);
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -367,28 +311,18 @@ public static class MathExtensionsValidation
     /// </summary>
     /// <param name="value">The numerator value</param>
     /// <param name="total">The denominator value</param>
-    /// <exception cref="ArgumentException"><paramref name="total"/> is negative</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="total"/> is negative</exception>
     public static void EnsureValidToPercentage(this int value, int total)
-    {
-        if (total < 0)
-        {
-            throw new ArgumentException("Total cannot be negative.", nameof(total));
-        }
-    }
+        => ArgumentOutOfRangeException.ThrowIfNegative(total);
 
     /// <summary>
     /// Ensures parameters for <see cref="MathExtensions.ToPercentage(double, double)"/> are valid, throwing if not
     /// </summary>
     /// <param name="value">The numerator value</param>
     /// <param name="total">The denominator value</param>
-    /// <exception cref="ArgumentException"><paramref name="total"/> is negative</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="total"/> is negative</exception>
     public static void EnsureValidToPercentage(this double value, double total)
-    {
-        if (total < 0)
-        {
-            throw new ArgumentException("Total cannot be negative.", nameof(total));
-        }
-    }
+        => ArgumentOutOfRangeException.ThrowIfNegative(total);
 
     /// <summary>
     /// Ensures parameters for <see cref="MathExtensions.RoundTo(decimal, int)"/> are valid, throwing if not
@@ -397,9 +331,7 @@ public static class MathExtensionsValidation
     /// <param name="decimalPlaces">The number of decimal places to round to</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="decimalPlaces"/> is negative</exception>
     public static void EnsureValidRoundTo(this decimal value, int decimalPlaces)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(decimalPlaces);
-    }
+        => ArgumentOutOfRangeException.ThrowIfNegative(decimalPlaces);
 
     /// <summary>
     /// Ensures parameters for <see cref="MathExtensions.RoundTo(double, int)"/> are valid, throwing if not
@@ -408,9 +340,7 @@ public static class MathExtensionsValidation
     /// <param name="decimalPlaces">The number of decimal places to round to</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="decimalPlaces"/> is negative</exception>
     public static void EnsureValidRoundTo(this double value, int decimalPlaces)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(decimalPlaces);
-    }
+        => ArgumentOutOfRangeException.ThrowIfNegative(decimalPlaces);
 
     /// <summary>
     /// Ensures parameters for <see cref="MathExtensions.ToHumanReadableDuration(int)"/> are valid, throwing if not
@@ -418,9 +348,7 @@ public static class MathExtensionsValidation
     /// <param name="milliseconds">The duration in milliseconds</param>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="milliseconds"/> is negative</exception>
     public static void EnsureValidToHumanReadableDuration(this int milliseconds)
-    {
-        ArgumentOutOfRangeException.ThrowIfNegative(milliseconds);
-    }
+        => ArgumentOutOfRangeException.ThrowIfNegative(milliseconds);
 
     /// <summary>
     /// Ensures parameters for <see cref="MathExtensions.CalculateCompoundInterest(decimal, decimal, int)"/> are valid, throwing if not
