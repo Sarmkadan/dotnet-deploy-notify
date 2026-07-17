@@ -2,6 +2,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 
 namespace DotNetDeployNotify.Configuration;
 
@@ -14,7 +15,8 @@ public static class DotnetDeployNotifyOptionsJsonExtensions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        TypeInfoResolver = new DefaultJsonTypeInfoResolver()
     };
 
     /// <summary>
@@ -55,14 +57,15 @@ public static class DotnetDeployNotifyOptionsJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">Receives the deserialized options instance if successful; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     public static bool TryFromJson(string json, out DotnetDeployNotifyOptions? value)
     {
-        ArgumentException.ThrowIfNullOrWhiteSpace(json);
+        ArgumentNullException.ThrowIfNull(json);
 
         try
         {
             value = JsonSerializer.Deserialize<DotnetDeployNotifyOptions>(json, _jsonOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
         {
