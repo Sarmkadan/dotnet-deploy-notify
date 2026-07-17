@@ -32,7 +32,7 @@ public static class CollectionExtensionsValidation
         var nullItems = collection.Where(x => x is null).ToList();
         if (nullItems.Count > 0)
         {
-            problems.Add(string.Format("{0} contains {1} null item(s). CollectionExtensions methods may throw NullReferenceException.", name, nullItems.Count));
+            problems.Add($"{name} contains {nullItems.Count} null item(s). CollectionExtensions methods may throw NullReferenceException.");
         }
 
         return problems.AsReadOnly();
@@ -59,12 +59,12 @@ public static class CollectionExtensionsValidation
 
         if (index < 0)
         {
-            problems.Add(string.Format("{0} ({1}) cannot be negative.", name, index));
+            problems.Add($"{name} ({index}) cannot be negative.");
         }
 
         if (index >= list.Count)
         {
-            problems.Add(string.Format("{0} ({1}) is out of range for list with {2} item(s). Maximum valid index is {3}.", name, index, list.Count, list.Count - 1));
+            problems.Add($"{name} ({index}) is out of range for list with {list.Count} item(s). Maximum valid index is {list.Count - 1}.");
         }
 
         return problems.AsReadOnly();
@@ -76,16 +76,19 @@ public static class CollectionExtensionsValidation
     /// <param name="chunkSize">The chunk size to validate</param>
     /// <param name="chunkSizeName">Optional name of the chunkSize parameter for error messages</param>
     /// <returns>List of human-readable validation problems, empty if valid</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="chunkSizeName"/> is null</exception>
     public static IReadOnlyList<string> ValidateChunkSize(
         int chunkSize,
         [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(chunkSize))] string? chunkSizeName = null)
     {
+        ArgumentNullException.ThrowIfNull(chunkSizeName);
+
         var problems = new List<string>();
         var name = chunkSizeName ?? "chunkSize";
 
         if (chunkSize <= 0)
         {
-            problems.Add(string.Format("{0} ({1}) must be a positive integer. Chunk size must be 1 or greater.", name, chunkSize));
+            problems.Add($"{name} ({chunkSize}) must be a positive integer. Chunk size must be 1 or greater.");
         }
 
         return problems.AsReadOnly();
@@ -192,11 +195,14 @@ public static class CollectionExtensionsValidation
     /// </summary>
     /// <param name="chunkSize">The chunk size to validate</param>
     /// <param name="chunkSizeName">Optional name of the chunkSize parameter for error messages</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="chunkSizeName"/> is null</exception>
     /// <exception cref="ArgumentException">Thrown when validation fails</exception>
     public static void EnsureValidChunkSize(
         int chunkSize,
         [System.Runtime.CompilerServices.CallerArgumentExpression(nameof(chunkSize))] string? chunkSizeName = null)
     {
+        ArgumentNullException.ThrowIfNull(chunkSizeName);
+
         var problems = ValidateChunkSize(chunkSize, chunkSizeName);
 
         if (problems.Count > 0)
