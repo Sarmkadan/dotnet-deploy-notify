@@ -56,7 +56,6 @@ public static class IntegrationTestsJsonExtensions
     public static bool TryFromJson(string json, out IntegrationTests? value)
     {
         ArgumentNullException.ThrowIfNull(json);
-            value = null;
 
         try
         {
@@ -64,6 +63,7 @@ public static class IntegrationTestsJsonExtensions
             return value is not null;
         }
         catch (JsonException)
+        {
             value = null;
             return false;
         }
