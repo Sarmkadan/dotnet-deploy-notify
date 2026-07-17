@@ -2,10 +2,9 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using DotNetDeployNotify.Core;
-using System.Globalization;
 
 namespace DotNetDeployNotify.Core.Models;
 
@@ -32,7 +31,7 @@ public static class ChannelConfigurationValidation
             errors.Add("Id must be a non-empty string.");
         }
 
-        // Validate ChannelType (enum has valid values by design)
+        // Validate ChannelType
         if (value.ChannelType is not (NotificationChannel.Telegram or NotificationChannel.Slack or NotificationChannel.Discord or NotificationChannel.Webhook or NotificationChannel.Email))
         {
             errors.Add("ChannelType must be a valid NotificationChannel value.");
@@ -43,13 +42,13 @@ public static class ChannelConfigurationValidation
         {
             errors.Add("WebhookUrl must be a non-empty string.");
         }
-        else if (!Uri.IsWellFormedUriString(value.WebhookUrl, UriKind.Absolute) && !value.WebhookUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) && !value.WebhookUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        else if (!Uri.IsWellFormedUriString(value.WebhookUrl, UriKind.Absolute))
         {
             errors.Add("WebhookUrl must be a well-formed absolute URI.");
         }
 
-        // Validate ApiToken (can be empty for some channel types, but if present should be valid)
-        if (!string.IsNullOrEmpty(value.ApiToken) && string.IsNullOrWhiteSpace(value.ApiToken))
+        // Validate ApiToken (can be empty for some channel types)
+        if (value.ApiToken is not null && string.IsNullOrWhiteSpace(value.ApiToken))
         {
             errors.Add("ApiToken must be a non-empty string if provided.");
         }
@@ -136,7 +135,6 @@ public static class ChannelConfigurationValidation
                 if (string.IsNullOrWhiteSpace(kvp.Key))
                 {
                     errors.Add("CustomHeaders contains an entry with null or empty key.");
-                    break;
                 }
             }
         }
@@ -158,18 +156,18 @@ public static class ChannelConfigurationValidation
         }
 
         // Validate UpdatedAt
-        if (value.UpdatedAt.HasValue)
+        if (value.UpdatedAt is { } updatedAt)
         {
-            if (value.UpdatedAt.Value == default)
+            if (updatedAt == default)
             {
                 errors.Add("UpdatedAt must be a valid DateTime if set.");
             }
-            else if (value.UpdatedAt.Value > DateTime.UtcNow.AddMinutes(5))
+            else if (updatedAt > DateTime.UtcNow.AddMinutes(5))
             {
                 errors.Add("UpdatedAt cannot be in the future.");
             }
 
-            if (value.CreatedAt != default && value.UpdatedAt < value.CreatedAt)
+            if (value.CreatedAt != default && updatedAt < value.CreatedAt)
             {
                 errors.Add("UpdatedAt cannot be earlier than CreatedAt.");
             }
