@@ -18,6 +18,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to look up.</param>
     /// <returns>The timeout in milliseconds.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static int GetWebhookTimeoutMs(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -34,6 +35,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to look up.</param>
     /// <returns>The maximum retry count.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static int GetMaxRetries(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -49,6 +51,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to check.</param>
     /// <returns>True if auto-processing is enabled; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static bool IsAutoProcessingEnabled(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -65,12 +68,21 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to look up.</param>
     /// <returns>The notification priority level.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static NotificationPriority GetPriority(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(environmentName);
 
-        if (Enum.TryParse<NotificationPriority>(options.Notification.DefaultPriority, ignoreCase: true, out var priority))
+        if (options.Notification.EnvironmentChannels.TryGetValue(environmentName, out var channelConfig) &&
+            !string.IsNullOrWhiteSpace(channelConfig.DisplayName))
+        {
+            // Channel-specific display name is available, but priority is not stored in channel config
+            // Fall through to default priority logic
+        }
+
+        if (!string.IsNullOrWhiteSpace(options.Notification.DefaultPriority) &&
+            Enum.TryParse<NotificationPriority>(options.Notification.DefaultPriority, ignoreCase: true, out var priority))
         {
             return priority;
         }
@@ -85,6 +97,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to check.</param>
     /// <returns>True if audit logging is enabled; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static bool IsAuditLoggingEnabled(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -101,6 +114,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to look up.</param>
     /// <returns>The display name for the channel.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static string GetDisplayName(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -112,7 +126,10 @@ public static class DotnetDeployNotifyOptionsExtensions
             return channelConfig.DisplayName;
         }
 
-        return $"{environmentName}-{channelConfig?.ChannelType ?? "Slack"}";
+        var channelType = options.Notification.EnvironmentChannels.TryGetValue(environmentName, out var resolvedConfig)
+            ? resolvedConfig.ChannelType
+            : "Slack";
+        return $"{environmentName}-{channelType}";
     }
 
     /// <summary>
@@ -123,6 +140,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to look up.</param>
     /// <returns>The storage path, or null if not configured.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static string? GetStoragePath(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -139,6 +157,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to look up.</param>
     /// <returns>The log level string.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static string GetLogLevel(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -266,17 +285,15 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to look up.</param>
     /// <returns>The webhook URL, or null if not configured.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static string? GetWebhookUrl(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(environmentName);
 
-        if (options.Notification.EnvironmentChannels.TryGetValue(environmentName, out var channelConfig))
-        {
-            return channelConfig.WebhookUrl;
-        }
-
-        return null;
+        return options.Notification.EnvironmentChannels.TryGetValue(environmentName, out var channelConfig)
+            ? channelConfig.WebhookUrl
+            : null;
     }
 
     /// <summary>
@@ -286,17 +303,15 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to look up.</param>
     /// <returns>The channel type.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static string GetChannelType(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(environmentName);
 
-        if (options.Notification.EnvironmentChannels.TryGetValue(environmentName, out var channelConfig))
-        {
-            return channelConfig.ChannelType;
-        }
-
-        return "Slack";
+        return options.Notification.EnvironmentChannels.TryGetValue(environmentName, out var channelConfig)
+            ? channelConfig.ChannelType
+            : "Slack";
     }
 
     /// <summary>
@@ -306,17 +321,15 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to look up.</param>
     /// <returns>The target ID, or null if not configured.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static string? GetTargetId(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
         ArgumentException.ThrowIfNullOrWhiteSpace(environmentName);
 
-        if (options.Notification.EnvironmentChannels.TryGetValue(environmentName, out var channelConfig))
-        {
-            return channelConfig.TargetId;
-        }
-
-        return null;
+        return options.Notification.EnvironmentChannels.TryGetValue(environmentName, out var channelConfig)
+            ? channelConfig.TargetId
+            : null;
     }
 
     /// <summary>
@@ -326,6 +339,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to check.</param>
     /// <returns>True if commit details should be included; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static bool IncludeCommitDetails(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -341,6 +355,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to check.</param>
     /// <returns>True if build URL should be included; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static bool IncludeBuildUrl(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -356,6 +371,7 @@ public static class DotnetDeployNotifyOptionsExtensions
     /// <param name="environmentName">The environment name to check.</param>
     /// <returns>The retention days.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="environmentName"/> is null or whitespace.</exception>
     public static int GetRetentionDays(this DotnetDeployNotifyOptions options, string environmentName)
     {
         ArgumentNullException.ThrowIfNull(options);
