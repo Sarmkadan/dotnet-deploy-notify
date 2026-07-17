@@ -165,7 +165,7 @@ public static class NotificationExceptionExtensions
             diagnostics["ValidationErrorsCount"] = validation.ValidationErrors.Count.ToString(CultureInfo.InvariantCulture);
             if (validation.ValidationErrors.Count > 0)
             {
-                diagnostics["FirstValidationError"] = validation.ValidationErrors[0];
+                diagnostics["FirstValidationError"] = validation.ValidationErrors[0] ?? "Unknown";
             }
         }
 
