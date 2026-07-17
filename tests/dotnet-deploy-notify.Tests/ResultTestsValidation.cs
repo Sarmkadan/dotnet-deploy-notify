@@ -6,7 +6,10 @@ using System.Reflection;
 /// <summary>
 /// Provides validation for <see cref="ResultTests"/> test class to ensure all expected test methods are properly implemented.
 /// </summary>
-public static class ResultTestsValidation
+/// <summary>
+        /// Provides validation methods for <see cref="ResultTests"/> test class to ensure all expected test methods are properly implemented.
+        /// </summary>
+        public static class ResultTestsValidation
 {
     /// <summary>
     /// Validates that the <see cref="ResultTests"/> class contains all expected test methods.
