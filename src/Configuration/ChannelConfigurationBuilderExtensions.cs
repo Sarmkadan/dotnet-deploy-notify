@@ -46,12 +46,9 @@ public static class ChannelConfigurationBuilderExtensions
         ArgumentException.ThrowIfNullOrEmpty(key);
         ArgumentException.ThrowIfNullOrEmpty(value);
 
-        if (builder.Build().CustomHeaders is null)
-        {
-            builder.Build(); // Ensure _config is initialized
-        }
-
-        builder.Build().CustomHeaders[key] = value;
+        var config = builder.Build();
+        config.CustomHeaders ??= new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        config.CustomHeaders[key] = value;
         return builder;
     }
 
@@ -69,12 +66,9 @@ public static class ChannelConfigurationBuilderExtensions
         ArgumentException.ThrowIfNullOrEmpty(key);
         ArgumentException.ThrowIfNullOrEmpty(value);
 
-        if (builder.Build().Settings is null)
-        {
-            builder.Build(); // Ensure _config is initialized
-        }
-
-        builder.Build().Settings[key] = value;
+        var config = builder.Build();
+        config.Settings ??= new Dictionary<string, string>();
+        config.Settings[key] = value;
         return builder;
     }
 
@@ -104,7 +98,6 @@ public static class ChannelConfigurationBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        _ = builder.Build(); // Ensure _config is initialized
         builder.Build().MinimumPriority = priority;
         return builder;
     }
@@ -121,7 +114,6 @@ public static class ChannelConfigurationBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(environments);
 
-        _ = builder.Build(); // Ensure _config is initialized
         builder.Build().AllowedEnvironments = new List<Environment>(environments);
         return builder;
     }
@@ -138,7 +130,6 @@ public static class ChannelConfigurationBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentNullException.ThrowIfNull(statuses);
 
-        _ = builder.Build(); // Ensure _config is initialized
         builder.Build().AllowedStatuses = new List<BuildStatus>(statuses);
         return builder;
     }
@@ -159,7 +150,6 @@ public static class ChannelConfigurationBuilderExtensions
             throw new ArgumentOutOfRangeException(nameof(seconds), "Timeout seconds cannot be negative");
         }
 
-        _ = builder.Build(); // Ensure _config is initialized
         builder.Build().TimeoutMs = seconds * 1000;
         return builder;
     }
@@ -180,7 +170,6 @@ public static class ChannelConfigurationBuilderExtensions
             throw new ArgumentOutOfRangeException(nameof(minutes), "Timeout minutes cannot be negative");
         }
 
-        _ = builder.Build(); // Ensure _config is initialized
         builder.Build().TimeoutMs = minutes * 60 * 1000;
         return builder;
     }
@@ -196,7 +185,6 @@ public static class ChannelConfigurationBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        _ = builder.Build(); // Ensure _config is initialized
         builder.Build().UseSlackBlockKit = enable;
         return builder;
     }
@@ -212,7 +200,6 @@ public static class ChannelConfigurationBuilderExtensions
     {
         ArgumentNullException.ThrowIfNull(builder);
 
-        _ = builder.Build(); // Ensure _config is initialized
         builder.Build().EnableEmojis = enable;
         return builder;
     }
@@ -229,7 +216,6 @@ public static class ChannelConfigurationBuilderExtensions
         ArgumentNullException.ThrowIfNull(builder);
         ArgumentException.ThrowIfNullOrEmpty(displayName);
 
-        _ = builder.Build(); // Ensure _config is initialized
         builder.Build().DisplayName = displayName;
         return builder;
     }
