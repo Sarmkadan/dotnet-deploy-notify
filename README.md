@@ -902,6 +902,52 @@ catch (ArgumentException ex)
 {
     Console.WriteLine(ex.Message);
 }
+## NotificationServiceTestsExtensions
+
+The `NotificationServiceTestsExtensions` class provides extension methods for `NotificationServiceTests` to simplify unit test creation. It includes factory methods for creating test objects (`DeploymentNotification`, `ChannelConfiguration`, `NotificationResult`) and verification helpers for asserting repository interactions. These extensions make tests more readable and maintainable by encapsulating common test setup patterns.
+
+Example usage:
+
+```csharp
+// Create test data
+var notification = this.CreateTestNotification(
+    projectName: "MyWebApp",
+    version: "2.1.0",
+    environment: Environment.Production,
+    status: BuildStatus.Success
+);
+
+var channelConfig = this.CreateTestChannelConfiguration(
+    channelType: NotificationChannel.Slack,
+    webhookUrl: "https://hooks.slack.com/services/T/B/X",
+    displayName: "Production Slack"
+);
+
+// Create expected result
+var successResult = this.CreateSuccessfulResult(
+    notificationId: notification.Id,
+    channel: NotificationChannel.Slack,
+    configurationId: channelConfig.Id
+);
+
+// Verify repository interactions
+var mockRepo = new Mock<INotificationRepository>();
+this.VerifyNotificationCreated(mockRepo, notification);
+
+var mockResultRepo = new Mock<INotificationResultRepository>();
+this.VerifyResultCreated(mockResultRepo, successResult);
+
+// Setup mocks
+var mockValidation = new Mock<IValidationService>();
+this.SetupValidationResult(mockValidation, isValid: true);
+
+var mockChannelRepo = new Mock<IChannelConfigRepository>();
+this.SetupChannelConfigurations(mockChannelRepo, new[] { channelConfig });
+
+var mockDispatcher = new Mock<IWebhookDispatcher>();
+this.SetupWebhookDispatch(mockDispatcher, successResult);
+```
+
 ## ChannelPayloadTests
 
 The `ChannelPayloadTests` class verifies per-channel payload formatting by driving the real `WebhookDispatcher` and `PayloadBuilder` through a `FakeWebhookTransport` and asserting on the captured wire payload. These tests ensure that notifications sent to different channels (Slack, Discord, Telegram, generic webhooks) are properly formatted according to each platform's requirements.
