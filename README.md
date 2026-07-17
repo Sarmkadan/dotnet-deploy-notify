@@ -364,6 +364,52 @@ if (stringErrors.Any())
 }
 ```
 
+## RetryPolicyExtensions
+
+The `RetryPolicyExtensions` class provides extension methods for the `RetryPolicy` type to simplify retry operations. It includes factory methods for creating retry policies with common patterns (immediate retries, exponential backoff), delay calculation methods with and without jitter, and helper methods for executing operations with retry logic. The extensions support both synchronous and asynchronous operations, custom retry conditions, and policy validation.
+
+Example usage:
+
+```csharp
+// Create a retry policy with exponential backoff
+var retryPolicy = RetryPolicyExtensions.WithExponentialBackoff(
+    maxAttempts: 5,
+    initialDelay: TimeSpan.FromSeconds(1),
+    backoffMultiplier: 2.0,
+    maxDelay: TimeSpan.FromSeconds(30)
+);
+
+Console.WriteLine(retryPolicy.FormatConfiguration());
+
+// Execute an operation with retry logic
+var result = await retryPolicy.ExecuteAsync(async () =>
+{
+    var response = await httpClient.GetAsync("https://api.example.com/data");
+    response.EnsureSuccessStatusCode();
+    return await response.Content.ReadAsStringAsync();
+});
+
+// Get retry delays for monitoring
+var delays = retryPolicy.GetRetryDelaysWithJitter();
+foreach (var delay in delays)
+{
+    Console.WriteLine($"Retry delay: {delay.TotalMilliseconds}ms");
+}
+
+// Create a policy with custom retry condition
+var customPolicy = RetryPolicyExtensions.WithCustomRetryCondition(
+    maxAttempts: 3,
+    initialDelay: TimeSpan.FromMilliseconds(200),
+    shouldRetry: ex => ex is HttpRequestException or TimeoutException
+);
+
+// Validate policy configuration
+if (retryPolicy.IsValid())
+{
+    Console.WriteLine("Retry policy is valid");
+}
+```
+
 ## MathExtensionsJsonExtensions
 
 The `MathExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for `MathExtensions` type information. It enables converting MathExtensions metadata to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
