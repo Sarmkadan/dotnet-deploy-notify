@@ -58,7 +58,7 @@ public static class TestHttpClientExtensionsJsonExtensions
         try
         {
             value = JsonSerializer.Deserialize<TestHttpClientExtensions>(json, _jsonOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
         {
