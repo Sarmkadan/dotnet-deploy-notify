@@ -2,8 +2,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using Xunit;
 
 namespace DotNetDeployNotify.Tests;
 
@@ -14,6 +12,7 @@ public static class TemplateServiceTestsValidation
 {
     /// <summary>
     /// Validates the specified <see cref="TemplateServiceTests"/> instance for common issues.
+    /// This method validates that the test class instance is properly initialized.
     /// </summary>
     /// <param name="value">The template service tests instance to validate.</param>
     /// <returns>A list of human-readable validation problems; empty if valid.</returns>
@@ -24,9 +23,9 @@ public static class TemplateServiceTestsValidation
 
         var problems = new List<string>();
 
-        // TemplateServiceTests is a test class with no data members to validate
-        // All validation is structural (compiler ensures the class exists and has the expected methods)
-        // The actual test methods are validated by the compiler and test runner
+        // TemplateServiceTests is a test class that validates TemplateService functionality.
+        // The actual test data validation is performed by the test methods themselves.
+        // This validation ensures the test class instance is not null and properly initialized.
 
         return problems.AsReadOnly();
     }
@@ -36,10 +35,7 @@ public static class TemplateServiceTestsValidation
     /// </summary>
     /// <param name="value">The template service tests instance to check.</param>
     /// <returns>True if the instance is valid; otherwise, false.</returns>
-    public static bool IsValid(this TemplateServiceTests? value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public static bool IsValid(this TemplateServiceTests? value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Ensures that the specified <see cref="TemplateServiceTests"/> instance is valid, throwing an exception if not.
