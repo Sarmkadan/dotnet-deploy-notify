@@ -341,6 +341,71 @@ else
 }
 ```
 
+## TrafficSplitterExtensionsValidation
+
+The `TrafficSplitterExtensionsValidation` class provides validation helpers for the `TrafficSplitterExtensions` extension methods used in canary deployments. It validates parameters passed to extension methods like `CreateLinearCanaryDeployment`, `CreateExponentialCanaryDeployment`, `CreateBlueGreenCanaryDeployment`, `ShouldProceedToNextStepAsync`, and `GetCanaryPercentageNormalized`, ensuring that canary deployment configurations are valid before they are used.
+
+This validation class helps prevent runtime errors by validating project names, versions, traffic splits, and deployment configurations against business rules and constraints.
+
+Example usage:
+
+```csharp
+// Validate linear canary deployment parameters before creating deployment
+var validationProblems = TrafficSplitterExtensionsValidation.ValidateCreateLinearCanaryDeployment(
+    projectName: "MyWebApp",
+    canaryVersion: "2.1.0-preview",
+    stableVersion: "2.0.0",
+    stepCount: 5
+);
+
+if (validationProblems.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var problem in validationProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+    return;
+}
+
+// If validation passes, proceed with deployment
+var deployment = TrafficSplitterExtensions.CreateLinearCanaryDeployment(
+    projectName: "MyWebApp",
+    canaryVersion: "2.1.0-preview",
+    stableVersion: "2.0.0",
+    stepCount: 5
+);
+
+// Validate a traffic split percentage
+var split = new TrafficSplit
+{
+    CanaryPercent = 10.5,
+    StablePercent = 89.5
+};
+
+var splitProblems = TrafficSplitterExtensionsValidation.ValidateGetCanaryPercentageNormalized(split);
+bool isSplitValid = TrafficSplitterExtensionsValidation.IsValidGetCanaryPercentageNormalized(split);
+
+// Validate canary deployment state before proceeding to next step
+var healthEvaluator = new CanaryHealthEvaluator();
+var deploymentProblems = TrafficSplitterExtensionsValidation.ValidateShouldProceedToNextStepAsync(
+    deployment,
+    healthEvaluator
+);
+
+if (deploymentProblems.Count == 0)
+{
+    await TrafficSplitterExtensions.ShouldProceedToNextStepAsync(deployment, healthEvaluator);
+}
+
+// Use EnsureValid methods for immediate exception throwing on validation failure
+TrafficSplitterExtensionsValidation.EnsureValidCreateExponentialCanaryDeployment(
+    projectName: "PaymentService",
+    canaryVersion: "3.2.0-beta",
+    stableVersion: "3.1.0"
+);
+```
+
 ## ServiceExtensionsMetadataJsonExtensions
 
 The `ServiceExtensionsMetadataJsonExtensions` class provides JSON serialization and deserialization utilities for `ServiceExtensions` type information. It enables converting service extension metadata to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
