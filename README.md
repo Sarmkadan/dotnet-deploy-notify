@@ -3987,6 +3987,47 @@ string typeName = deploymentConfig.GetTypeName();
 string fullTypeName = deploymentConfig.GetFullTypeName();
 ```
 
+## WebhookPayloadValidation
+
+`WebhookPayloadValidation` provides extension methods for the `WebhookPayload` class to validate its contents against required fields, formats (like GUIDs, semantic versions, UTC timestamps), and structural rules. It allows developers to check for issues, determine validity, or enforce validity by throwing exceptions when payloads are malformed or invalid.
+
+Example usage:
+
+```csharp
+using DotNetDeployNotify.Core.Models;
+
+var payload = new WebhookPayload
+{
+    EventId = Guid.NewGuid().ToString(),
+    EventType = "DeploymentStarted",
+    Timestamp = DateTime.UtcNow,
+    Source = "CI/CD Pipeline",
+    SchemaVersion = "1.0.0",
+    Data = new WebhookData
+    {
+        ProjectName = "MyProject",
+        Version = "1.0.0",
+        Status = "success"
+    }
+};
+
+// Check if valid
+if (payload.IsValid())
+{
+    // Process payload
+}
+
+// Ensure valid (throws ArgumentException if invalid)
+payload.EnsureValid();
+
+// Get validation errors
+var errors = payload.Validate();
+foreach (var error in errors)
+{
+    Console.WriteLine(error);
+}
+```
+
 ## License
 
 MIT License - see LICENSE file for details.
