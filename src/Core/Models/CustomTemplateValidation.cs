@@ -47,7 +47,11 @@ public static class CustomTemplateValidation
         }
 
         // Validate Description
-        if (value.Description.Length > 2000)
+        if (string.IsNullOrEmpty(value.Description))
+        {
+            errors.Add("Description cannot be null or empty.");
+        }
+        else if (value.Description.Length > 2000)
         {
             errors.Add("Description cannot exceed 2000 characters.");
         }
@@ -105,10 +109,7 @@ public static class CustomTemplateValidation
     /// <param name="value">The template to check</param>
     /// <returns>True if valid, otherwise false</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
-    public static bool IsValid(this CustomTemplate? value)
-    {
-        return value.Validate().Count == 0;
-    }
+    public static bool IsValid(this CustomTemplate? value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that a <see cref="CustomTemplate"/> instance is valid, throwing an exception if not
