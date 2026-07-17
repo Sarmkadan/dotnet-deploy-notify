@@ -4,10 +4,9 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
-namespace DotNetDeployNotify.Search;
 
 /// <summary>
 /// Provides System.Text.Json serialization helpers for <see cref="SearchCriteriaExtensions"/> type metadata.
@@ -36,13 +35,13 @@ public static class SearchCriteriaExtensionsJsonExtensions
         var metadata = new SearchCriteriaExtensionsMetadata
         {
             Type = "SearchCriteriaExtensions",
-            Namespace = typeof(SearchCriteriaExtensions).Namespace ?? "DotNetDeployNotify.Search",
-            Assembly = typeof(SearchCriteriaExtensions).Assembly.GetName().Name ?? "DotNetDeployNotify",
+            Namespace = "DotNetDeployNotify.Search",
+            Assembly = "DotNetDeployNotify",
             Methods = [
-                "Combine",
                 "ClearFilters",
-                "WithPagination",
-                "FilterByPriority"
+                "Combine",
+                "FilterByPriority",
+                "WithPagination"
             ]
         };
         return JsonSerializer.Serialize(metadata, options);
@@ -54,6 +53,7 @@ public static class SearchCriteriaExtensionsJsonExtensions
     /// <param name="json">JSON string to deserialize.</param>
     /// <returns>SearchCriteriaExtensions metadata or null if deserialization fails.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid.</exception>
     public static SearchCriteriaExtensionsMetadata? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
@@ -74,6 +74,7 @@ public static class SearchCriteriaExtensionsJsonExtensions
     /// <param name="value">Output value, null if deserialization fails.</param>
     /// <returns>True if deserialization succeeds, false otherwise.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid.</exception>
     public static bool TryFromJson(string json, out SearchCriteriaExtensionsMetadata? value)
     {
         ArgumentNullException.ThrowIfNull(json);
@@ -97,21 +98,25 @@ public static class SearchCriteriaExtensionsJsonExtensions
         /// <summary>
         /// Gets or sets the type identifier.
         /// </summary>
+        /// <example>SearchCriteriaExtensions</example>
         public string? Type { get; set; }
 
         /// <summary>
-        /// Gets or sets the namespace.
+        /// Gets or sets the namespace where the type is defined.
         /// </summary>
+        /// <example>DotNetDeployNotify.Search</example>
         public string? Namespace { get; set; }
 
         /// <summary>
-        /// Gets or sets the assembly name.
+        /// Gets or sets the assembly name containing the type.
         /// </summary>
+        /// <example>DotNetDeployNotify</example>
         public string? Assembly { get; set; }
 
         /// <summary>
-        /// Gets or sets the array of method names.
+        /// Gets or sets the array of public static method names available on the type.
         /// </summary>
+        /// <example>["ClearFilters", "Combine", "FilterByPriority", "WithPagination"]</example>
         public string[]? Methods { get; set; }
     }
 }
