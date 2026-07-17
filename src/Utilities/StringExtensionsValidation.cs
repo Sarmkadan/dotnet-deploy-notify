@@ -5,6 +5,8 @@
 // =============================================================================
 
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace DotNetDeployNotify.Utilities;
 
@@ -14,11 +16,11 @@ namespace DotNetDeployNotify.Utilities;
 public static class StringExtensionsValidation
 {
     /// <summary>
-    /// Validates extension methods from StringExtensions class for common parameter validation issues
+    /// Validates extension methods from StringExtensions class by testing edge cases and parameter validation.
+    /// Returns a list of problems found during validation testing.
     /// </summary>
     /// <param name="value">The string instance to validate extension methods against.</param>
-    /// <returns>List of validation problems found, empty if valid.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null.</exception>
+    /// <returns>List of validation problems found, empty if all tests pass.</returns>
     public static IReadOnlyList<string> Validate(this string value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -191,7 +193,7 @@ public static class StringExtensionsValidation
             problems.Add("StringExtensions.WrapText: throws unexpected exception type for zero lineLength");
         }
 
-        // ToBooleanSafe validation - defaultValue is a bool, not a string
+        // ToBooleanSafe validation
         try
         {
             "test".ToBooleanSafe(default);
@@ -206,18 +208,18 @@ public static class StringExtensionsValidation
     }
 
     /// <summary>
-    /// Checks if the string instance passes all StringExtensions validation checks
+    /// Checks if the string instance passes all StringExtensions validation checks.
     /// </summary>
     /// <param name="value">The string instance to validate.</param>
-    /// <returns>True if valid; otherwise, false.</returns>
+    /// <returns>True if validation passes (no problems found); otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown when value is null.</exception>
     public static bool IsValid(this string value) => value.Validate().Count == 0;
 
     /// <summary>
-    /// Ensures the string instance passes all StringExtensions validation checks, throwing if not
+    /// Ensures the string instance passes all StringExtensions validation checks, throwing if not.
     /// </summary>
     /// <param name="value">The string instance to validate.</param>
-    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
+    /// <exception cref="ArgumentException">Thrown when validation fails with details of all problems found.</exception>
     /// <exception cref="ArgumentNullException">Thrown when value is null.</exception>
     public static void EnsureValid(this string value)
     {
