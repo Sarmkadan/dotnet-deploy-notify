@@ -84,9 +84,7 @@ public static class GuardExtensions
     public static void ThrowIfLongerThan(this string? value, int maxLength, string paramName)
     {
         if (value?.Length > maxLength)
-            throw new ArgumentException(
-                $"{paramName} cannot be longer than {maxLength} characters, but was {value.Length}",
-                paramName);
+            throw new ArgumentException($"{paramName} cannot be longer than {maxLength} characters, but was {value.Length}", paramName);
     }
 
     /// <summary>
