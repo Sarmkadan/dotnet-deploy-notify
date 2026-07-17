@@ -12,11 +12,15 @@ namespace DotNetDeployNotify.Core.Exceptions;
 public static class NotificationExceptionValidation
 {
     /// <summary>
-    /// Validates a NotificationException and returns a list of human-readable problems
+    /// Validates a <see cref="NotificationException"/> and returns a list of human-readable problems
     /// </summary>
-    /// <param name="value">The NotificationException to validate</param>
+    /// <param name="value">The <see cref="NotificationException"/> to validate</param>
     /// <returns>List of validation problems; empty list if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null</exception>
+    /// <remarks>
+    /// This method validates the exception message and performs type-specific validation
+    /// for each derived exception type using pattern matching.
+    /// </remarks>
     public static IReadOnlyList<string> Validate(this NotificationException value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -57,11 +61,15 @@ public static class NotificationExceptionValidation
     }
 
     /// <summary>
-    /// Checks if a NotificationException is valid
+    /// Checks if a <see cref="NotificationException"/> is valid
     /// </summary>
-    /// <param name="value">The NotificationException to check</param>
+    /// <param name="value">The <see cref="NotificationException"/> to check</param>
     /// <returns>True if valid; false otherwise</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null</exception>
+    /// <remarks>
+    /// This method is a convenience wrapper around <see cref="Validate(NotificationException)"/> that
+    /// returns a boolean result instead of a list of problems.
+    /// </remarks>
     public static bool IsValid(this NotificationException value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -69,11 +77,15 @@ public static class NotificationExceptionValidation
     }
 
     /// <summary>
-    /// Ensures that a NotificationException is valid, throwing an exception if not
+    /// Ensures that a <see cref="NotificationException"/> is valid, throwing an <see cref="ArgumentException"/> if not
     /// </summary>
-    /// <param name="value">The NotificationException to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if value is not valid, containing the list of problems</exception>
+    /// <param name="value">The <see cref="NotificationException"/> to validate</param>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not valid, containing the list of problems</exception>
+    /// <remarks>
+    /// This method calls <see cref="Validate(NotificationException)"/> and throws an exception with detailed
+    /// validation messages if any problems are found.
+    /// </remarks>
     public static void EnsureValid(this NotificationException value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -86,10 +98,18 @@ public static class NotificationExceptionValidation
         }
     }
 
+    /// <summary>
+    /// Validates a <see cref="ChannelConfigurationException"/> instance
+    /// </summary>
+    /// <param name="value">The exception to validate</param>
+    /// <param name="problems">List to accumulate validation problems</param>
     private static void ValidateChannelConfigurationException(
         ChannelConfigurationException value,
         List<string> problems)
     {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(problems);
+
         // ChannelType can be null (nullable property)
         if (value.ChannelType.HasValue && !Enum.IsDefined(typeof(NotificationChannel), value.ChannelType.Value))
         {
@@ -103,10 +123,18 @@ public static class NotificationExceptionValidation
         }
     }
 
+    /// <summary>
+    /// Validates a <see cref="WebhookDeliveryException"/> instance
+    /// </summary>
+    /// <param name="value">The exception to validate</param>
+    /// <param name="problems">List to accumulate validation problems</param>
     private static void ValidateWebhookDeliveryException(
         WebhookDeliveryException value,
         List<string> problems)
     {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(problems);
+
         // Channel must be defined
         if (!Enum.IsDefined(typeof(NotificationChannel), value.Channel))
         {
@@ -129,10 +157,18 @@ public static class NotificationExceptionValidation
         }
     }
 
+    /// <summary>
+    /// Validates a <see cref="NotificationValidationException"/> instance
+    /// </summary>
+    /// <param name="value">The exception to validate</param>
+    /// <param name="problems">List to accumulate validation problems</param>
     private static void ValidateNotificationValidationException(
         NotificationValidationException value,
         List<string> problems)
     {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(problems);
+
         // ValidationErrors collection should not be null and should not contain null/empty strings
         if (value.ValidationErrors is null)
         {
@@ -154,10 +190,18 @@ public static class NotificationExceptionValidation
         }
     }
 
+    /// <summary>
+    /// Validates a <see cref="NotificationDeliveryException"/> instance
+    /// </summary>
+    /// <param name="value">The exception to validate</param>
+    /// <param name="problems">List to accumulate validation problems</param>
     private static void ValidateNotificationDeliveryException(
         NotificationDeliveryException value,
         List<string> problems)
     {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(problems);
+
         // Channel must be defined
         if (!Enum.IsDefined(typeof(NotificationChannel), value.Channel))
         {
@@ -174,10 +218,18 @@ public static class NotificationExceptionValidation
         }
     }
 
+    /// <summary>
+    /// Validates a <see cref="ConfigurationMissingException"/> instance
+    /// </summary>
+    /// <param name="value">The exception to validate</param>
+    /// <param name="problems">List to accumulate validation problems</param>
     private static void ValidateConfigurationMissingException(
         ConfigurationMissingException value,
         List<string> problems)
     {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentNullException.ThrowIfNull(problems);
+
         // ConfigurationKey can be null or empty
         if (value.ConfigurationKey is not null && string.IsNullOrWhiteSpace(value.ConfigurationKey))
         {
