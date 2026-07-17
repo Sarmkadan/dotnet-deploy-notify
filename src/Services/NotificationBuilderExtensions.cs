@@ -22,7 +22,7 @@ public static class NotificationBuilderExtensions
     /// <param name="deployer">Name of the person who triggered the deployment</param>
     /// <param name="deploymentId">Unique deployment identifier</param>
     /// <returns>The notification builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null</exception>
     public static NotificationBuilder WithDeploymentMetadata(
         this NotificationBuilder builder,
         string deployer,
@@ -44,7 +44,7 @@ public static class NotificationBuilderExtensions
     /// <param name="builder">The notification builder instance</param>
     /// <param name="status">The build/deployment status</param>
     /// <returns>The notification builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null</exception>
     public static NotificationBuilder WithPriorityForStatus(
         this NotificationBuilder builder,
         BuildStatus status)
@@ -68,7 +68,8 @@ public static class NotificationBuilderExtensions
     /// <param name="commitHash">Git commit hash</param>
     /// <param name="commitMessage">Commit message summary</param>
     /// <returns>The notification builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder or repositoryUrl is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="repositoryUrl"/> is null</exception>
+/// <exception cref="ArgumentException">Thrown when <paramref name="branchName"/>, <paramref name="commitHash"/>, or <paramref name="commitMessage"/> is null or empty</exception>
     public static NotificationBuilder WithSourceControl(
         this NotificationBuilder builder,
         string repositoryUrl,
@@ -95,14 +96,18 @@ public static class NotificationBuilderExtensions
     /// <param name="startTime">When the build/deployment started</param>
     /// <param name="endTime">When the build/deployment completed</param>
     /// <returns>The notification builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null</exception>
+/// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="endTime"/> is before <paramref name="startTime"/></exception>
     public static NotificationBuilder WithTiming(
         this NotificationBuilder builder,
         DateTime startTime,
         DateTime endTime)
     {
         ArgumentNullException.ThrowIfNull(builder);
-
+	if (endTime < startTime)
+	{
+		throw new ArgumentOutOfRangeException(nameof(endTime), "End time cannot be before start time");
+	}
         var duration = (int)(endTime - startTime).TotalSeconds;
         return builder.WithDuration(duration);
     }
@@ -114,7 +119,7 @@ public static class NotificationBuilderExtensions
     /// <param name="buildUrl">URL to the build job</param>
     /// <param name="status">Current build/deployment status</param>
     /// <returns>The notification builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null</exception>
     public static NotificationBuilder WithBuildReference(
         this NotificationBuilder builder,
         string buildUrl,
@@ -134,7 +139,7 @@ public static class NotificationBuilderExtensions
     /// <param name="builder">The notification builder instance</param>
     /// <param name="channels">Collection of notification channels</param>
     /// <returns>The notification builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder or channels is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="channels"/> is null</exception>
     public static NotificationBuilder WithChannels(
         this NotificationBuilder builder,
         params NotificationChannel[] channels)
@@ -151,7 +156,7 @@ public static class NotificationBuilderExtensions
     /// <param name="builder">The notification builder instance</param>
     /// <param name="channels">Collection of notification channels</param>
     /// <returns>The notification builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder or channels is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> or <paramref name="channels"/> is null</exception>
     public static NotificationBuilder WithChannels(
         this NotificationBuilder builder,
         IEnumerable<NotificationChannel> channels)
@@ -169,7 +174,7 @@ public static class NotificationBuilderExtensions
     /// <param name="serverName">Name of the server/agent</param>
     /// <param name="serviceName">Name of the service being deployed</param>
     /// <returns>The notification builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null</exception>
     public static NotificationBuilder WithInfrastructureMetadata(
         this NotificationBuilder builder,
         string serverName,
@@ -193,7 +198,8 @@ public static class NotificationBuilderExtensions
     /// <param name="failedTests">Number of tests that failed</param>
     /// <param name="skippedTests">Number of tests that were skipped</param>
     /// <returns>The notification builder for fluent chaining</returns>
-    /// <exception cref="ArgumentNullException">Thrown when builder is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="builder"/> is null</exception>
+/// <exception cref="ArgumentOutOfRangeException">Thrown when any test parameter is negative or when the sum of passed, failed, and skipped tests exceeds total tests</exception>
     public static NotificationBuilder WithTestResults(
         this NotificationBuilder builder,
         int totalTests,
@@ -202,6 +208,27 @@ public static class NotificationBuilderExtensions
         int skippedTests = 0)
     {
         ArgumentNullException.ThrowIfNull(builder);
+
+	if (totalTests < 0)
+	{
+		throw new ArgumentOutOfRangeException(nameof(totalTests), "Total tests cannot be negative");
+	}
+	if (passedTests < 0)
+	{
+		throw new ArgumentOutOfRangeException(nameof(passedTests), "Passed tests cannot be negative");
+	}
+	if (failedTests < 0)
+	{
+		throw new ArgumentOutOfRangeException(nameof(failedTests), "Failed tests cannot be negative");
+	}
+	if (skippedTests < 0)
+	{
+		throw new ArgumentOutOfRangeException(nameof(skippedTests), "Skipped tests cannot be negative");
+	}
+	if (passedTests + failedTests + skippedTests > totalTests)
+	{
+		throw new ArgumentOutOfRangeException(nameof(totalTests), "Sum of passed, failed, and skipped tests cannot exceed total tests");
+	}
 
         var testCoverage = totalTests > 0
             ? (double)passedTests / totalTests * 100
@@ -212,20 +239,33 @@ public static class NotificationBuilderExtensions
             .WithMetadata("testPassed", passedTests)
             .WithMetadata("testFailed", failedTests)
             .WithMetadata("testSkipped", skippedTests)
-            .WithMetadata("testCoverage", testCoverage.ToString("F2", CultureInfo.InvariantCulture) + "%");
+            .WithMetadata("testCoverage", $"{testCoverage:F2}%");
     }
 
-    private static string GetStatusMessage(BuildStatus status) => status switch
-    {
-        BuildStatus.Started => "Build started",
-        BuildStatus.InProgress => "Build in progress",
-        BuildStatus.Success => "✅ Build completed successfully",
-        BuildStatus.SuccessWithWarnings => "⚠️ Build completed with warnings",
-        BuildStatus.Failed => "❌ Build failed",
-        BuildStatus.Cancelled => "🚫 Build cancelled",
-        BuildStatus.Deploying => "🚀 Deployment in progress",
-        BuildStatus.DeploymentSuccess => "✅ Deployment completed successfully",
-        BuildStatus.DeploymentFailed => "💥 Deployment failed",
-        _ => "Build completed"
-    };
+	private static string GetStatusMessage(BuildStatus status)
+	{
+		switch (status)
+		{
+			case BuildStatus.Started:
+				return "Build started";
+			case BuildStatus.InProgress:
+				return "Build in progress";
+			case BuildStatus.Success:
+				return "✅ Build completed successfully";
+			case BuildStatus.SuccessWithWarnings:
+				return "⚠️ Build completed with warnings";
+			case BuildStatus.Failed:
+				return "❌ Build failed";
+			case BuildStatus.Cancelled:
+				return "🚫 Build cancelled";
+			case BuildStatus.Deploying:
+				return "🚀 Deployment in progress";
+			case BuildStatus.DeploymentSuccess:
+				return "✅ Deployment completed successfully";
+			case BuildStatus.DeploymentFailed:
+				return "💥 Deployment failed";
+			default:
+				return "Build completed";
+		}
+	}
 }
