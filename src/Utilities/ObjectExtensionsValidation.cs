@@ -2,8 +2,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
-
+// =====================================================================
 
 namespace DotNetDeployNotify.Utilities;
 
@@ -17,7 +16,7 @@ public static class ObjectExtensionsValidation
     /// </summary>
     /// <param name="value">The object to validate</param>
     /// <returns>List of validation problems; empty list if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this object? value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -64,13 +63,13 @@ public static class ObjectExtensionsValidation
     }
 
     /// <summary>
-    /// Validates an object with a specific property name
+    /// Validates a specific property of an object
     /// </summary>
-    /// <param name="value">The object to validate</param>
+    /// <param name="value">The object containing the property to validate</param>
     /// <param name="propertyName">The name of the property to validate</param>
     /// <returns>List of validation problems; empty list if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value or propertyName is null</exception>
-    /// <exception cref="ArgumentException">Thrown if propertyName is empty or whitespace</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> or <paramref name="propertyName"/> is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="propertyName"/> is empty or whitespace</exception>
     public static IReadOnlyList<string> ValidateProperty(this object value, string propertyName)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -93,7 +92,7 @@ public static class ObjectExtensionsValidation
     /// </summary>
     /// <param name="value">The object to check</param>
     /// <returns>True if valid; false otherwise</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static bool IsValid(this object value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -106,8 +105,8 @@ public static class ObjectExtensionsValidation
     /// <param name="value">The object to check</param>
     /// <param name="propertyName">The name of the property to check</param>
     /// <returns>True if valid; false otherwise</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value or propertyName is null</exception>
-    /// <exception cref="ArgumentException">Thrown if propertyName is empty or whitespace</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> or <paramref name="propertyName"/> is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="propertyName"/> is empty or whitespace</exception>
     public static bool IsValidProperty(this object value, string propertyName)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -120,8 +119,8 @@ public static class ObjectExtensionsValidation
     /// Ensures that an object is valid, throwing an exception if not
     /// </summary>
     /// <param name="value">The object to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if value is not valid, containing the list of problems</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not valid, containing the list of problems</exception>
     public static void EnsureValid(this object value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -139,8 +138,8 @@ public static class ObjectExtensionsValidation
     /// </summary>
     /// <param name="value">The object to validate</param>
     /// <param name="propertyName">The name of the property to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if value or propertyName is null</exception>
-    /// <exception cref="ArgumentException">Thrown if propertyName is empty or whitespace</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> or <paramref name="propertyName"/> is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="propertyName"/> is empty or whitespace</exception>
     /// <exception cref="ArgumentException">Thrown if the object or property is not valid, containing the list of problems</exception>
     public static void EnsureValidProperty(this object value, string propertyName)
     {
@@ -151,7 +150,7 @@ public static class ObjectExtensionsValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                $"Property validation failed for '{propertyName}':\n{string.Join("\n", problems)}");
+                $"Property validation failed for '{propertyName}':{System.Environment.NewLine}{string.Join("\n", problems)}");
         }
     }
 }
