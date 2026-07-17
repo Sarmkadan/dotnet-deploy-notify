@@ -28,8 +28,8 @@ public static class TrafficSplitterValidation
 
         var errors = new List<string>();
 
-        // Validate CanaryPercent
-        if (value.CanaryPercent < 0 || value.CanaryPercent > 100)
+        // Validate CanaryPercent range
+        if (value.CanaryPercent is < 0 or > 100)
         {
             errors.Add(string.Format(
                 CultureInfo.InvariantCulture,
@@ -37,8 +37,8 @@ public static class TrafficSplitterValidation
                 value.CanaryPercent));
         }
 
-        // Validate StablePercent
-        if (value.StablePercent < 0 || value.StablePercent > 100)
+        // Validate StablePercent range
+        if (value.StablePercent is < 0 or > 100)
         {
             errors.Add(string.Format(
                 CultureInfo.InvariantCulture,
@@ -59,23 +59,6 @@ public static class TrafficSplitterValidation
                 value.CanaryPercent + value.StablePercent));
         }
 
-        // Validate that both percentages are non-negative
-        if (value.CanaryPercent < 0)
-        {
-            errors.Add(string.Format(
-                CultureInfo.InvariantCulture,
-                "CanaryPercent cannot be negative, but was {0:F2}.",
-                value.CanaryPercent));
-        }
-
-        if (value.StablePercent < 0)
-        {
-            errors.Add(string.Format(
-                CultureInfo.InvariantCulture,
-                "StablePercent cannot be negative, but was {0:F2}.",
-                value.StablePercent));
-        }
-
         return errors.AsReadOnly();
     }
 
@@ -90,10 +73,8 @@ public static class TrafficSplitterValidation
         ArgumentNullException.ThrowIfNull(value);
 
         const double tolerance = 0.01;
-        return value.CanaryPercent >= 0
-            && value.CanaryPercent <= 100
-            && value.StablePercent >= 0
-            && value.StablePercent <= 100
+        return value.CanaryPercent is >= 0 and <= 100
+            && value.StablePercent is >= 0 and <= 100
             && Math.Abs(value.CanaryPercent + value.StablePercent - 100) <= tolerance;
     }
 
@@ -109,13 +90,9 @@ public static class TrafficSplitterValidation
         ArgumentNullException.ThrowIfNull(value);
 
         var errors = value.Validate();
-        if (errors.Count == 0)
+        if (errors.Count > 0)
         {
-            return;
+            throw new ArgumentException(string.Join(" ", errors), nameof(value));
         }
-
-        throw new ArgumentException(
-            string.Join(" ", errors),
-            nameof(value));
     }
 }
