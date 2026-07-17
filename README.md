@@ -766,6 +766,32 @@ else
 }
 ```
 
+## ChannelConfigurationExtensions
+
+The `ChannelConfigurationExtensions` class provides extension methods for `ChannelConfiguration` instances that enhance their functionality. These methods enable operations like creating a deep copy of a channel configuration, checking if a configuration is valid for a specific environment or status, and getting human-readable representations of configuration properties.
+
+Example usage:
+```csharp
+var config = new ChannelConfiguration
+{
+    ChannelType = NotificationChannel.Slack,
+    WebhookUrl = "https://hooks.slack.com/services/T123/B456/C789",
+    TargetId = "C123456"
+};
+
+// Create a deep copy of the configuration
+var copy = config.DeepCopy();
+Console.WriteLine($"Copy created: {copy.WebhookUrl}");
+
+// Check if configuration is valid for production environment
+bool isValid = config.IsEnvironmentAllowed(Environment.Production);
+Console.WriteLine($"Is valid for production: {isValid}");
+
+// Get human-readable channel type
+string channelType = config.GetChannelTypeDisplay();
+Console.WriteLine($"Channel type: {channelType}");
+```
+
 ## CacheEntry
 
 The `CacheEntry<T>` class represents a single cache entry in the in-memory cache system. It stores a cached value along with metadata such as expiration time and creation timestamp, enabling time-to-live (TTL) functionality for cache entries.
