@@ -39,11 +39,11 @@ public static class ChannelConfigurationBuilderValidation
         {
             problems.Add("ChannelConfigurationBuilder.WebhookUrl must be a non-empty string.");
         }
-        else if (!Uri.IsWellFormedUriString(value.WebhookUrl, UriKind.Absolute) &&
-                 !value.WebhookUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
-                 !value.WebhookUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        else if (!Uri.IsWellFormedUriString(value.WebhookUrl, UriKind.Absolute) ||
+                 (!value.WebhookUrl.StartsWith("http://", StringComparison.OrdinalIgnoreCase) &&
+                  !value.WebhookUrl.StartsWith("https://", StringComparison.OrdinalIgnoreCase)))
         {
-            problems.Add("ChannelConfigurationBuilder.WebhookUrl must be a well-formed absolute URI.");
+            problems.Add("ChannelConfigurationBuilder.WebhookUrl must be a well-formed absolute URI starting with http:// or https://.");
         }
 
         // Validate TargetId: must be non-empty (common requirement for notification channels)
@@ -94,7 +94,7 @@ public static class ChannelConfigurationBuilderValidation
         }
 
         // Validate AllowedEnvironments: must contain valid enum values if not empty
-        if (value.AllowedEnvironments.Count > 0)
+        if (value.AllowedEnvironments is not null && value.AllowedEnvironments.Count > 0)
         {
             foreach (var env in value.AllowedEnvironments)
             {
@@ -104,13 +104,12 @@ public static class ChannelConfigurationBuilderValidation
                         CultureInfo.InvariantCulture,
                         "ChannelConfigurationBuilder.AllowedEnvironments contains invalid Environment value: {0}.",
                         env));
-                    break;
                 }
             }
         }
 
         // Validate AllowedStatuses: must contain valid enum values if not empty
-        if (value.AllowedStatuses.Count > 0)
+        if (value.AllowedStatuses is not null && value.AllowedStatuses.Count > 0)
         {
             foreach (var status in value.AllowedStatuses)
             {
@@ -120,7 +119,6 @@ public static class ChannelConfigurationBuilderValidation
                         CultureInfo.InvariantCulture,
                         "ChannelConfigurationBuilder.AllowedStatuses contains invalid BuildStatus value: {0}.",
                         status));
-                    break;
                 }
             }
         }
@@ -134,10 +132,7 @@ public static class ChannelConfigurationBuilderValidation
     /// <param name="value">The builder to validate.</param>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static bool IsValid(this ChannelConfigurationBuilder value)
-    {
-        return value.Validate().Count == 0;
-    }
+    public static bool IsValid(this ChannelConfigurationBuilder value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the provided <see cref="ChannelConfigurationBuilder"/> instance is valid.
