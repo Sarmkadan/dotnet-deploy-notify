@@ -118,23 +118,22 @@ public static class NotificationResultValidation
     /// </summary>
     /// <param name="value">The notification result to check</param>
     /// <returns>True if valid; otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    public static bool IsValid(this NotificationResult value)
-    {
-        return value.Validate().Count == 0;
-    }
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
+    public static bool IsValid(this NotificationResult value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures the notification result is valid, throwing an exception if not
     /// </summary>
     /// <param name="value">The notification result to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if value is invalid, with details</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is invalid, with details</exception>
     public static void EnsureValid(this NotificationResult value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
         var problems = value.Validate();
+        ArgumentNullException.ThrowIfNull(problems);
+
         if (problems.Count == 0)
         {
             return;
