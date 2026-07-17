@@ -23,7 +23,7 @@ public static class NotificationProcessingWorkerValidation
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var errors = new List<string>();
+        var errors = new List<string>(capacity: 3);
 
         // Validate statistics from GetStatistics()
         try
@@ -38,23 +38,28 @@ public static class NotificationProcessingWorkerValidation
             }
 
             // Validate SuccessRate (should be between 0 and 1 inclusive)
-            if (stats.SuccessRate < 0.0 || stats.SuccessRate > 1.0)
+            if (stats.SuccessRate is < 0.0 or > 1.0)
             {
                 errors.Add(
-                    $"SuccessRate must be between 0.0 and 1.0, but was {stats.SuccessRate.ToString(CultureInfo.InvariantCulture)}.");
+                    $"SuccessRate must be between 0.0 and 1.0, but was {stats.SuccessRate:F6}.");
             }
 
             // Validate Uptime (should be non-negative)
             if (stats.Uptime < TimeSpan.Zero)
             {
                 errors.Add(
-                    $"Uptime cannot be negative, but was {stats.Uptime.TotalSeconds.ToString(CultureInfo.InvariantCulture)} seconds.");
+                    $"Uptime cannot be negative, but was {stats.Uptime.TotalSeconds:F2} seconds.");
             }
         }
-        catch (Exception ex)
+        catch (InvalidOperationException ex)
         {
             errors.Add(
-                $"Failed to retrieve statistics from worker: {ex.Message}");
+                $"Worker statistics unavailable: {ex.Message}");
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException)
+        {
+            errors.Add(
+                $"Unexpected error while retrieving worker statistics: {ex.Message}");
         }
 
         return errors.AsReadOnly();
