@@ -1327,3 +1327,94 @@ if (notification.IsValid())
     Console.WriteLine("DeploymentNotification is valid for sending");
 }
 ```
+
+## MetricsServiceTestsValidation
+
+The `MetricsServiceTestsValidation` class provides validation extension methods for `MetricsSnapshot` and `ChannelMetrics` types used in `MetricsServiceTests`. It offers comprehensive validation capabilities with detailed error reporting through `IReadOnlyList<string>` return types, along with convenience methods for quick boolean validation checks (`IsValid`) and exception-throwing validation (`EnsureValid`).
+
+This validation class is particularly useful for ensuring test data integrity before executing test scenarios, helping to catch configuration issues early in the test pipeline.
+
+Example usage:
+
+```csharp
+// Create a valid MetricsSnapshot
+var metrics = new MetricsSnapshot
+{
+    Timestamp = DateTime.UtcNow,
+    NotificationsCreated = 150,
+    DeliveryAttempts = 145,
+    SuccessfulDeliveries = 140,
+    FailedDeliveries = 5,
+    ValidationFailures = 2,
+    ConfigurationChanges = 1,
+    AverageDeliveryTimeMs = 1250,
+    MinDeliveryTimeMs = 200,
+    MaxDeliveryTimeMs = 3500,
+    P95DeliveryTimeMs = 2800,
+    P99DeliveryTimeMs = 3200,
+    ChannelMetrics = new Dictionary<NotificationChannel, ChannelMetrics>
+    {
+        [NotificationChannel.Slack] = new ChannelMetrics
+        {
+            Channel = NotificationChannel.Slack,
+            DeliveryAttempts = 80,
+            SuccessfulDeliveries = 78,
+            FailedDeliveries = 2,
+            AverageDeliveryTimeMs = 1100,
+            TotalNotifications = 80,
+            LastDeliveryAt = DateTime.UtcNow.AddMinutes(-5)
+        },
+        [NotificationChannel.Discord] = new ChannelMetrics
+        {
+            Channel = NotificationChannel.Discord,
+            DeliveryAttempts = 65,
+            SuccessfulDeliveries = 62,
+            FailedDeliveries = 3,
+            AverageDeliveryTimeMs = 1400,
+            TotalNotifications = 65,
+            LastDeliveryAt = DateTime.UtcNow.AddMinutes(-10)
+        }
+    }
+};
+
+// Validate the metrics - returns empty list if valid
+var validationProblems = metrics.Validate();
+if (validationProblems.Any())
+{
+    foreach (var problem in validationProblems)
+    {
+        Console.WriteLine(problem);
+    }
+}
+
+// Quick validation check
+if (metrics.IsValid())
+{
+    Console.WriteLine("MetricsSnapshot is valid for testing");
+}
+
+// Exception-throwing validation
+try
+{
+    metrics.EnsureValid();
+    Console.WriteLine("Metrics validation passed");
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
+
+// Validate individual ChannelMetrics
+foreach (var channelMetric in metrics.ChannelMetrics.Values)
+{
+    var channelProblems = channelMetric.Validate();
+    if (channelProblems.Any())
+    {
+        Console.WriteLine($"Channel {channelMetric.Channel} has validation issues:");
+        foreach (var problem in channelProblems)
+        {
+            Console.WriteLine($"  - {problem}");
+        }
+    }
+}
+```
