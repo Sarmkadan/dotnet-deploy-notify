@@ -3,7 +3,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System.Globalization;
 using Microsoft.Extensions.Logging;
@@ -27,8 +27,8 @@ internal sealed class NullLoggerAdapter<TCategoryName> : ILogger<TCategoryName>
         EventId eventId,
         TState state,
         Exception? exception,
-        Func<TState, Exception?, string> formatter) =>
-        _logger.Log(logLevel, eventId, state, exception, formatter);
+        Func<TState, Exception?, string> formatter)
+        => _logger.Log(logLevel, eventId, state, exception, formatter);
 }
 
 /// <summary>
@@ -62,8 +62,7 @@ public static class RetryPolicyExtensions
     /// </summary>
     /// <returns>A new <see cref="RetryPolicy"/> instance</returns>
     public static RetryPolicy WithDefaults()
-    {
-        return new RetryPolicy
+        => new()
         {
             MaxAttempts = 3,
             InitialDelay = TimeSpan.FromMilliseconds(100),
@@ -71,7 +70,6 @@ public static class RetryPolicyExtensions
             MaxDelay = TimeSpan.FromSeconds(30),
             ShouldRetry = null
         };
-    }
 
     /// <summary>
     /// Creates a new <see cref="RetryPolicy"/> configured for immediate retries
@@ -179,7 +177,7 @@ public static class RetryPolicyExtensions
         var exponentialDelay = policy.InitialDelay.TotalMilliseconds *
             Math.Pow(policy.BackoffMultiplier, attemptNumber - 1);
         var cappedDelay = Math.Min(exponentialDelay, policy.MaxDelay.TotalMilliseconds);
-        return TimeSpan.FromMilliseconds(cappedDelay);
+        return TimeSpan.FromMilliseconds(Math.Clamp(cappedDelay, 0, int.MaxValue));
     }
 
     /// <summary>
@@ -200,7 +198,7 @@ public static class RetryPolicyExtensions
         }
 
         var baseDelay = policy.GetDelay(attemptNumber);
-        var jitterRange = (int)(baseDelay.TotalMilliseconds * 0.5);
+        var jitterRange = (int)Math.Min(baseDelay.TotalMilliseconds * 0.5, int.MaxValue);
         var jitter = Random.Shared.Next(0, Math.Max(1, jitterRange));
         return baseDelay.Add(TimeSpan.FromMilliseconds(jitter));
     }
@@ -210,6 +208,7 @@ public static class RetryPolicyExtensions
     /// </summary>
     /// <param name="logger">Optional logger for retry operations</param>
     /// <returns>A new <see cref="RetryHelper"/> instance</returns>
+    /// <exception cref="ArgumentNullException">Thrown when policy is null</exception>
     public static RetryHelper CreateHelper(this RetryPolicy policy, ILogger<RetryHelper>? logger = null)
     {
         ArgumentNullException.ThrowIfNull(policy);
@@ -266,12 +265,12 @@ public static class RetryPolicyExtensions
     {
         ArgumentNullException.ThrowIfNull(policy);
 
-        return string.Create(CultureInfo.InvariantCulture, $@"RetryPolicy Configuration:
-  MaxAttempts: {policy.MaxAttempts}
-  InitialDelay: {policy.InitialDelay.TotalMilliseconds}ms
-  BackoffMultiplier: {policy.BackoffMultiplier}
-  MaxDelay: {policy.MaxDelay.TotalMilliseconds}ms
-  ShouldRetry: {(policy.ShouldRetry is null ? "null (default retry logic)" : "custom condition")}");
+        return $"RetryPolicy Configuration:\n" +
+               $"MaxAttempts: {policy.MaxAttempts}\n" +
+               $"InitialDelay: {policy.InitialDelay.TotalMilliseconds}ms\n" +
+               $"BackoffMultiplier: {policy.BackoffMultiplier}\n" +
+               $"MaxDelay: {policy.MaxDelay.TotalMilliseconds}ms\n" +
+               $"ShouldRetry: {(policy.ShouldRetry is null ? "null (default retry logic)" : "custom condition")}";
     }
 
     /// <summary>
@@ -286,19 +285,15 @@ public static class RetryPolicyExtensions
         ArgumentNullException.ThrowIfNull(policy);
         ArgumentNullException.ThrowIfNull(exception);
 
-        if (policy.ShouldRetry is null)
-        {
-            // Default retry logic: retry on all exceptions except critical ones
-            return exception switch
+        return policy.ShouldRetry is null
+            ? exception switch
             {
                 OperationCanceledException => false,
                 OutOfMemoryException => false,
                 StackOverflowException => false,
                 _ => true
-            };
-        }
-
-        return policy.ShouldRetry(exception);
+            }
+            : policy.ShouldRetry(exception);
     }
 
     /// <summary>
@@ -323,7 +318,7 @@ public static class RetryPolicyExtensions
     {
         ArgumentNullException.ThrowIfNull(policy);
 
-        for (int attempt = 1; attempt < policy.MaxAttempts; attempt++)
+        for (int attempt = 1; attempt <= policy.MaxAttempts; attempt++)
         {
             yield return policy.GetDelay(attempt);
         }
@@ -339,7 +334,7 @@ public static class RetryPolicyExtensions
     {
         ArgumentNullException.ThrowIfNull(policy);
 
-        for (int attempt = 1; attempt < policy.MaxAttempts; attempt++)
+        for (int attempt = 1; attempt <= policy.MaxAttempts; attempt++)
         {
             yield return policy.GetDelayWithJitter(attempt);
         }
@@ -382,15 +377,12 @@ public static class RetryPolicyExtensions
     /// <param name="policy">The retry policy to validate</param>
     /// <returns>True if the policy is valid; otherwise, false</returns>
     /// <exception cref="ArgumentNullException">Thrown when policy is null</exception>
-    public static bool IsValid(this RetryPolicy policy)
-    {
-        ArgumentNullException.ThrowIfNull(policy);
-
-        return policy.MaxAttempts >= 1
-            && policy.InitialDelay >= TimeSpan.Zero
-            && policy.BackoffMultiplier > 1.0
-            && policy.MaxDelay >= policy.InitialDelay;
-    }
+    public static bool IsValid(this RetryPolicy policy) =>
+        policy is not null
+        && policy.MaxAttempts >= 1
+        && policy.InitialDelay >= TimeSpan.Zero
+        && policy.BackoffMultiplier > 1.0
+        && policy.MaxDelay >= policy.InitialDelay;
 
     /// <summary>
     /// Validates the retry policy and throws an exception if invalid
