@@ -902,3 +902,137 @@ catch (ArgumentException ex)
 {
     Console.WriteLine(ex.Message);
 }
+## ChannelPayloadTests
+
+The `ChannelPayloadTests` class verifies per-channel payload formatting by driving the real `WebhookDispatcher` and `PayloadBuilder` through a `FakeWebhookTransport` and asserting on the captured wire payload. These tests ensure that notifications sent to different channels (Slack, Discord, Telegram, generic webhooks) are properly formatted according to each platform's requirements.
+
+Example usage:
+
+```csharp
+// Test Slack payload with attachment block and status color
+[Fact]
+public async Task Slack_payload_contains_attachment_block_with_status_color()
+{
+    var transport = new FakeWebhookTransport();
+    var dispatcher = CreateDispatcher(transport);
+
+    var result = await dispatcher.SendToWebhookAsync(
+        Config(NotificationChannel.Slack, "https://hooks.slack.com/services/T/B/X"),
+        SampleNotification());
+
+    result.IsSuccessful.Should().BeTrue();
+    
+    // Verify Slack-specific formatting
+    var data = ParseData(transport.LastRequest!.Body);
+    var slack = data.GetProperty("CustomProperties").GetProperty("slack_format");
+    var attachment = slack.GetProperty("attachments")[0];
+    
+    attachment.GetProperty("color").GetString().Should().Be("#00ff00"); // Success color
+    attachment.GetProperty("title").GetString().Should().Contain("Checkout.Api v3.2.1");
+}
+
+// Test Slack Block Kit payload
+[Fact]
+public async Task Slack_block_kit_payload_uses_blocks_when_enabled()
+{
+    var transport = new FakeWebhookTransport();
+    var dispatcher = CreateDispatcher(transport);
+    var config = Config(NotificationChannel.Slack, "https://hooks.slack.com/services/T/B/X");
+    config.UseSlackBlockKit = true;
+
+    await dispatcher.SendToWebhookAsync(config, SampleNotification());
+
+    var data = ParseData(transport.LastRequest!.Body);
+    var slack = data.GetProperty("CustomProperties").GetProperty("slack_format");
+    var firstBlock = slack.GetProperty("blocks")[0];
+
+    firstBlock.GetProperty("type").GetString().Should().Be("header");
+}
+
+// Test Telegram payload with HTML formatting
+[Fact]
+public async Task Telegram_payload_carries_html_formatted_text()
+{
+    var transport = new FakeWebhookTransport();
+    var dispatcher = CreateDispatcher(transport);
+
+    await dispatcher.SendToWebhookAsync(
+        Config(NotificationChannel.Telegram, "https://api.telegram.org/bot123/sendMessage"),
+        SampleNotification());
+
+    var data = ParseData(transport.LastRequest!.Body);
+    var text = data.GetProperty("CustomProperties").GetProperty("telegram_text").GetString();
+
+    text.Should().Contain("<b>Checkout.Api</b> v3.2.1");
+    text.Should().Contain("<b>Status:</b>");
+}
+
+// Test generic webhook payload mapping
+[Fact]
+public async Task Generic_webhook_payload_maps_notification_fields()
+{
+    var transport = new FakeWebhookTransport();
+    var dispatcher = CreateDispatcher(transport);
+
+    await dispatcher.SendToWebhookAsync(
+        Config(NotificationChannel.Webhook, "https://example.com/hooks/deploy"),
+        SampleNotification());
+
+    var data = ParseData(transport.LastRequest!.Body);
+    
+    data.GetProperty("ProjectName").GetString().Should().Be("Checkout.Api");
+    data.GetProperty("Version").GetString().Should().Be("3.2.1");
+    data.GetProperty("Status").GetString().Should().Be("DeploymentSuccess");
+    data.GetProperty("Environment").GetString().Should().Be("Production");
+}
+
+// Test custom headers forwarding
+[Fact]
+public async Task Custom_headers_are_forwarded_to_transport()
+{
+    var transport = new FakeWebhookTransport();
+    var dispatcher = CreateDispatcher(transport);
+    var config = Config(NotificationChannel.Webhook, "https://example.com/hooks/deploy");
+    config.CustomHeaders["X-Deploy-Token"] = "s3cr3t";
+
+    await dispatcher.SendToWebhookAsync(config, SampleNotification());
+
+    transport.LastRequest!.Headers.Should().ContainKey("X-Deploy-Token");
+    transport.LastRequest.Headers["X-Deploy-Token"].Should().Be("s3cr3t");
+}
+
+// Test failed status mapping
+[Fact]
+public async Task Failed_status_maps_to_red_slack_color()
+{
+    var transport = new FakeWebhookTransport();
+    var dispatcher = CreateDispatcher(transport);
+
+    await dispatcher.SendToWebhookAsync(
+        Config(NotificationChannel.Slack, "https://hooks.slack.com/services/T/B/X"),
+        SampleNotification(BuildStatus.DeploymentFailed));
+
+    var data = ParseData(transport.LastRequest!.Body);
+    var color = data.GetProperty("CustomProperties")
+        .GetProperty("slack_format")
+        .GetProperty("attachments")[0]
+        .GetProperty("color").GetString();
+
+    color.Should().Be("#ff0000"); // Failed color
+}
+
+// Test HTTP response handling
+[Fact]
+public async Task Non_success_http_response_is_reported_as_failure()
+{
+    var transport = new FakeWebhookTransport(HttpStatusCode.InternalServerError, "boom");
+    var dispatcher = CreateDispatcher(transport);
+
+    var result = await dispatcher.SendToWebhookAsync(
+        Config(NotificationChannel.Slack, "https://hooks.slack.com/services/T/B/X"),
+        SampleNotification());
+
+    result.IsSuccessful.Should().BeFalse();
+    result.HttpStatusCode.Should().Be(500);
+}
+```
