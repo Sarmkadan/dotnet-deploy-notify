@@ -2091,6 +2091,92 @@ int randomNumber = random.RandomBetween(1, 100); // Returns random integer betwe
 
 The `CollectionExtensions` class provides a comprehensive set of extension methods for working with collections and enumerables in a functional and efficient way. These methods enable common collection operations like adding items conditionally, batch processing, partitioning, and statistical analysis without modifying the original collections.
 
+## CollectionExtensionsValidation
+
+The `CollectionExtensionsValidation` class provides validation helpers for collection operations that work with `CollectionExtensions` methods. It validates collections, indices, and chunk sizes to prevent runtime errors like `NullReferenceException` or `ArgumentOutOfRangeException` when using collection extension methods.
+
+This validation class helps ensure data integrity before performing operations like batching, indexing, or chunking collections, providing detailed error messages for invalid inputs.
+
+Example usage:
+
+```csharp
+// Validate a collection before using CollectionExtensions methods
+var items = new List<string> { "item1", "item2", null, "item4" };
+
+// Get validation problems (returns list of issues or empty if valid)
+var validationProblems = items.Validate();
+if (validationProblems.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var problem in validationProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+    return;
+}
+
+// Validate an index before accessing with collection extensions
+var list = new List<string> { "first", "second", "third" };
+var indexProblems = list.ValidateIndex(5); // Invalid index
+if (indexProblems.Count > 0)
+{
+    Console.WriteLine("Index validation failed:");
+    foreach (var problem in indexProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+
+// Validate chunk size before using Chunk method
+var chunkSizeProblems = CollectionExtensionsValidation.ValidateChunkSize(0); // Invalid chunk size
+if (chunkSizeProblems.Count > 0)
+{
+    Console.WriteLine("Chunk size validation failed:");
+    foreach (var problem in chunkSizeProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+
+// Use IsValid methods for boolean checks
+bool isCollectionValid = items.IsValid(); // Returns false (contains null)
+bool isIndexValid = list.IsValidIndex(1); // Returns true
+bool isChunkSizeValid = CollectionExtensionsValidation.IsValidChunkSize(10); // Returns true
+
+// Use EnsureValid methods to throw exceptions on validation failure
+try
+{
+    items.EnsureValid(); // Throws ArgumentException with detailed message
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
+
+// Real-world example: validate before batching notifications
+var notifications = new List<DeploymentNotification>
+{
+    new DeploymentNotification { ProjectName = "App1", Version = "1.0.0" },
+    new DeploymentNotification { ProjectName = "App2", Version = "2.0.0" },
+    null // Oops, null item
+};
+
+// Validate collection
+if (notifications.IsValid())
+{
+    // Safe to use collection extensions
+    var batches = notifications.Chunk(2);
+    foreach (var batch in batches)
+    {
+        Console.WriteLine($"Processing batch with {batch.Length} notifications");
+    }
+}
+else
+{
+    Console.WriteLine("Cannot process batch - collection contains null items");
+}
+```
+
 The extension methods support various collection types including `ICollection<T>`, `IList<T>`, and `IEnumerable<T>`, providing safe operations that handle null values and edge cases appropriately.
 
 Example usage:
