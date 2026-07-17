@@ -1588,6 +1588,72 @@ var rollbacks = await historyService.GetRollbackEntriesAsync("MyApplication", li
 bool isSuccessful = deploymentEntry.IsSuccessful; // true for Success/DeploymentSuccess
 ```
 
+## ServiceExtensionsValidation
+
+The `ServiceExtensionsValidation` class provides extension methods for validating `DeploymentNotification` and `NotificationResult` objects. It includes methods to validate objects, check if they are valid, and ensure they are valid (throwing exceptions if not).
+
+Example usage:
+```csharp
+// Create a valid deployment notification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyApplication",
+    Version = "2.0.0",
+    Status = DeploymentStatus.Success,
+    Priority = NotificationPriority.High,
+    TargetEnvironment = "production",
+    Channels = new List<NotificationChannel> { NotificationChannel.Slack, NotificationChannel.Discord },
+    CommitAuthor = "vlad",
+    BranchName = "main",
+    CommitHash = "abc123def456",
+    Message = "Version 2.0.0 deployed successfully",
+    CreatedAt = DateTime.UtcNow,
+    DurationSeconds = 180
+};
+
+// Validate and get list of problems
+var problems = notification.Validate();
+if (problems.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var problem in problems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+
+// Check if valid (returns true/false)
+bool isValid = notification.IsValid();
+Console.WriteLine($"Notification is valid: {isValid}");
+
+// Ensure valid (throws ArgumentException if invalid)
+ServiceExtensionsValidation.EnsureValid(notification);
+
+// Validate a NotificationResult
+var result = new NotificationResult
+{
+    NotificationId = Guid.NewGuid().ToString(),
+    ConfigurationId = "cfg-slack-prod",
+    Channel = NotificationChannel.Slack,
+    Status = DeliveryStatus.Success,
+    DurationMs = 142,
+    AttemptNumber = 1,
+    AttemptedAt = DateTime.UtcNow
+};
+
+var resultProblems = result.Validate();
+if (resultProblems.Count > 0)
+{
+    Console.WriteLine("Result validation failed:");
+    foreach (var problem in resultProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+
+ServiceExtensionsValidation.EnsureValid(result);
+```
+
 ## TypeHelper
 
 The `TypeHelper` class provides a comprehensive set of utilities for working with .NET types and reflection. It includes methods for type checking, conversion, instantiation, and reflection operations, enabling type-safe operations and dynamic type handling throughout the application.
