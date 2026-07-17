@@ -18,13 +18,7 @@ public static class DeploymentHistoryServiceTestsValidation
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var errors = new List<string>();
-
-        // DeploymentHistoryServiceTests is a test class with no instance state to validate
-        // All validation is performed at the service level via the methods being tested
-        // This method exists for consistency with the validation helper pattern
-
-        return errors.AsReadOnly();
+        return Array.Empty<string>();
     }
 
     /// <summary>
@@ -33,10 +27,7 @@ public static class DeploymentHistoryServiceTestsValidation
     /// <param name="value">The instance to check.</param>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is <see langword="null"/>.</exception>
-    public static bool IsValid(this DeploymentHistoryServiceTests? value)
-    {
-        return value?.Validate() is { Count: 0 };
-    }
+    public static bool IsValid(this DeploymentHistoryServiceTests? value) => value?.Validate() is { Count: 0 };
 
     /// <summary>
     /// Ensures that the specified <see cref="DeploymentHistoryServiceTests"/> instance is valid.
@@ -52,8 +43,7 @@ public static class DeploymentHistoryServiceTestsValidation
         if (errors.Count > 0)
         {
             throw new ArgumentException(
-                "The DeploymentHistoryServiceTests instance is not valid. " +
-                string.Join(" ", errors),
+                $"The DeploymentHistoryServiceTests instance is not valid. Details: {string.Join("; ", errors)}",
                 nameof(value));
         }
     }
