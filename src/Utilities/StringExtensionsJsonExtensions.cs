@@ -4,6 +4,7 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -30,6 +31,7 @@ public static class StringExtensionsJsonExtensions
     /// </summary>
     /// <param name="indented">Whether to format the JSON with indentation</param>
     /// <returns>JSON string representation of StringExtensions metadata</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <see cref="StringExtensions"/> type cannot be resolved</exception>
     public static string ToJson(bool indented = false)
     {
         var options = new JsonSerializerOptions(_jsonOptions)
@@ -42,23 +44,29 @@ public static class StringExtensionsJsonExtensions
             Type = nameof(StringExtensions),
             Namespace = typeof(StringExtensions).Namespace ?? "DotNetDeployNotify.Utilities",
             Assembly = typeof(StringExtensions).Assembly.GetName().Name ?? "DotNetDeployNotify",
-            Methods = [
-                "Truncate",
-                "ToSlug",
-                "ToPascalCase",
-                "ToCamelCase",
-                "MaskSensitive",
-                "ContainsAny",
-                "NormalizeLineEndings",
-                "CountOccurrences",
-                "RemoveDuplicateCharacters",
-                "TakeWords",
-                "WrapText",
-                "ToBooleanSafe"
-            ]
+            Methods = GetPublicStaticMethodNames(typeof(StringExtensions))
         };
 
         return JsonSerializer.Serialize(metadata, options);
+    }
+
+    /// <summary>
+    /// Gets the names of public static methods from a type
+    /// </summary>
+    /// <param name="type">The type to inspect</param>
+    /// <returns>Array of method names, or empty array if type is null</returns>
+    private static string[] GetPublicStaticMethodNames(Type? type)
+    {
+        if (type is null)
+        {
+            return [];
+        }
+
+        return type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Where(m => !m.IsSpecialName) // Exclude property accessors, operators, etc.
+            .Select(m => m.Name)
+            .OrderBy(name => name)
+            .ToArray();
     }
 
     /// <summary>
