@@ -338,3 +338,119 @@ else
   Console.WriteLine("Failed to deserialize metadata");
 }
 ```
+
+## GuardExtensionsValidation
+
+The `GuardExtensionsValidation` class provides comprehensive validation helpers for common types with detailed error reporting capabilities. It includes extension methods for validating objects, strings, collections, boolean conditions, integers, URLs, and regular expressions. Each validation method returns an `IReadOnlyList<string>` containing human-readable error messages, making it easy to collect and report multiple validation problems at once.
+
+The class also provides convenience methods (`IsValid` family) for quick validation checks that return boolean values, and `EnsureValid` methods that throw exceptions when validation fails.
+
+Example usage:
+
+```csharp
+// Validate an object reference
+var validationResults = myObject.ValidateObject(nameof(myObject));
+if (validationResults.Any())
+{
+    foreach (var error in validationResults)
+    {
+        Console.WriteLine(error);
+    }
+}
+
+// Validate a string
+var stringErrors = "".ValidateString(nameof(myString));
+if (stringErrors.Any())
+{
+    Console.WriteLine(stringErrors.First()); // "myString cannot be null or empty"
+}
+
+// Validate a collection
+var collection = new List<string>();
+var collectionErrors = collection.ValidateCollection(nameof(myCollection));
+if (collectionErrors.Any())
+{
+    Console.WriteLine(collectionErrors.First()); // "myCollection cannot be empty"
+}
+
+// Validate a condition
+var conditionErrors = false.ValidateCondition(nameof(condition), "Condition must be true");
+if (conditionErrors.Any())
+{
+    Console.WriteLine(conditionErrors.First()); // "Condition must be true"
+}
+
+// Validate an integer minimum
+var minErrors = 5.ValidateMinimum(10, nameof(value));
+if (minErrors.Any())
+{
+    Console.WriteLine(minErrors.First()); // "value must be at least 10, but was 5"
+}
+
+// Validate a string maximum length
+var maxLengthErrors = "toolongstring".ValidateMaxLength(5, nameof(myString));
+if (maxLengthErrors.Any())
+{
+    Console.WriteLine(maxLengthErrors.First()); // "myString cannot be longer than 5 characters, but was 12"
+}
+
+// Validate a URL
+var urlErrors = "invalidurl".ValidateUrl(nameof(myUrl));
+if (urlErrors.Any())
+{
+    Console.WriteLine(urlErrors.First()); // "myUrl is not a valid URL"
+}
+
+// Validate a nullable reference
+var nullErrors = ((string)null).ValidateNotNull<string>(nameof(myNullable));
+if (nullErrors.Any())
+{
+    Console.WriteLine(nullErrors.First()); // "myNullable cannot be null"
+}
+
+// Validate a range
+var rangeErrors = 15.ValidateRange(10, 20, nameof(value));
+if (rangeErrors.Any())
+{
+    Console.WriteLine(rangeErrors.First()); // "value must be between 10 and 20 (inclusive), but was 15"
+}
+
+// Validate against a regular expression pattern
+var patternErrors = "invalid123".ValidatePattern("^[A-Za-z]+", nameof(myString));
+if (patternErrors.Any())
+{
+    Console.WriteLine(patternErrors.First()); // "myString does not match the required pattern"
+}
+
+// Quick boolean validation checks
+if (!myObject.IsValid())
+{
+    Console.WriteLine("Object is null");
+}
+
+if (!myString.IsValid())
+{
+    Console.WriteLine("String is null or whitespace");
+}
+
+if (!myCollection.IsValid())
+{
+    Console.WriteLine("Collection is null or empty");
+}
+
+if (!myUrl.IsValidUrl())
+{
+    Console.WriteLine("URL is invalid");
+}
+
+// Exception-throwing validation
+try
+{
+    myNullable.EnsureValidNotNull(nameof(myNullable));
+    myUrl.EnsureValidUrl(nameof(myUrl));
+    5.EnsureValidMinimum(10, nameof(value));
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine(ex.Message);
+}
