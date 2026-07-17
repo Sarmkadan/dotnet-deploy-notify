@@ -38,13 +38,13 @@ public static class MetricsCollectorValidation
                 // Validate metric name
                 if (string.IsNullOrWhiteSpace(metric.Name))
                 {
-                    problems.Add($"Metric '{metric.Name}' has null, empty, or whitespace Name");
+                    problems.Add("Metric has null, empty, or whitespace Name");
                 }
 
                 // Validate values list
                 if (metric.Values is null)
                 {
-                    problems.Add($"Metric '{metric.Name}' has null Values collection");
+                    problems.Add("Metric has null Values collection");
                 }
                 else if (metric.Values.Count == 0)
                 {
@@ -86,12 +86,15 @@ public static class MetricsCollectorValidation
         try
         {
             // Test that GetStatistics works for all metrics
-            foreach (var metricName in allMetrics?.Select(m => m.Name) ?? [])
+            if (allMetrics is not null)
             {
-                var stats = value.GetStatistics(metricName);
-                if (stats is null && allMetrics?.Any(m => m.Name == metricName) == true)
+                foreach (var metricName in allMetrics.Select(m => m.Name))
                 {
-                    problems.Add($"GetStatistics() returned null for valid metric '{metricName}'");
+                    var stats = value.GetStatistics(metricName);
+                    if (stats is null)
+                    {
+                        problems.Add($"GetStatistics() returned null for valid metric '{metricName}'");
+                    }
                 }
             }
         }
@@ -111,7 +114,7 @@ public static class MetricsCollectorValidation
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <c>null</c>.</exception>
     public static bool IsValid(this MetricsCollector? value)
     {
-        return value?.Validate().Count == 0;
+        return value is not null && value.Validate().Count == 0;
     }
 
     /// <summary>
