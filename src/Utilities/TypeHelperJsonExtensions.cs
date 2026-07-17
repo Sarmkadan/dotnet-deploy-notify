@@ -2,8 +2,11 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// ====================================================================
 
+using System;
+using System.Linq;
+using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -30,6 +33,7 @@ public static class TypeHelperJsonExtensions
     /// </summary>
     /// <param name="indented">Whether to format the JSON with indentation</param>
     /// <returns>JSON string representation of TypeHelper metadata</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="indented"/> is invalid</exception>
     public static string ToJson(bool indented = false)
     {
         var options = new JsonSerializerOptions(_jsonOptions)
@@ -37,34 +41,13 @@ public static class TypeHelperJsonExtensions
             WriteIndented = indented
         };
 
+        var typeHelperType = typeof(TypeHelper);
         var metadata = new TypeHelperMetadata
         {
-            Type = nameof(TypeHelper),
-            Namespace = typeof(TypeHelper).Namespace ?? "DotNetDeployNotify.Utilities",
-            Assembly = typeof(TypeHelper).Assembly.GetName().Name ?? "DotNetDeployNotify",
-            Methods = [
-                "IsNumeric",
-                "IsNumeric<T>",
-                "IsNullable",
-                "GetUnderlyingType",
-                "ImplementsInterface<T>",
-                "IsEnum<T>",
-                "IsCollection",
-                "GetGenericArguments",
-                "IsGeneric",
-                "GetMethodBySignature",
-                "GetAllProperties",
-                "GetAllFields",
-                "GetAllMethods",
-                "HasParameterlessConstructor",
-                "CreateInstance",
-                "ConvertTo",
-                "ConvertTo<T>",
-                "FindTypesThatInherit",
-                "GetAttribute<T>",
-                "GetAttributes<T>",
-                "HasAttribute<T>"
-            ]
+            Type = typeHelperType.Name,
+            Namespace = typeHelperType.Namespace ?? "DotNetDeployNotify.Utilities",
+            Assembly = typeHelperType.Assembly.GetName().Name ?? "DotNetDeployNotify",
+            Methods = GetPublicStaticMethodNames(typeHelperType)
         };
 
         return JsonSerializer.Serialize(metadata, options);
@@ -111,6 +94,19 @@ public static class TypeHelperJsonExtensions
             value = null;
             return false;
         }
+    }
+
+    /// <summary>
+    /// Gets the names of all public static methods from a type
+    /// </summary>
+    /// <param name="type">The type to inspect</param>
+    /// <returns>Array of method names with generic parameters</returns>
+    private static string[] GetPublicStaticMethodNames(Type type)
+    {
+        return type.GetMethods(BindingFlags.Public | BindingFlags.Static)
+            .Select(m => m.IsGenericMethod ? $"{m.Name}<T>" : m.Name)
+            .Order(StringComparer.Ordinal)
+            .ToArray();
     }
 
     /// <summary>
