@@ -233,6 +233,60 @@ else
 }
 ```
 
+## StringExtensionsJsonExtensions
+
+The `StringExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for `StringExtensions` metadata. It enables converting string extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+This extension class is particularly useful for persisting string extension configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
+
+Example usage:
+
+```csharp
+// Serialize to JSON string (compact format)
+string jsonCompact = StringExtensionsJsonExtensions.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"type":"StringExtensions","namespace":"DotNetDeployNotify.Utilities","assembly":"DotNetDeployNotify","methods":["IsBase64","IsGuid","IsNumeric","ToBase64","ToGuid","TrimToLength"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = StringExtensionsJsonExtensions.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "StringExtensions",
+  "namespace": "DotNetDeployNotify.Utilities",
+  "assembly": "DotNetDeployNotify",
+  "methods": [
+    "IsBase64",
+    "IsGuid",
+    "IsNumeric",
+    "ToBase64",
+    "ToGuid",
+    "TrimToLength"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = StringExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+  Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+  Console.WriteLine($"Namespace: {deserializedMetadata.Namespace}");
+  Console.WriteLine($"Assembly: {deserializedMetadata.Assembly}");
+  Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (StringExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+  Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+  Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ## ResultValidation
 
 The `ResultValidation` class provides validation helpers for `Result` and `Result<T>` types to ensure data integrity when working with functional error handling patterns. It offers methods to validate result instances, check their validity, and throw exceptions when invalid results are encountered.
