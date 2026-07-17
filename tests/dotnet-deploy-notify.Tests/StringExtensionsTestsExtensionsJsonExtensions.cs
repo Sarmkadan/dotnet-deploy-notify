@@ -16,9 +16,9 @@ namespace DotNetDeployNotify.Tests;
 public static class StringExtensionsTestsExtensionsJsonExtensions
 {
     /// <summary>
-    /// Cached JSON serializer options that use camel‑case naming.
+    /// Cached JSON serializer options that use camel-case naming.
     /// </summary>
-    private static readonly JsonSerializerOptions _options = new()
+    public static JsonSerializerOptions Options { get; } = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false
