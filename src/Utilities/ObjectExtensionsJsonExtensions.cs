@@ -3,7 +3,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// ====================================================================
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -27,7 +27,7 @@ public static class ObjectExtensionsJsonExtensions
     };
 
     /// <summary>
-    /// Serializes ObjectExtensions type information to JSON string
+    /// Serializes ObjectExtensions metadata to JSON string
     /// </summary>
     /// <param name="indented">Whether to format the JSON with indentation</param>
     /// <returns>JSON string representation of ObjectExtensions metadata</returns>
@@ -118,21 +118,25 @@ public static class ObjectExtensionsJsonExtensions
         /// <summary>
         /// Gets or sets the type identifier
         /// </summary>
+        /// <example>ObjectExtensions</example>
         public string? Type { get; set; }
 
         /// <summary>
         /// Gets or sets the namespace
         /// </summary>
+        /// <example>DotNetDeployNotify.Utilities</example>
         public string? Namespace { get; set; }
 
         /// <summary>
         /// Gets or sets the assembly name
         /// </summary>
+        /// <example>DotNetDeployNotify</example>
         public string? Assembly { get; set; }
 
         /// <summary>
         /// Gets or sets the array of method names
         /// </summary>
+        /// <example>["SafeCast", "IsNull", "IsNotNull"]</example>
         public string[]? Methods { get; set; }
     }
 }
