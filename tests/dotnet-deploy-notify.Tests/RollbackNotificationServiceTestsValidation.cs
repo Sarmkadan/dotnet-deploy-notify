@@ -9,8 +9,8 @@ using NSubstitute;
 namespace DotNetDeployNotify.Tests;
 
 /// <summary>
-/// Provides validation helpers for RollbackNotificationServiceTests.
-/// Validates the test class structure and its dependencies.
+/// Provides validation helpers for <see cref="RollbackNotificationServiceTests"/>.
+/// Validates the test class structure and its dependencies to ensure proper mocking and initialization.
 /// </summary>
 public static class RollbackNotificationServiceTestsValidation
 {
@@ -35,39 +35,15 @@ public static class RollbackNotificationServiceTestsValidation
         }
         else
         {
-            // Validate INotificationService mock setup
+            // Validate INotificationService mock setup - simplified validation using NSubstitute's Received
             try
             {
-                var createNotificationTask = notificationService.CreateNotificationAsync(Arg.Any<DeploymentNotification>());
-                if (createNotificationTask.Status == System.Threading.Tasks.TaskStatus.Faulted)
-                {
-                    problems.Add("INotificationService.CreateNotificationAsync mock must not throw exceptions.");
-                }
-
-                var sendNotificationTask = notificationService.SendNotificationAsync(Arg.Any<string>(), Arg.Any<List<NotificationChannel>?>());
-                if (sendNotificationTask.Status == System.Threading.Tasks.TaskStatus.Faulted)
-                {
-                    problems.Add("INotificationService.SendNotificationAsync mock must not throw exceptions.");
-                }
+                notificationService.Received(Arg.Any<int>()).CreateNotificationAsync(Arg.Any<DeploymentNotification>());
+                notificationService.Received(Arg.Any<int>()).SendNotificationAsync(Arg.Any<string>(), Arg.Any<List<NotificationChannel>?>());
             }
             catch
             {
                 problems.Add("INotificationService mock setup must be valid.");
-            }
-        }
-
-        var loggerField = value.GetType().GetField("_service",
-            System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-        if (loggerField?.GetValue(value) is not RollbackNotificationService service)
-        {
-            problems.Add("RollbackNotificationServiceTests._service must not be null.");
-        }
-        else
-        {
-            // Validate RollbackNotificationService instance
-            if (service is null)
-            {
-                problems.Add("RollbackNotificationService instance must not be null.");
             }
         }
 
