@@ -19,7 +19,8 @@ public static class CacheEntryJsonExtensions
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+        ReferenceHandler = ReferenceHandler.IgnoreCycles
     };
 
     /// <summary>
@@ -28,17 +29,14 @@ public static class CacheEntryJsonExtensions
     /// <typeparam name="T">The type of the cached value.</typeparam>
     /// <param name="value">The cache entry to serialize.</param>
     /// <param name="indented">Whether to format the JSON with indentation.</param>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
     /// <returns>The JSON representation of the cache entry.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
     public static string ToJson<T>(this CacheEntry<T> value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
 
         var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions)
-            {
-                WriteIndented = true
-            }
+            ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
             : _jsonSerializerOptions;
 
         return JsonSerializer.Serialize(value, options);
@@ -49,9 +47,9 @@ public static class CacheEntryJsonExtensions
     /// </summary>
     /// <typeparam name="T">The type of the cached value.</typeparam>
     /// <param name="json">The JSON string to deserialize.</param>
+    /// <returns>The deserialized cache entry, or null if the JSON represents a null value.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is <see langword="null"/></exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid.</exception>
-    /// <returns>The deserialized cache entry, or null if the JSON represents a null value.</returns>
     public static CacheEntry<T>? FromJson<T>(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
@@ -66,6 +64,7 @@ public static class CacheEntryJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">The deserialized cache entry, or null if deserialization failed.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="json"/> is <see langword="null"/></exception>
     public static bool TryFromJson<T>(string json, out CacheEntry<T>? value)
     {
         ArgumentNullException.ThrowIfNull(json);
