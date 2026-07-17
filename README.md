@@ -10,6 +10,10 @@ A .NET application for sending deployment notifications to various channels (Sla
 - Configurable channel strategies
 - Integration with deployment pipelines
 
+## Architecture
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the module breakdown, composition roots, data flow, extension points, and known limitations. Short version: a console app whose active wiring is `AddNotificationServices` (validation → in-memory repositories → webhook dispatch via a typed `HttpClient`); the event bus, middleware pipeline, background workers, and canary engine are optional opt-in subsystems.
+
 ## BatchNotification
 
 The `BatchNotification` class represents a collection of notifications to be sent together, allowing for batch processing and improved delivery efficiency. It provides properties and methods to manage the batch's status, notifications, channels, and delivery results.
