@@ -57,19 +57,12 @@ public static class DeploymentNotificationJsonExtensions
     /// <param name="value">Receives the deserialized deployment notification if successful.</param>
     /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid.</exception>
     public static bool TryFromJson(string json, out DeploymentNotification? value)
     {
         ArgumentNullException.ThrowIfNull(json);
 
-        try
-        {
-            value = JsonSerializer.Deserialize<DeploymentNotification>(json, _jsonOptions);
-            return true;
-        }
-        catch (JsonException)
-        {
-            value = null;
-            return false;
-        }
+        value = JsonSerializer.Deserialize<DeploymentNotification>(json, _jsonOptions);
+        return value is not null;
     }
 }
