@@ -347,6 +347,115 @@ The class also provides convenience methods (`IsValid` family) for quick validat
 
 Example usage:
 
+```csharp
+var validationResults = myObject.ValidateObject(nameof(myObject));
+if (validationResults.Any())
+{
+    foreach (var error in validationResults)
+    {
+        Console.WriteLine(error);
+    }
+}
+
+var stringErrors = "".ValidateString(nameof(myString));
+if (stringErrors.Any())
+{
+    Console.WriteLine(stringErrors.First());
+}
+```
+
+## MathExtensionsValidation
+
+The `MathExtensionsValidation` class provides mathematical validation and calculation utilities with detailed error reporting. It includes methods for validating numeric ranges, clamping values, calculating percentages, rounding numbers, computing statistical measures (average, median), performing safe arithmetic operations, and converting between numeric representations. Each validation method returns an `IReadOnlyList<string>` containing human-readable error messages, enabling comprehensive validation of mathematical operations.
+
+The class also provides convenience methods (`IsValid` family) for quick validation checks that return boolean values, and `EnsureValid` methods that throw exceptions when validation fails.
+
+Example usage:
+
+```csharp
+// Validate that a value is within a specific range
+var rangeErrors = 15.ValidateIsBetween(10, 20, nameof(value));
+if (rangeErrors.Any())
+{
+    Console.WriteLine(rangeErrors.First()); // "value must be between 10 and 20 (inclusive), but was 15"
+}
+
+// Validate and clamp a value to a range
+var clampedValue = 25.Clamp(0, 100);
+Console.WriteLine(clampedValue); // Output: 100
+
+// Validate percentage conversion
+var percentageErrors = 1.25.ValidateToPercentage(nameof(ratio));
+if (percentageErrors.Any())
+{
+    Console.WriteLine(percentageErrors.First());
+}
+else
+{
+    Console.WriteLine($"Percentage: {1.25.ToPercentage()}%"); // Output: Percentage: 125%
+}
+
+// Validate rounding to a specific decimal place
+var roundErrors = 3.14159.ValidateRoundTo(2, nameof(pi));
+if (roundErrors.Any())
+{
+    Console.WriteLine(roundErrors.First());
+}
+else
+{
+    Console.WriteLine($"Rounded: {3.14159.RoundTo(2)}"); // Output: Rounded: 3.14
+}
+
+// Validate safe arithmetic operations
+var sumErrors = (5, 10).ValidateSafeSum(nameof(values));
+if (sumErrors.Any())
+{
+    Console.WriteLine(sumErrors.First());
+}
+else
+{
+    Console.WriteLine($"Sum: {(5, 10).SafeSum()}"); // Output: Sum: 15
+}
+
+// Validate statistical calculations
+var statsErrors = new[] { 10, 20, 30, 40, 50 }.ValidateAverage(nameof(data));
+if (statsErrors.Any())
+{
+    Console.WriteLine(statsErrors.First());
+}
+else
+{
+    Console.WriteLine($"Average: {new[] { 10, 20, 30, 40, 50 }.Average()}"); // Output: Average: 30
+}
+
+// Validate human-readable size conversion
+var sizeErrors = 1024.ValidateToHumanReadableSize(nameof(bytes));
+if (sizeErrors.Any())
+{
+    Console.WriteLine(sizeErrors.First());
+}
+else
+{
+    Console.WriteLine($"Size: {1024.ToHumanReadableSize()}"); // Output: Size: 1.00 KB
+}
+
+// Quick validation checks
+if (!15.IsValidIsBetween(10, 20))
+{
+    Console.WriteLine("Value is not between 10 and 20");
+}
+
+// Exception-throwing validation
+try
+{
+    5.EnsureValidIsBetween(10, 20, nameof(value));
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine(ex.Message);
+}
+```
+
 [...previous content...]
 
 ## ObjectExtensionsJsonExtensions
