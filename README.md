@@ -189,6 +189,50 @@ var results = new List<Result<int>> { Result<int>.Ok(1), Result<int>.Ok(2) };
 Result<IReadOnlyList<int>> combined = results.Combine();
 ```
 
+## ResultJsonExtensions
+
+The `ResultJsonExtensions` class provides System.Text.Json serialization helpers for `Result` and `Result<T>` types. It enables converting result objects to and from JSON format, supporting configurable formatting options such as indentation for readability.
+
+This extension class is useful for persisting functional operation results to configuration files, databases, or remote services, and for restoring them back into application memory. It provides serialization (`ToJson`), deserialization (`FromJson`), and safe deserialization with error handling (`TryFromJson`).
+
+Example usage:
+```csharp
+// Create a successful result
+var result = Result<string>.Ok("Operation completed successfully");
+
+// Serialize to JSON string (compact format)
+string jsonCompact = result.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"value":"Operation completed successfully","isSuccess":true}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = result.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "value": "Operation completed successfully",
+  "isSuccess": true
+}
+*/
+
+// Deserialize from JSON string
+var deserializedResult = ResultJsonExtensions.FromJson<string>(jsonCompact);
+if (deserializedResult != null && deserializedResult.IsSuccess)
+{
+    Console.WriteLine($"Deserialized value: {deserializedResult.Value}");
+}
+
+// Try deserialization with error handling
+if (ResultJsonExtensions.TryFromJson<string>(jsonCompact, out var resultValue))
+{
+    Console.WriteLine("Successfully deserialized result");
+}
+else
+{
+    Console.WriteLine("Failed to deserialize result");
+}
+```
+
 ## ResultValidation
 
 The `ResultValidation` class provides validation helpers for `Result` and `Result<T>` types to ensure data integrity when working with functional error handling patterns. It offers methods to validate result instances, check their validity, and throw exceptions when invalid results are encountered.
