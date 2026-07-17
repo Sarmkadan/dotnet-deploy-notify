@@ -477,6 +477,57 @@ else
 }
 ```
 
+## BuildStatusConverterExtensions
+
+The `BuildStatusConverterExtensions` class provides extension methods for the `BuildStatusConverter` type that enhance build status handling and conversion operations. These methods enable checking build status states, parsing status strings, getting display names, CSS classes, priorities, and severity levels for build status values.
+
+This extension class is particularly useful for notification systems, UI rendering, and status-based routing where you need to work with build status values in a consistent and type-safe way.
+
+Example usage:
+
+```csharp
+// Create a BuildStatusConverter instance
+var converter = new BuildStatusConverter();
+
+// Check if a build status represents success
+bool isSuccess = converter.IsSuccessful(BuildStatus.Success); // Returns true
+bool isFailed = converter.IsSuccessful(BuildStatus.Failed); // Returns false
+
+// Check if a build status represents failure
+bool isFailedStatus = converter.IsFailed(BuildStatus.Failed); // Returns true
+bool isInProgress = converter.IsFailed(BuildStatus.InProgress); // Returns false
+
+// Check if a build status is in progress
+bool isInProgressStatus = converter.IsInProgress(BuildStatus.InProgress); // Returns true
+bool isStarted = converter.IsInProgress(BuildStatus.Started); // Returns false
+
+// Get a user-friendly display name for a build status
+string displayName = converter.GetDisplayName(BuildStatus.Success); // Returns "Build Success"
+string failedDisplayName = converter.GetDisplayName(BuildStatus.Failed); // Returns "Build Failed"
+
+// Parse a string to a BuildStatus value
+BuildStatus parsedStatus = converter.ParseStatus("Success"); // Returns BuildStatus.Success
+
+// Try to parse a string to a BuildStatus value (safe version)
+bool parseSuccess = converter.TryParseStatus("Failed", out BuildStatus parsedFailedStatus); // Returns true, parsedFailedStatus = BuildStatus.Failed
+bool parseFailed = converter.TryParseStatus("Invalid", out _); // Returns false
+
+// Get notification priority based on build status
+NotificationPriority priority = converter.GetPriority(BuildStatus.Failed); // Returns NotificationPriority.Critical
+NotificationPriority normalPriority = converter.GetPriority(BuildStatus.Success); // Returns NotificationPriority.Low
+
+// Get CSS class name for styling
+string cssClass = converter.GetCssClass(BuildStatus.Success); // Returns "status-success"
+string failedCssClass = converter.GetCssClass(BuildStatus.Failed); // Returns "status-failed"
+
+// Check if two status values are the same
+bool isSame = converter.IsSameAs(BuildStatus.Success, BuildStatus.Success); // Returns true
+
+// Get severity level (0-10) for sorting and comparison
+int severity = converter.GetSeverity(BuildStatus.Failed); // Returns 9
+int successSeverity = converter.GetSeverity(BuildStatus.Success); // Returns 3
+```
+
 ## CanaryDeploymentExtensionsJsonExtensions
 
 The `CanaryDeploymentExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for the `CanaryDeploymentExtensions` type metadata. It enables converting canary deployment extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
