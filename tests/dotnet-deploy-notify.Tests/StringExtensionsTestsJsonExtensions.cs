@@ -3,6 +3,11 @@ using System.Text.Json;
 
 namespace DotNetDeployNotify.Tests
 {
+    using DotNetDeployNotify.Utilities;
+
+    /// <summary>
+    /// Provides JSON serialization/deserialization extension methods for testing <see cref="StringExtensionsJsonExtensions"/>
+    /// </summary>
     public static class StringExtensionsTestsJsonExtensions
     {
         private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
@@ -10,6 +15,7 @@ namespace DotNetDeployNotify.Tests
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = false,
         };
+
         private static readonly JsonSerializerOptions _jsonOptionsIndented = new(JsonSerializerDefaults.Web)
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
@@ -17,13 +23,13 @@ namespace DotNetDeployNotify.Tests
         };
 
         /// <summary>
-        /// Serializes a <see cref="StringExtensionsTests"/> instance to a JSON string.
+        /// Serializes a <see cref="StringExtensionsJsonExtensions.StringExtensionsMetadata"/> instance to a JSON string.
         /// </summary>
         /// <param name="value">The instance to serialize.</param>
         /// <param name="indented">Whether to format the JSON with indentation.</param>
         /// <returns>A JSON string representation of the instance.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
-        public static string ToJson(this StringExtensionsTests value, bool indented = false)
+        public static string ToJson(this StringExtensionsJsonExtensions.StringExtensionsMetadata? value, bool indented = false)
         {
             ArgumentNullException.ThrowIfNull(value);
 
@@ -31,33 +37,33 @@ namespace DotNetDeployNotify.Tests
         }
 
         /// <summary>
-        /// Deserializes a JSON string to a <see cref="StringExtensionsTests"/> instance.
+        /// Deserializes a JSON string to a <see cref="StringExtensionsJsonExtensions.StringExtensionsMetadata"/> instance.
         /// </summary>
         /// <param name="json">The JSON string to deserialize.</param>
-        /// <returns>The deserialized instance, or <see langword="null"/> if the JSON is empty.</returns>
+        /// <returns>The deserialized instance, or <see langword="null"/> if the JSON is empty or invalid.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
-        /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
-        public static StringExtensionsTests? FromJson(string json)
+        /// <exception cref="JsonException">Thrown when the JSON is invalid.</exception>
+        public static StringExtensionsJsonExtensions.StringExtensionsMetadata? FromJson(string json)
         {
             ArgumentNullException.ThrowIfNull(json);
 
-            return JsonSerializer.Deserialize<StringExtensionsTests>(json, _jsonOptions);
+            return JsonSerializer.Deserialize<StringExtensionsJsonExtensions.StringExtensionsMetadata>(json, _jsonOptions);
         }
 
         /// <summary>
-        /// Attempts to deserialize a JSON string to a <see cref="StringExtensionsTests"/> instance.
+        /// Attempts to deserialize a JSON string to a <see cref="StringExtensionsJsonExtensions.StringExtensionsMetadata"/> instance.
         /// </summary>
         /// <param name="json">The JSON string to deserialize.</param>
         /// <param name="value">Receives the deserialized instance if successful.</param>
         /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
         /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
-        public static bool TryFromJson(string json, out StringExtensionsTests? value)
+        public static bool TryFromJson(string json, out StringExtensionsJsonExtensions.StringExtensionsMetadata? value)
         {
             ArgumentNullException.ThrowIfNull(json);
 
             try
             {
-                value = JsonSerializer.Deserialize<StringExtensionsTests>(json, _jsonOptions);
+                value = JsonSerializer.Deserialize<StringExtensionsJsonExtensions.StringExtensionsMetadata>(json, _jsonOptions);
                 return true;
             }
             catch (JsonException)
