@@ -13,11 +13,13 @@ namespace DotNetDeployNotify.Utilities;
 /// </summary>
 public static class RetryPolicyValidation
 {
+    static RetryPolicyValidation() { }
+
     /// <summary>
     /// Validates a <see cref="RetryPolicy"/> instance for common issues
     /// </summary>
-    /// <param name="policy">The retry policy to validate</param>
-    /// <returns>A list of validation problems (empty if valid)</returns>
+    /// <param name="policy">The retry policy to validate. Cannot be <see langword="null"/>.</param>
+    /// <returns>A list of validation problems (empty if valid).</returns>
     /// <exception cref="ArgumentNullException"><paramref name="policy"/> is <see langword="null"/></exception>
     public static IReadOnlyList<string> ValidateRetryPolicy([NotNull] this RetryPolicy? policy)
     {
@@ -55,30 +57,29 @@ public static class RetryPolicyValidation
             problems.Add("MaxDelay must be greater than or equal to InitialDelay.");
         }
 
+        // Validate ShouldRetry delegate if present
+        if (policy.ShouldRetry is null)
+        {
+            // This is valid - null means retry on all exceptions
+        }
+
         return problems.AsReadOnly();
     }
 
     /// <summary>
     /// Checks if a <see cref="RetryPolicy"/> instance is valid
     /// </summary>
-    /// <param name="policy">The retry policy to check</param>
-    /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/></returns>
+    /// <param name="policy">The retry policy to check.</param>
+    /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
     public static bool IsRetryPolicyValid([NotNullWhen(true)] this RetryPolicy? policy)
-    {
-        if (policy is null)
-        {
-            return false;
-        }
-
-        return policy.ValidateRetryPolicy().Count == 0;
-    }
+        => policy is not null && policy.ValidateRetryPolicy().Count == 0;
 
     /// <summary>
     /// Ensures a <see cref="RetryPolicy"/> instance is valid, throwing if not
     /// </summary>
-    /// <param name="policy">The retry policy to validate</param>
+    /// <param name="policy">The retry policy to validate. Cannot be <see langword="null"/>.</param>
     /// <exception cref="ArgumentNullException"><paramref name="policy"/> is <see langword="null"/></exception>
-    /// <exception cref="ArgumentException">Thrown if validation fails with a list of problems</exception>
+    /// <exception cref="ArgumentException">Thrown if validation fails with a list of problems.</exception>
     public static void EnsureRetryPolicyIsValid(this RetryPolicy? policy)
     {
         ArgumentNullException.ThrowIfNull(policy);
@@ -87,7 +88,7 @@ public static class RetryPolicyValidation
 
         if (problems.Count > 0)
         {
-            var problemList = string.Join("\n", problems.Select((p, i) => $"  {i + 1}. {p}"));
+            var problemList = string.Join("\n", problems.Select((p, i) => $" {i + 1}. {p}"));
             throw new ArgumentException(
                 $"RetryPolicy is invalid. Problems:\n{problemList}",
                 nameof(policy));
