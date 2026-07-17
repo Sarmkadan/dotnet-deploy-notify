@@ -32,7 +32,7 @@ public static class ServiceExtensionsMetadataJsonExtensions
     /// <param name="indented">Whether to format the JSON with indentation</param>
     /// <returns>JSON string representation of ServiceExtensionsMetadata</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
-    public static string ToJson(this global::DotNetDeployNotify.Infrastructure.ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata value, bool indented = false)
+    public static string ToJson(this ServiceExtensionsMetadata value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -50,13 +50,13 @@ public static class ServiceExtensionsMetadataJsonExtensions
     /// <param name="json">JSON string to deserialize</param>
     /// <returns>ServiceExtensionsMetadata instance or null if deserialization fails</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
-    public static global::DotNetDeployNotify.Infrastructure.ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata? FromJson(string json)
+    public static ServiceExtensionsMetadata? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
 
         try
         {
-            return JsonSerializer.Deserialize<global::DotNetDeployNotify.Infrastructure.ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata>(json, _jsonOptions);
+            return JsonSerializer.Deserialize<ServiceExtensionsMetadata>(json, _jsonOptions);
         }
         catch (JsonException)
         {
@@ -71,13 +71,13 @@ public static class ServiceExtensionsMetadataJsonExtensions
     /// <param name="value">Output value, null if deserialization fails</param>
     /// <returns>True if deserialization succeeds, false otherwise</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
-    public static bool TryFromJson(string json, out global::DotNetDeployNotify.Infrastructure.ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata? value)
+    public static bool TryFromJson(string json, out ServiceExtensionsMetadata? value)
     {
         ArgumentNullException.ThrowIfNull(json);
 
         try
         {
-            value = JsonSerializer.Deserialize<global::DotNetDeployNotify.Infrastructure.ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata>(json, _jsonOptions);
+            value = JsonSerializer.Deserialize<ServiceExtensionsMetadata>(json, _jsonOptions);
             return true;
         }
         catch (JsonException)
@@ -85,5 +85,31 @@ public static class ServiceExtensionsMetadataJsonExtensions
             value = null;
             return false;
         }
+    }
+
+    /// <summary>
+    /// Metadata representation of the ServiceExtensions class for JSON serialization
+    /// </summary>
+    public sealed class ServiceExtensionsMetadata
+    {
+        /// <summary>
+        /// Gets or sets the type identifier
+        /// </summary>
+        public string? Type { get; set; }
+
+        /// <summary>
+        /// Gets or sets the namespace
+        /// </summary>
+        public string? Namespace { get; set; }
+
+        /// <summary>
+        /// Gets or sets the assembly name
+        /// </summary>
+        public string? Assembly { get; set; }
+
+        /// <summary>
+        /// Gets or sets the array of method names
+        /// </summary>
+        public string[]? Methods { get; set; }
     }
 }
