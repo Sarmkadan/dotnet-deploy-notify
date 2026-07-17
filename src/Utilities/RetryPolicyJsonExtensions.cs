@@ -46,10 +46,11 @@ public static class RetryPolicyJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize</param>
     /// <returns>A RetryPolicy instance, or null if the JSON represents a null value</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized</exception>
     public static RetryPolicy? FromJson(string json)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentNullException.ThrowIfNull(json);
         return JsonSerializer.Deserialize<RetryPolicy>(json, _jsonOptions);
     }
 
@@ -59,9 +60,24 @@ public static class RetryPolicyJsonExtensions
     /// <param name="json">The JSON string to deserialize</param>
     /// <param name="value">Receives the deserialized RetryPolicy instance, or null if deserialization fails</param>
     /// <returns>True if deserialization succeeds; otherwise, false</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
     public static bool TryFromJson(string json, out RetryPolicy? value)
+        => TryFromJson(json.AsSpan(), out value);
+
+    /// <summary>
+    /// Attempts to deserialize a JSON string to a RetryPolicy instance
+    /// </summary>
+    /// <param name="json">The JSON string to deserialize</param>
+    /// <param name="value">Receives the deserialized RetryPolicy instance, or null if deserialization fails</param>
+    /// <returns>True if deserialization succeeds; otherwise, false</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
+    public static bool TryFromJson(ReadOnlySpan<char> json, out RetryPolicy? value)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        if (json.IsEmpty || json.IsWhiteSpace())
+        {
+            value = null;
+            return false;
+        }
 
         try
         {
