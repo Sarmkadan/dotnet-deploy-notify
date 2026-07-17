@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 namespace DotNetDeployNotify.Utilities
 {
     /// <summary>
-    /// Provides System.Text.Json serialization extensions for <see cref="GuardExtensions"/>
+    /// Provides System.Text.Json serialization extensions for <see cref="GuardExtensions"/> guard methods
     /// </summary>
     public static class GuardExtensionsJsonExtensions
     {
@@ -17,7 +17,8 @@ namespace DotNetDeployNotify.Utilities
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = false,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNameCaseInsensitive = true
+            PropertyNameCaseInsensitive = true,
+            IncludeFields = false
         };
 
         /// <summary>
@@ -29,7 +30,7 @@ namespace DotNetDeployNotify.Utilities
         {
             var options = new JsonSerializerOptions(_jsonOptions)
             {
-                WriteIndented = indented,
+                WriteIndented = indented
             };
 
             var metadata = new GuardExtensionsMetadata
@@ -38,16 +39,16 @@ namespace DotNetDeployNotify.Utilities
                 Namespace = typeof(GuardExtensions).Namespace ?? "DotNetDeployNotify.Utilities",
                 Assembly = typeof(GuardExtensions).Assembly.GetName().Name ?? "DotNetDeployNotify",
                 Methods = [
-                    "ThrowIfNull",
-                    "ThrowIfNullOrEmpty",
-                    "ThrowIfFalse",
-                    "ThrowIfLessThan",
-                    "ThrowIfLongerThan",
-                    "ThrowIfInvalidUrl",
-                    "GetValueOrThrow",
-                    "IsInRange",
-                    "MatchesPattern"
-                ],
+                    nameof(GuardExtensions.ThrowIfNull),
+                    nameof(GuardExtensions.ThrowIfNullOrEmpty),
+                    nameof(GuardExtensions.ThrowIfFalse),
+                    nameof(GuardExtensions.ThrowIfLessThan),
+                    nameof(GuardExtensions.ThrowIfLongerThan),
+                    nameof(GuardExtensions.ThrowIfInvalidUrl),
+                    nameof(GuardExtensions.GetValueOrThrow),
+                    nameof(GuardExtensions.IsInRange),
+                    nameof(GuardExtensions.MatchesPattern)
+                ]
             };
 
             return JsonSerializer.Serialize(metadata, options);
@@ -67,7 +68,7 @@ namespace DotNetDeployNotify.Utilities
             {
                 return JsonSerializer.Deserialize<GuardExtensionsMetadata>(json, _jsonOptions);
             }
-            catch (JsonException)
+            catch
             {
                 return null;
             }
@@ -89,7 +90,7 @@ namespace DotNetDeployNotify.Utilities
                 value = JsonSerializer.Deserialize<GuardExtensionsMetadata>(json, _jsonOptions);
                 return true;
             }
-            catch (JsonException)
+            catch
             {
                 value = null;
                 return false;
@@ -99,6 +100,7 @@ namespace DotNetDeployNotify.Utilities
         /// <summary>
         /// Metadata representation of the GuardExtensions class for JSON serialization
         /// </summary>
+        [Serializable]
         public sealed class GuardExtensionsMetadata
         {
             /// <summary>
