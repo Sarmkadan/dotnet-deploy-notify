@@ -12,16 +12,19 @@ using Xunit;
 namespace DotNetDeployNotify.Tests;
 
 /// <summary>
-/// Extension methods for PayloadBuilderTests providing additional test utilities
+/// Extension methods for <see cref="PayloadBuilderTests"/> providing additional test utilities.
+/// All members are static for extension methods.
 /// </summary>
 public static class PayloadBuilderTestsExtensions
 {
     /// <summary>
-    /// Creates a test deployment notification with default values
+    /// Creates a test deployment notification with default values.
     /// </summary>
-    public static DeploymentNotification CreateTestNotification(this PayloadBuilderTests _)
-    {
-        return new DeploymentNotification
+    /// <param name="_">The instance parameter for extension method (unused).</param>
+    /// <returns>A new <see cref="DeploymentNotification"/> with test values.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="_"/> is <see langword="null"/></exception>
+    public static DeploymentNotification CreateTestNotification(this PayloadBuilderTests _) =>
+        new DeploymentNotification
         {
             ProjectName = "TestApp",
             Version = "1.0.0",
@@ -34,14 +37,15 @@ public static class PayloadBuilderTestsExtensions
             Channels = [NotificationChannel.Slack],
             CreatedAt = DateTime.UtcNow
         };
-    }
 
     /// <summary>
     /// Creates a Slack channel configuration with default settings
     /// </summary>
-    public static ChannelConfiguration CreateSlackChannelConfig(this PayloadBuilderTests _)
-    {
-        return new ChannelConfiguration
+    /// <param name="_">The instance parameter for extension method (unused).</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> configured for Slack.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="_"/> is <see langword="null"/></exception>
+    public static ChannelConfiguration CreateSlackChannelConfig(this PayloadBuilderTests _) =>
+        new ChannelConfiguration
         {
             ChannelType = NotificationChannel.Slack,
             DisplayName = "Slack Prod",
@@ -54,14 +58,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = true,
             IncludeBuildUrl = true
         };
-    }
 
     /// <summary>
     /// Creates a Discord channel configuration with default settings
     /// </summary>
-    public static ChannelConfiguration CreateDiscordChannelConfig(this PayloadBuilderTests _)
-    {
-        return new ChannelConfiguration
+    /// <param name="_">The instance parameter for extension method (unused).</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> configured for Discord.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="_"/> is <see langword="null"/></exception>
+    public static ChannelConfiguration CreateDiscordChannelConfig(this PayloadBuilderTests _) =>
+        new ChannelConfiguration
         {
             ChannelType = NotificationChannel.Discord,
             DisplayName = "Discord Prod",
@@ -73,14 +78,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = true,
             IncludeBuildUrl = true
         };
-    }
 
     /// <summary>
     /// Creates a Telegram channel configuration with default settings
     /// </summary>
-    public static ChannelConfiguration CreateTelegramChannelConfig(this PayloadBuilderTests _)
-    {
-        return new ChannelConfiguration
+    /// <param name="_">The instance parameter for extension method (unused).</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> configured for Telegram.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="_"/> is <see langword="null"/></exception>
+    public static ChannelConfiguration CreateTelegramChannelConfig(this PayloadBuilderTests _) =>
+        new ChannelConfiguration
         {
             ChannelType = NotificationChannel.Telegram,
             DisplayName = "Telegram Prod",
@@ -92,11 +98,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = true,
             IncludeBuildUrl = true
         };
-    }
 
     /// <summary>
     /// Verifies that a webhook payload contains expected custom properties
     /// </summary>
+    /// <param name="payload">The payload to verify.</param>
+    /// <param name="key">The key of the custom property to check.</param>
+    /// <param name="expectedValue">The expected value of the custom property.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="payload"/> or <paramref name="key"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is empty.</exception>
     public static void ShouldContainCustomProperty(this WebhookPayload payload, string key, object expectedValue)
     {
         ArgumentNullException.ThrowIfNull(payload);
@@ -110,6 +120,10 @@ public static class PayloadBuilderTestsExtensions
     /// <summary>
     /// Verifies that a webhook payload has the expected event type
     /// </summary>
+    /// <param name="payload">The payload to verify.</param>
+    /// <param name="expectedEventType">The expected event type.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="payload"/> or <paramref name="expectedEventType"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="expectedEventType"/> is empty.</exception>
     public static void ShouldHaveEventType(this WebhookPayload payload, string expectedEventType)
     {
         ArgumentNullException.ThrowIfNull(payload);
@@ -121,10 +135,12 @@ public static class PayloadBuilderTestsExtensions
     /// <summary>
     /// Creates a deployment notification with a specific status
     /// </summary>
-    public static DeploymentNotification WithStatus(this DeploymentNotification notification, BuildStatus status)
-    {
-        ArgumentNullException.ThrowIfNull(notification);
-        return new DeploymentNotification
+    /// <param name="notification">The source notification to copy properties from.</param>
+    /// <param name="status">The status to set on the new notification.</param>
+    /// <returns>A new <see cref="DeploymentNotification"/> with the specified status.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="notification"/> is null.</exception>
+    public static DeploymentNotification WithStatus(this DeploymentNotification notification, BuildStatus status) =>
+        new DeploymentNotification
         {
             ProjectName = notification.ProjectName,
             Version = notification.Version,
@@ -142,15 +158,16 @@ public static class PayloadBuilderTestsExtensions
             Metadata = notification.Metadata,
             RepositoryUrl = notification.RepositoryUrl
         };
-    }
 
     /// <summary>
     /// Creates a deployment notification with a specific environment
     /// </summary>
-    public static DeploymentNotification WithEnvironment(this DeploymentNotification notification, global::DotNetDeployNotify.Core.Environment environment)
-    {
-        ArgumentNullException.ThrowIfNull(notification);
-        return new DeploymentNotification
+    /// <param name="notification">The source notification to copy properties from.</param>
+    /// <param name="environment">The environment to set on the new notification.</param>
+    /// <returns>A new <see cref="DeploymentNotification"/> with the specified environment.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="notification"/> is null.</exception>
+    public static DeploymentNotification WithEnvironment(this DeploymentNotification notification, global::DotNetDeployNotify.Core.Environment environment) =>
+        new DeploymentNotification
         {
             ProjectName = notification.ProjectName,
             Version = notification.Version,
@@ -168,15 +185,15 @@ public static class PayloadBuilderTestsExtensions
             Metadata = notification.Metadata,
             RepositoryUrl = notification.RepositoryUrl
         };
-    }
 
     /// <summary>
     /// Creates a channel configuration with emojis enabled
     /// </summary>
-    public static ChannelConfiguration WithEmojisEnabled(this ChannelConfiguration config)
-    {
-        ArgumentNullException.ThrowIfNull(config);
-        return new ChannelConfiguration
+    /// <param name="config">The source configuration to copy properties from.</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> with emojis enabled.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    public static ChannelConfiguration WithEmojisEnabled(this ChannelConfiguration config) =>
+        new ChannelConfiguration
         {
             ChannelType = config.ChannelType,
             DisplayName = config.DisplayName,
@@ -189,15 +206,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = config.IncludeCommitDetails,
             IncludeBuildUrl = config.IncludeBuildUrl
         };
-    }
 
     /// <summary>
     /// Creates a channel configuration with emojis disabled
     /// </summary>
-    public static ChannelConfiguration WithEmojisDisabled(this ChannelConfiguration config)
-    {
-        ArgumentNullException.ThrowIfNull(config);
-        return new ChannelConfiguration
+    /// <param name="config">The source configuration to copy properties from.</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> with emojis disabled.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    public static ChannelConfiguration WithEmojisDisabled(this ChannelConfiguration config) =>
+        new ChannelConfiguration
         {
             ChannelType = config.ChannelType,
             DisplayName = config.DisplayName,
@@ -210,15 +227,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = config.IncludeCommitDetails,
             IncludeBuildUrl = config.IncludeBuildUrl
         };
-    }
 
     /// <summary>
     /// Creates a channel configuration with commit details included
     /// </summary>
-    public static ChannelConfiguration WithCommitDetails(this ChannelConfiguration config)
-    {
-        ArgumentNullException.ThrowIfNull(config);
-        return new ChannelConfiguration
+    /// <param name="config">The source configuration to copy properties from.</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> with commit details included.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    public static ChannelConfiguration WithCommitDetails(this ChannelConfiguration config) =>
+        new ChannelConfiguration
         {
             ChannelType = config.ChannelType,
             DisplayName = config.DisplayName,
@@ -231,15 +248,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = true,
             IncludeBuildUrl = config.IncludeBuildUrl
         };
-    }
 
     /// <summary>
     /// Creates a channel configuration without commit details
     /// </summary>
-    public static ChannelConfiguration WithoutCommitDetails(this ChannelConfiguration config)
-    {
-        ArgumentNullException.ThrowIfNull(config);
-        return new ChannelConfiguration
+    /// <param name="config">The source configuration to copy properties from.</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> without commit details.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    public static ChannelConfiguration WithoutCommitDetails(this ChannelConfiguration config) =>
+        new ChannelConfiguration
         {
             ChannelType = config.ChannelType,
             DisplayName = config.DisplayName,
@@ -252,15 +269,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = false,
             IncludeBuildUrl = config.IncludeBuildUrl
         };
-    }
 
     /// <summary>
     /// Creates a channel configuration with build URL included
     /// </summary>
-    public static ChannelConfiguration WithBuildUrl(this ChannelConfiguration config)
-    {
-        ArgumentNullException.ThrowIfNull(config);
-        return new ChannelConfiguration
+    /// <param name="config">The source configuration to copy properties from.</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> with build URL included.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    public static ChannelConfiguration WithBuildUrl(this ChannelConfiguration config) =>
+        new ChannelConfiguration
         {
             ChannelType = config.ChannelType,
             DisplayName = config.DisplayName,
@@ -273,15 +290,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = config.IncludeCommitDetails,
             IncludeBuildUrl = true
         };
-    }
 
     /// <summary>
     /// Creates a channel configuration without build URL
     /// </summary>
-    public static ChannelConfiguration WithoutBuildUrl(this ChannelConfiguration config)
-    {
-        ArgumentNullException.ThrowIfNull(config);
-        return new ChannelConfiguration
+    /// <param name="config">The source configuration to copy properties from.</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> without build URL.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    public static ChannelConfiguration WithoutBuildUrl(this ChannelConfiguration config) =>
+        new ChannelConfiguration
         {
             ChannelType = config.ChannelType,
             DisplayName = config.DisplayName,
@@ -294,15 +311,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = config.IncludeCommitDetails,
             IncludeBuildUrl = false
         };
-    }
 
     /// <summary>
     /// Creates a channel configuration with Slack Block Kit enabled
     /// </summary>
-    public static ChannelConfiguration WithSlackBlockKit(this ChannelConfiguration config)
-    {
-        ArgumentNullException.ThrowIfNull(config);
-        return new ChannelConfiguration
+    /// <param name="config">The source configuration to copy properties from.</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> with Slack Block Kit enabled.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    public static ChannelConfiguration WithSlackBlockKit(this ChannelConfiguration config) =>
+        new ChannelConfiguration
         {
             ChannelType = config.ChannelType,
             DisplayName = config.DisplayName,
@@ -315,15 +332,15 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = config.IncludeCommitDetails,
             IncludeBuildUrl = config.IncludeBuildUrl
         };
-    }
 
     /// <summary>
     /// Creates a channel configuration with Slack Block Kit disabled
     /// </summary>
-    public static ChannelConfiguration WithoutSlackBlockKit(this ChannelConfiguration config)
-    {
-        ArgumentNullException.ThrowIfNull(config);
-        return new ChannelConfiguration
+    /// <param name="config">The source configuration to copy properties from.</param>
+    /// <returns>A new <see cref="ChannelConfiguration"/> with Slack Block Kit disabled.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="config"/> is null.</exception>
+    public static ChannelConfiguration WithoutSlackBlockKit(this ChannelConfiguration config) =>
+        new ChannelConfiguration
         {
             ChannelType = config.ChannelType,
             DisplayName = config.DisplayName,
@@ -336,11 +353,14 @@ public static class PayloadBuilderTestsExtensions
             IncludeCommitDetails = config.IncludeCommitDetails,
             IncludeBuildUrl = config.IncludeBuildUrl
         };
-    }
 
     /// <summary>
     /// Asserts that a Telegram message contains the project name and version
     /// </summary>
+    /// <param name="message">The message to check.</param>
+    /// <param name="projectName">The expected project name.</param>
+    /// <param name="version">The expected version.</param>
+    /// <exception cref="ArgumentException">Thrown when any parameter is null or empty.</exception>
     public static void ShouldContainProjectAndVersion(this string message, string projectName, string version)
     {
         ArgumentException.ThrowIfNullOrEmpty(message);
@@ -354,6 +374,10 @@ public static class PayloadBuilderTestsExtensions
     /// <summary>
     /// Asserts that a Telegram message contains commit information
     /// </summary>
+    /// <param name="message">The message to check.</param>
+    /// <param name="commitHash">The expected commit hash.</param>
+    /// <param name="commitAuthor">The expected commit author.</param>
+    /// <exception cref="ArgumentException">Thrown when any parameter is null or empty.</exception>
     public static void ShouldContainCommitInfo(this string message, string commitHash, string commitAuthor)
     {
         ArgumentException.ThrowIfNullOrEmpty(message);
@@ -368,6 +392,9 @@ public static class PayloadBuilderTestsExtensions
     /// <summary>
     /// Asserts that a Telegram message contains duration information
     /// </summary>
+    /// <param name="message">The message to check.</param>
+    /// <param name="durationSeconds">The expected duration in seconds.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="message"/> is null or empty.</exception>
     public static void ShouldContainDuration(this string message, int durationSeconds)
     {
         ArgumentException.ThrowIfNullOrEmpty(message);
@@ -379,6 +406,9 @@ public static class PayloadBuilderTestsExtensions
     /// <summary>
     /// Asserts that a Telegram message contains the build URL
     /// </summary>
+    /// <param name="message">The message to check.</param>
+    /// <param name="buildUrl">The expected build URL.</param>
+    /// <exception cref="ArgumentException">Thrown when any parameter is null or empty.</exception>
     public static void ShouldContainBuildUrl(this string message, string buildUrl)
     {
         ArgumentException.ThrowIfNullOrEmpty(message);
@@ -390,10 +420,12 @@ public static class PayloadBuilderTestsExtensions
     /// <summary>
     /// Creates a deployment notification with duration
     /// </summary>
-    public static DeploymentNotification WithDuration(this DeploymentNotification notification, int durationSeconds)
-    {
-        ArgumentNullException.ThrowIfNull(notification);
-        return new DeploymentNotification
+    /// <param name="notification">The source notification to copy properties from.</param>
+    /// <param name="durationSeconds">The duration in seconds to set.</param>
+    /// <returns>A new <see cref="DeploymentNotification"/> with the specified duration.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="notification"/> is null.</exception>
+    public static DeploymentNotification WithDuration(this DeploymentNotification notification, int durationSeconds) =>
+        new DeploymentNotification
         {
             ProjectName = notification.ProjectName,
             Version = notification.Version,
@@ -411,57 +443,4 @@ public static class PayloadBuilderTestsExtensions
             Metadata = notification.Metadata,
             RepositoryUrl = notification.RepositoryUrl
         };
-    }
-
-    /// <summary>
-    /// Creates a deployment notification with build URL
-    /// </summary>
-    public static DeploymentNotification WithBuildUrl(this DeploymentNotification notification, string buildUrl)
-    {
-        ArgumentNullException.ThrowIfNull(notification);
-        return new DeploymentNotification
-        {
-            ProjectName = notification.ProjectName,
-            Version = notification.Version,
-            BranchName = notification.BranchName,
-            Message = notification.Message,
-            Status = notification.Status,
-            TargetEnvironment = notification.TargetEnvironment,
-            CommitHash = notification.CommitHash,
-            CommitAuthor = notification.CommitAuthor,
-            Channels = notification.Channels,
-            CreatedAt = notification.CreatedAt,
-            DurationSeconds = notification.DurationSeconds,
-            BuildUrl = buildUrl,
-            Priority = notification.Priority,
-            Metadata = notification.Metadata,
-            RepositoryUrl = notification.RepositoryUrl
-        };
-    }
-
-    /// <summary>
-    /// Creates a deployment notification with commit details
-    /// </summary>
-    public static DeploymentNotification WithCommitDetails(this DeploymentNotification notification, string commitHash, string commitAuthor)
-    {
-        ArgumentNullException.ThrowIfNull(notification);
-        return new DeploymentNotification
-        {
-            ProjectName = notification.ProjectName,
-            Version = notification.Version,
-            BranchName = notification.BranchName,
-            Message = notification.Message,
-            Status = notification.Status,
-            TargetEnvironment = notification.TargetEnvironment,
-            CommitHash = commitHash,
-            CommitAuthor = commitAuthor,
-            Channels = notification.Channels,
-            CreatedAt = notification.CreatedAt,
-            DurationSeconds = notification.DurationSeconds,
-            BuildUrl = notification.BuildUrl,
-            Priority = notification.Priority,
-            Metadata = notification.Metadata,
-            RepositoryUrl = notification.RepositoryUrl
-        };
-    }
 }
