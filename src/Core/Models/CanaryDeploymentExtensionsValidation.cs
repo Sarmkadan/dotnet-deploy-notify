@@ -49,7 +49,7 @@ public static class CanaryDeploymentExtensionsValidation
             {
                 problems.Add("Health score is not a valid number");
             }
-            else if (healthScore < 0 || healthScore > 100)
+            else if (healthScore is < 0 or > 100)
             {
                 problems.Add($"Health score {healthScore} is out of range [0, 100]");
             }
@@ -76,8 +76,7 @@ public static class CanaryDeploymentExtensionsValidation
         // Validate promotion capability
         try
         {
-            var canPromote = deployment.CanPromote();
-            // No specific validation needed beyond the method call itself
+            _ = deployment.CanPromote();
         }
         catch (Exception ex)
         {
@@ -88,12 +87,9 @@ public static class CanaryDeploymentExtensionsValidation
         try
         {
             var nextTraffic = deployment.GetNextTrafficPercentage();
-            if (nextTraffic.HasValue)
+            if (nextTraffic is { } value && (value is < 0 or > 100))
             {
-                if (nextTraffic.Value < 0 || nextTraffic.Value > 100)
-                {
-                    problems.Add($"Next traffic percentage {nextTraffic.Value} is out of range [0, 100]");
-                }
+                problems.Add($"Next traffic percentage {value} is out of range [0, 100]");
             }
         }
         catch (Exception ex)
@@ -105,12 +101,9 @@ public static class CanaryDeploymentExtensionsValidation
         try
         {
             var soakRemaining = deployment.GetCurrentSoakRemaining();
-            if (soakRemaining.HasValue)
+            if (soakRemaining is { } remaining && remaining < TimeSpan.Zero)
             {
-                if (soakRemaining.Value < TimeSpan.Zero)
-                {
-                    problems.Add("Soak remaining time is negative");
-                }
+                problems.Add("Soak remaining time is negative");
             }
         }
         catch (Exception ex)
