@@ -4,6 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -17,7 +18,7 @@ public static class CanaryDeploymentEngineExtensionsJsonExtensions
     /// <summary>
     /// JsonSerializerOptions with camelCase naming policy for consistent serialization.
     /// </summary>
-    private static readonly JsonSerializerOptions _jsonOptions = new()
+    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false,
@@ -30,6 +31,7 @@ public static class CanaryDeploymentEngineExtensionsJsonExtensions
     /// </summary>
     /// <param name="indented">Whether to format the JSON with indentation.</param>
     /// <returns>JSON string representation of CanaryDeploymentEngineExtensions metadata.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="indented"/> is outside valid range.</exception>
     public static string ToJson(bool indented = false)
     {
         var options = new JsonSerializerOptions(_jsonOptions) { WriteIndented = indented };
@@ -97,7 +99,7 @@ public static class CanaryDeploymentEngineExtensionsJsonExtensions
         /// <summary>
         /// Gets or sets the type identifier.
         /// </summary>
-        public string? Type { get; set; }
+        public string Type { get; set; } = string.Empty;
 
         /// <summary>
         /// Gets or sets the namespace.
