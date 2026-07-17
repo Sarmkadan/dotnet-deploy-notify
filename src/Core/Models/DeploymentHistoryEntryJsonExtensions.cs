@@ -40,7 +40,7 @@ public static class DeploymentHistoryEntryJsonExtensions
     /// Deserializes a JSON string to a <see cref="DeploymentHistoryEntry"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized deployment history entry, or <see langword="null"/> if the JSON is empty.</returns>
+    /// <returns>The deserialized deployment history entry.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static DeploymentHistoryEntry? FromJson(string json)
