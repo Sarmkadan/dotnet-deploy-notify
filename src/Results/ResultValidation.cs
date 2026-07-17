@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 
 namespace DotNetDeployNotify.Results;
 
@@ -18,7 +18,7 @@ public static class ResultValidation
     /// </summary>
     /// <param name="value">The Result to validate</param>
     /// <returns>List of human-readable validation problems, or empty list if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this Result value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -61,7 +61,7 @@ public static class ResultValidation
     /// <typeparam name="T">The value type</typeparam>
     /// <param name="value">The Result&lt;T&gt; to validate</param>
     /// <returns>List of human-readable validation problems, or empty list if valid</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate<T>(this Result<T> value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -96,9 +96,10 @@ public static class ResultValidation
     /// </summary>
     /// <param name="value">The Result to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
     public static bool IsValid(this Result value)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return Validate(value).Count == 0;
     }
 
@@ -108,17 +109,17 @@ public static class ResultValidation
     /// <typeparam name="T">The value type</typeparam>
     /// <param name="value">The Result&lt;T&gt; to check</param>
     /// <returns>True if valid, false otherwise</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    public static bool IsValid<T>(this Result<T> value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
+    public static bool IsValid<T>([NotNullWhen(true)] this Result<T>? value)
     {
-        return Validate(value).Count == 0;
+        return value is not null && Validate(value).Count == 0;
     }
 
     /// <summary>
     /// Ensures that a Result instance is valid, throwing ArgumentException if not
     /// </summary>
     /// <param name="value">The Result to validate</param>
-    /// <exception cref="ArgumentException">Thrown if value is not valid, containing the list of problems</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not valid, containing the list of problems</exception>
     public static void EnsureValid(this Result value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -136,7 +137,7 @@ public static class ResultValidation
     /// </summary>
     /// <typeparam name="T">The value type</typeparam>
     /// <param name="value">The Result&lt;T&gt; to validate</param>
-    /// <exception cref="ArgumentException">Thrown if value is not valid, containing the list of problems</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is not valid, containing the list of problems</exception>
     public static void EnsureValid<T>(this Result<T> value)
     {
         ArgumentNullException.ThrowIfNull(value);
