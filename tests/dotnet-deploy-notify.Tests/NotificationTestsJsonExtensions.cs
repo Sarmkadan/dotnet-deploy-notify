@@ -9,10 +9,18 @@ namespace DotNetDeployNotify.Tests;
 /// </summary>
 public static class NotificationTestsJsonExtensions
 {
+    private const string ExceptionMessageWhitespaceOnly = "JSON string cannot be empty or whitespace.";
+
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false
+    };
+
+    private static readonly JsonSerializerOptions _jsonSerializerOptionsIndented = new(JsonSerializerDefaults.Web)
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        WriteIndented = true
     };
 
     /// <summary>
@@ -27,7 +35,7 @@ public static class NotificationTestsJsonExtensions
         ArgumentNullException.ThrowIfNull(value);
 
         var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
+            ? _jsonSerializerOptionsIndented
             : _jsonSerializerOptions;
 
         return JsonSerializer.Serialize(value, options);
