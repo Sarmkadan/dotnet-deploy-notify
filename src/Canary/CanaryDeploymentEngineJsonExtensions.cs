@@ -11,8 +11,17 @@ using System.Text.Json.Serialization;
 namespace DotNetDeployNotify.Canary;
 
 /// <summary>
-/// Provides System.Text.Json serialization helpers for <see cref="CanaryDeploymentEngine"/>.
+/// Provides extension methods for serializing and deserializing <see cref="CanaryDeploymentEngine"/> instances
+/// to and from JSON using System.Text.Json.
 /// </summary>
+/// <remarks>
+/// This static class offers three serialization patterns:
+/// <list type="bullet">
+/// <item><see cref="ToJson(CanaryDeploymentEngine, bool)"/> for compact or indented JSON output</item>
+/// <item><see cref="FromJson(string)"/> for deserialization with null handling</item>
+/// <item><see cref="TryFromJson(string, out CanaryDeploymentEngine?)"/> for safe deserialization with error handling</item>
+/// </list>
+/// </remarks>
 public static class CanaryDeploymentEngineJsonExtensions
 {
     private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web)
@@ -30,7 +39,7 @@ public static class CanaryDeploymentEngineJsonExtensions
     /// <param name="value">The canary deployment engine instance to serialize.</param>
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the canary deployment engine.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     public static string ToJson(this CanaryDeploymentEngine value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -49,7 +58,7 @@ public static class CanaryDeploymentEngineJsonExtensions
     /// Deserializes a JSON string to a <see cref="CanaryDeploymentEngine"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized canary deployment engine, or null if the JSON is null or empty.</returns>
+    /// <returns>The deserialized canary deployment engine, or <see langword="null"/> if the JSON is null or empty.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is <see langword="null"/>.</exception>
     public static CanaryDeploymentEngine? FromJson(string json)
     {
