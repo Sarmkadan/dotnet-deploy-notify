@@ -17,8 +17,8 @@ public static class RequestContextValidation
     /// </summary>
     /// <param name="value">The request context to validate</param>
     /// <returns>A list of validation problems (empty if valid)</returns>
-    /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    public static IReadOnlyList<string> Validate(this RequestContext value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
+    public static IReadOnlyList<string> Validate(this RequestContext? value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -49,7 +49,11 @@ public static class RequestContextValidation
         {
             errors.Add("RequestTime cannot be default(DateTime)");
         }
-        else if (value.RequestTime > DateTime.UtcNow.AddMinutes(5))
+        else if (value.RequestTime.Kind != DateTimeKind.Utc)
+    {
+        errors.Add("RequestTime must be in UTC kind");
+    }
+    else if (value.RequestTime > DateTime.UtcNow.AddMinutes(5))
         {
             errors.Add("RequestTime cannot be in the future");
         }
@@ -98,14 +102,15 @@ public static class RequestContextValidation
     /// </summary>
     /// <param name="value">The request context to check</param>
     /// <returns>True if the context is valid; otherwise, false</returns>
-    public static bool IsValid(this RequestContext value) => value.Validate().Count == 0;
+    public static bool IsValid(this RequestContext? value) => value?.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that a <see cref="RequestContext"/> instance is valid, throwing an exception if not
     /// </summary>
     /// <param name="value">The request context to validate</param>
-    /// <exception cref="ArgumentException">Thrown if the context is invalid, containing all validation errors</exception>
-    public static void EnsureValid(this RequestContext value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
+/// <exception cref="ArgumentException">Thrown if the context is invalid, containing all validation errors</exception>
+    public static void EnsureValid(this RequestContext? value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -113,7 +118,7 @@ public static class RequestContextValidation
         if (errors.Count > 0)
         {
             var errorMessage = string.Join("\n- ", errors);
-            throw new ArgumentException($"RequestContext is invalid:\n- {errorMessage}");
+            throw new ArgumentException($"RequestContext is invalid:\n- {errorMessage}", nameof(value));
         }
     }
 }
