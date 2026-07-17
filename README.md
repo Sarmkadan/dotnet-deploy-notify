@@ -1102,6 +1102,63 @@ telegramText.ShouldContainCommitInfo("abc1234", "Test User");
 
 The `ChannelPayloadTests` class verifies per-channel payload formatting by driving the real `WebhookDispatcher` and `PayloadBuilder` through a `FakeWebhookTransport` and asserting on the captured wire payload. These tests ensure that notifications sent to different channels (Slack, Discord, Telegram, generic webhooks) are properly formatted according to each platform's requirements.
 
+## FakeWebhookTransport
+
+The `FakeWebhookTransport` is an in-memory HTTP transport for unit tests that captures every outgoing webhook request instead of sending it over the network. It records the HTTP method, URL, body, headers, and response for each request, allowing tests to assert on the exact payload and behavior a channel would have produced without making real HTTP calls.
+
+Example usage:
+
+```csharp
+// Create a fake transport that always returns success
+var transport = new FakeWebhookTransport();
+
+// Create a webhook dispatcher using the fake transport
+var dispatcher = new WebhookDispatcher(
+    new HttpClient(transport),
+    new PayloadBuilder(),
+    new NullLogger<WebhookDispatcher>()
+);
+
+// Send a notification through the dispatcher
+var result = await dispatcher.SendToWebhookAsync(
+    new ChannelConfiguration
+    {
+        ChannelType = NotificationChannel.Slack,
+        WebhookUrl = "https://hooks.slack.com/services/T/B/X"
+    },
+    new DeploymentNotification
+    {
+        ProjectName = "MyApp",
+        Version = "1.0.0",
+        Status = BuildStatus.Success,
+        Message = "Deployment completed successfully"
+    }
+);
+
+// Assert on the captured request
+var capturedRequest = transport.LastRequest;
+Assert.NotNull(capturedRequest);
+Assert.Equal("POST", capturedRequest.Method);
+Assert.Equal("https://hooks.slack.com/services/T/B/X", capturedRequest.Url);
+Assert.Contains("MyApp", capturedRequest.Body);
+Assert.Contains("1.0.0", capturedRequest.Body);
+Assert.True(result.IsSuccessful);
+```
+
+You can also create a transport with custom response behavior:
+
+```csharp
+// Create a transport that fails on certain URLs
+var transport = new FakeWebhookTransport(request =>
+{
+    if (request.Url.Contains("fail.example.com"))
+    {
+        return new HttpResponseMessage(HttpStatusCode.InternalServerError);
+    }
+    return new HttpResponseMessage(HttpStatusCode.OK);
+});
+```
+
 Example usage:
 
 ```csharp
