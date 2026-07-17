@@ -2091,6 +2091,63 @@ public string GetConfigValue(string key)
 }
 ```
 
+## GuardExtensionsJsonExtensions
+
+The `GuardExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for `GuardExtensions` metadata. It enables converting guard extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+This extension class is particularly useful for persisting guard extension configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
+
+Example usage:
+
+```csharp
+// Serialize to JSON string (compact format)
+string jsonCompact = GuardExtensionsJsonExtensions.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"type":"GuardExtensions","namespace":"DotNetDeployNotify.Utilities","assembly":"DotNetDeployNotify","methods":["ThrowIfNull","ThrowIfNullOrEmpty","ThrowIfFalse","ThrowIfLessThan","ThrowIfLongerThan","ThrowIfInvalidUrl","GetValueOrThrow","IsInRange","MatchesPattern"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = GuardExtensionsJsonExtensions.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "GuardExtensions",
+  "namespace": "DotNetDeployNotify.Utilities",
+  "assembly": "DotNetDeployNotify",
+  "methods": [
+    "ThrowIfNull",
+    "ThrowIfNullOrEmpty",
+    "ThrowIfFalse",
+    "ThrowIfLessThan",
+    "ThrowIfLongerThan",
+    "ThrowIfInvalidUrl",
+    "GetValueOrThrow",
+    "IsInRange",
+    "MatchesPattern"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = GuardExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+    Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+    Console.WriteLine($"Namespace: {deserializedMetadata.Namespace}");
+    Console.WriteLine($"Assembly: {deserializedMetadata.Assembly}");
+    Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (GuardExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+    Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+    Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ## ObjectExtensionsValidation
 
 The `ObjectExtensionsValidation` class provides validation extension methods for objects that enable comprehensive validation of object instances, properties, and collections. It validates null values, empty strings, whitespace strings, default value types, default DateTime/DateTimeOffset values, and empty collections, returning detailed error messages for any validation failures.
