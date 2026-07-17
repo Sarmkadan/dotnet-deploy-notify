@@ -30,9 +30,20 @@ public static class BatchNotificationExtensionsJsonExtensions
     /// </summary>
     /// <param name="indented">Whether to format the JSON with indentation.</param>
     /// <returns>JSON string representation of BatchNotificationExtensions metadata.</returns>
-    public static string ToJson(bool indented = false)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="indented"/> is null.</exception>
+    public static string ToJson(bool indented = false) =>
+        ToJson(indented, _jsonOptions);
+
+    /// <summary>
+    /// Serializes BatchNotificationExtensions type information to JSON string.
+    /// </summary>
+    /// <param name="indented">Whether to format the JSON with indentation.</param>
+    /// <param name="jsonSerializerOptions">Custom JSON serializer options.</param>
+    /// <returns>JSON string representation of BatchNotificationExtensions metadata.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="jsonSerializerOptions"/> is null.</exception>
+    private static string ToJson(bool indented, JsonSerializerOptions jsonSerializerOptions)
     {
-        var options = new JsonSerializerOptions(_jsonOptions)
+        var options = new JsonSerializerOptions(jsonSerializerOptions)
         {
             WriteIndented = indented
         };
