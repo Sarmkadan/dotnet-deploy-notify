@@ -62,13 +62,16 @@ public static class ValidationRuleJsonExtensions
     /// Deserializes a string validation rule from JSON string
     /// </summary>
     /// <param name="json">JSON string to deserialize</param>
-    /// <returns>The deserialized validation rule, or null if JSON is empty</returns>
-    /// <exception cref="JsonException">Thrown when JSON is invalid or cannot be deserialized</exception>
-    public static ValidationRule<string>? FromJsonString(string json)
+    /// <returns>The deserialized validation rule</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
+    /// <exception cref="JsonException">Thrown when JSON is invalid, empty, or cannot be deserialized</exception>
+    public static ValidationRule<string> FromJsonString(string json)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         if (string.IsNullOrWhiteSpace(json))
         {
-            return null;
+            throw new JsonException("JSON string cannot be empty or whitespace");
         }
 
         ValidationRule<string>? result = JsonSerializer.Deserialize<NotEmptyRule>(json, _jsonOptions);
@@ -96,13 +99,16 @@ public static class ValidationRuleJsonExtensions
     /// Deserializes a numeric validation rule from JSON string
     /// </summary>
     /// <param name="json">JSON string to deserialize</param>
-    /// <returns>The deserialized validation rule, or null if JSON is empty</returns>
-    /// <exception cref="JsonException">Thrown when JSON is invalid or cannot be deserialized</exception>
-    public static ValidationRule<int>? FromJsonInt(string json)
+    /// <returns>The deserialized validation rule</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
+    /// <exception cref="JsonException">Thrown when JSON is invalid, empty, or cannot be deserialized</exception>
+    public static ValidationRule<int> FromJsonInt(string json)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         if (string.IsNullOrWhiteSpace(json))
         {
-            return null;
+            throw new JsonException("JSON string cannot be empty or whitespace");
         }
 
         return JsonSerializer.Deserialize<RangeRule>(json, _jsonOptions)
@@ -115,19 +121,22 @@ public static class ValidationRuleJsonExtensions
     /// <param name="json">JSON string to deserialize</param>
     /// <param name="value">Output parameter for the deserialized validation rule</param>
     /// <returns>True if deserialization succeeded; false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
     public static bool TryFromJson(string json, out ValidationRule<string>? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         value = null;
 
         if (string.IsNullOrWhiteSpace(json))
         {
-            return true;
+            return false;
         }
 
         try
         {
             value = FromJsonString(json);
-            return value is not null;
+            return true;
         }
         catch (JsonException)
         {
@@ -141,19 +150,22 @@ public static class ValidationRuleJsonExtensions
     /// <param name="json">JSON string to deserialize</param>
     /// <param name="value">Output parameter for the deserialized validation rule</param>
     /// <returns>True if deserialization succeeded; false otherwise</returns>
+    /// <exception cref="ArgumentNullException">Thrown when json is null</exception>
     public static bool TryFromJson(string json, out ValidationRule<int>? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         value = null;
 
         if (string.IsNullOrWhiteSpace(json))
         {
-            return true;
+            return false;
         }
 
         try
         {
             value = FromJsonInt(json);
-            return value is not null;
+            return true;
         }
         catch (JsonException)
         {
