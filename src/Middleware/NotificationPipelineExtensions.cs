@@ -1,5 +1,6 @@
 #nullable enable
 
+using System.Collections.Generic;
 using DotNetDeployNotify.Core.Models;
 
 namespace DotNetDeployNotify.Middleware;
@@ -15,15 +16,13 @@ public static class NotificationPipelineExtensions
     /// <param name="pipeline">The pipeline instance</param>
     /// <param name="notification">The notification to process</param>
     /// <returns>A result containing the processed notification and metadata</returns>
-    /// <exception cref="ArgumentNullException">Thrown when pipeline or notification is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="pipeline"/> or <paramref name="notification"/> is null</exception>
     public static async Task<PipelineResult> ExecuteWithMetadataAsync(this NotificationPipeline pipeline, DeploymentNotification notification)
     {
         ArgumentNullException.ThrowIfNull(pipeline);
         ArgumentNullException.ThrowIfNull(notification);
 
-        var result = await pipeline.ExecuteAsync(notification);
-
-        return result;
+        return await pipeline.ExecuteAsync(notification).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -32,13 +31,13 @@ public static class NotificationPipelineExtensions
     /// <param name="pipeline">The pipeline instance</param>
     /// <param name="notification">The notification to process</param>
     /// <returns>The processed notification if successful, otherwise null</returns>
-    /// <exception cref="ArgumentNullException">Thrown when pipeline or notification is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="pipeline"/> or <paramref name="notification"/> is null</exception>
     public static async Task<DeploymentNotification?> ExecuteSuccessfullyAsync(this NotificationPipeline pipeline, DeploymentNotification notification)
     {
         ArgumentNullException.ThrowIfNull(pipeline);
         ArgumentNullException.ThrowIfNull(notification);
 
-        var result = await pipeline.ExecuteAsync(notification);
+        var result = await pipeline.ExecuteAsync(notification).ConfigureAwait(false);
         return result.Success ? result.ProcessedNotification : null;
     }
 
@@ -47,7 +46,7 @@ public static class NotificationPipelineExtensions
     /// </summary>
     /// <param name="result">The pipeline result</param>
     /// <returns>Formatted error messages or empty string if no errors</returns>
-    /// <exception cref="ArgumentNullException">Thrown when result is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="result"/> is null</exception>
     public static string GetValidationErrors(this PipelineResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -62,7 +61,7 @@ public static class NotificationPipelineExtensions
     /// </summary>
     /// <param name="result">The pipeline result</param>
     /// <returns>True if successful with no errors, otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when result is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="result"/> is null</exception>
     public static bool IsSuccessful(this PipelineResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -74,7 +73,7 @@ public static class NotificationPipelineExtensions
     /// </summary>
     /// <param name="result">The pipeline result</param>
     /// <returns>Number of channels, or 0 if not available</returns>
-    /// <exception cref="ArgumentNullException">Thrown when result is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="result"/> is null</exception>
     public static int GetChannelCount(this PipelineResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -87,7 +86,7 @@ public static class NotificationPipelineExtensions
     /// </summary>
     /// <param name="result">The pipeline result</param>
     /// <returns>The original notification, or null if not available</returns>
-    /// <exception cref="ArgumentNullException">Thrown when result is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="result"/> is null</exception>
     public static DeploymentNotification? GetOriginalNotification(this PipelineResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -99,7 +98,7 @@ public static class NotificationPipelineExtensions
     /// </summary>
     /// <param name="result">The pipeline result</param>
     /// <returns>The processed notification, or null if not available</returns>
-    /// <exception cref="ArgumentNullException">Thrown when result is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="result"/> is null</exception>
     public static DeploymentNotification? GetProcessedNotification(this PipelineResult result)
     {
         ArgumentNullException.ThrowIfNull(result);
@@ -109,11 +108,11 @@ public static class NotificationPipelineExtensions
     /// <summary>
     /// Creates a new pipeline result with the given notification and success status
     /// </summary>
-    /// <param name="pipeline">The pipeline instance (unused, for method chaining)</param>
+    /// <param name="pipeline">The pipeline instance</param>
     /// <param name="notification">The notification to process</param>
     /// <param name="success">Whether the processing was successful</param>
     /// <returns>A new pipeline result</returns>
-    /// <exception cref="ArgumentNullException">Thrown when notification is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="pipeline"/> or <paramref name="notification"/> is null</exception>
     public static PipelineResult CreateResult(this NotificationPipeline pipeline, DeploymentNotification notification, bool success)
     {
         ArgumentNullException.ThrowIfNull(pipeline);
@@ -123,18 +122,18 @@ public static class NotificationPipelineExtensions
         {
             Notification = notification,
             Success = success,
-            Errors = new List<string>()
+            Errors = []
         };
     }
 
     /// <summary>
     /// Creates a new pipeline result with the given notification and errors
     /// </summary>
-    /// <param name="pipeline">The pipeline instance (unused, for method chaining)</param>
+    /// <param name="pipeline">The pipeline instance</param>
     /// <param name="notification">The notification to process</param>
     /// <param name="errors">List of error messages</param>
     /// <returns>A new pipeline result</returns>
-    /// <exception cref="ArgumentNullException">Thrown when notification or errors is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="pipeline"/>, <paramref name="notification"/>, or <paramref name="errors"/> is null</exception>
     public static PipelineResult CreateResult(this NotificationPipeline pipeline, DeploymentNotification notification, IEnumerable<string> errors)
     {
         ArgumentNullException.ThrowIfNull(pipeline);
