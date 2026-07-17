@@ -1,22 +1,22 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
-using Microsoft.Extensions.Logging;
 
 namespace DotNetDeployNotify.Benchmarks.Benchmarks;
 
 /// <summary>
-/// Validation helpers for TestHttpClientExtensions to ensure proper usage in test scenarios
+/// Provides validation helpers for <see cref="TestHttpClientExtensions"/> extension methods.
+/// Since extension classes are static, these methods validate the <see cref="TestHttpClient"/> instances
+/// that the extension methods operate on.
 /// </summary>
 public static class TestHttpClientExtensionsValidation
 {
     /// <summary>
-    /// Validates that the TestHttpClientExtensions type is properly configured for use
+    /// Validates that a <see cref="TestHttpClient"/> instance is compatible with the TestHttpClientExtensions methods.
     /// </summary>
-    /// <param name="value">The TestHttpClientExtensions instance to validate</param>
-    /// <returns>List of validation errors; empty list if valid</returns>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
-    public static IReadOnlyList<string> Validate(this TestHttpClientExtensions value)
+    /// <param name="value">The <see cref="TestHttpClient"/> instance to validate</param>
+    /// <returns>A list of validation problems; empty if the instance is valid</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
+    public static IReadOnlyList<string> Validate(this TestHttpClient value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
@@ -26,25 +26,32 @@ public static class TestHttpClientExtensionsValidation
     }
 
     /// <summary>
-    /// Determines whether the TestHttpClientExtensions instance is valid
+    /// Determines whether a <see cref="TestHttpClient"/> instance is valid for use with TestHttpClientExtensions methods.
     /// </summary>
-    /// <param name="value">The TestHttpClientExtensions instance to check</param>
+    /// <param name="value">The <see cref="TestHttpClient"/> instance to check</param>
     /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/></returns>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
-    public static bool IsValid(this TestHttpClientExtensions value)
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
+    public static bool IsValid(this TestHttpClient value)
     {
-        ArgumentNullException.ThrowIfNull(value);
-        return true;
+        return value?.Validate().Count == 0;
     }
 
     /// <summary>
-    /// Validates the TestHttpClientExtensions instance and throws an exception if invalid
+    /// Ensures that a <see cref="TestHttpClient"/> instance is valid for use with TestHttpClientExtensions methods
+    /// and throws an <see cref="ArgumentException"/> if it is not.
     /// </summary>
-    /// <param name="value">The TestHttpClientExtensions instance to validate</param>
-    /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/></exception>
-    /// <exception cref="ArgumentException">The instance is invalid with validation errors listed</exception>
-    public static void EnsureValid(this TestHttpClientExtensions value)
+    /// <param name="value">The <see cref="TestHttpClient"/> instance to validate</param>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
+    /// <exception cref="ArgumentException">Thrown if the instance has validation problems</exception>
+    public static void EnsureValid(this TestHttpClient value)
     {
         ArgumentNullException.ThrowIfNull(value);
+
+        var problems = value.Validate();
+        if (problems.Count > 0)
+        {
+            throw new ArgumentException(
+                $"TestHttpClient instance is not valid for TestHttpClientExtensions. Problems: {string.Join("; ", problems)}");
+        }
     }
 }
