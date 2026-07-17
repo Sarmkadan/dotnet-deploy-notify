@@ -1999,6 +1999,64 @@ Assert.NotNull(notificationId);
 Console.WriteLine($"Created notification with ID: {notificationId}");
 ```
 
+## CommandParserExtensions
+
+The `CommandParserExtensions` class provides extension methods for the `CommandParser` type that simplify common command-line argument parsing scenarios. These extensions enable fluent, readable code for parsing commands and accessing parameters and options without directly working with the parser's internal state.
+
+The extension methods handle null checking, provide convenient access to parsed parameters and options, and offer type-safe conversion helpers for common scenarios like integer and boolean parsing.
+
+Example usage:
+
+```csharp
+// Create a command parser for deployment notifications
+var parser = new CommandParser();
+
+// Parse command-line arguments
+var parsedCommand = parser.Parse(new[] { "deploy", "--project", "MyWebApp", "--version", "2.0.0", "--environment", "production", "--timeout", "30" });
+
+// Get all parameter names
+var parameterNames = parser.GetParameterNames(parsedCommand);
+Console.WriteLine($"Parameters: {string.Join(", ", parameterNames)}");
+
+// Get all option names
+var optionNames = parser.GetOptionNames(parsedCommand);
+Console.WriteLine($"Options: {string.Join(", ", optionNames)}");
+
+// Get parameter count
+int paramCount = parser.GetParameterCount(parsedCommand);
+Console.WriteLine($"Parameter count: {paramCount}");
+
+// Get option count
+int optionCount = parser.GetOptionCount(parsedCommand);
+Console.WriteLine($"Option count: {optionCount}");
+
+// Check if parameters exist
+bool hasParameters = parser.HasParameters(parsedCommand);
+Console.WriteLine($"Has parameters: {hasParameters}");
+
+// Check if options exist
+bool hasOptions = parser.HasOptions(parsedCommand);
+Console.WriteLine($"Has options: {hasOptions}");
+
+// Get parameter as integer (safe parsing)
+int? timeout = parser.GetParameterAsInt(parsedCommand, "timeout");
+if (timeout.HasValue)
+{
+    Console.WriteLine($"Timeout: {timeout.Value} seconds");
+}
+
+// Get option as boolean (safe parsing)
+bool verbose = parser.GetOptionAsBoolean(parsedCommand, "verbose");
+Console.WriteLine($"Verbose mode: {verbose}");
+
+// Get option as integer (safe parsing)
+int? maxRetries = parser.GetOptionAsInt(parsedCommand, "max-retries");
+if (maxRetries.HasValue)
+{
+    Console.WriteLine($"Max retries: {maxRetries.Value}");
+}
+```
+
 ## NotificationProcessingWorkerExtensionsValidation
 
 The `NotificationProcessingWorkerExtensionsValidation` class provides validation helpers for `NotificationProcessingWorker` configurations. It allows developers to quickly verify that worker extensions and configurations are correctly set up, ensuring runtime reliability and providing detailed diagnostic information if validation fails.
