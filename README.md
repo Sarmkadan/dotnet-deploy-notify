@@ -1997,6 +1997,42 @@ var validNotification = new DeploymentNotification
 var notificationId = await notificationService.CreateNotificationAsync(validNotification);
 Assert.NotNull(notificationId);
 Console.WriteLine($"Created notification with ID: {notificationId}");
+```
+
+## NotificationProcessingWorkerExtensionsValidation
+
+The `NotificationProcessingWorkerExtensionsValidation` class provides validation helpers for `NotificationProcessingWorker` configurations. It allows developers to quickly verify that worker extensions and configurations are correctly set up, ensuring runtime reliability and providing detailed diagnostic information if validation fails.
+
+Example usage:
+```csharp
+// Assume worker is an instance of NotificationProcessingWorker
+var worker = new NotificationProcessingWorker(notificationService, logger, TimeSpan.FromSeconds(30));
+
+// Validate using extension methods and get detailed problems
+var problems = worker.ValidateWorkerExtensions();
+if (problems.Count > 0)
+{
+    Console.WriteLine("Worker configuration has problems:");
+    foreach (var problem in problems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+
+// Quickly check if the configuration is valid
+bool isValid = worker.IsWorkerExtensionsValid();
+Console.WriteLine($"Is worker valid: {isValid}");
+
+// Ensure configuration is valid, throws ArgumentException if not
+try 
+{
+    worker.EnsureWorkerExtensionsValid();
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
+```
 
 // Test SendNotificationAsync with valid notification ID
 var sendResults = await notificationService.SendNotificationAsync(notificationId);
