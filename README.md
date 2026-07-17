@@ -364,6 +364,70 @@ if (stringErrors.Any())
 }
 ```
 
+## ValidationRuleValidation
+
+The `ValidationRuleValidation` class provides validation extension methods for `ValidationRule<T>` types, enabling comprehensive validation of validation rules themselves. It supports validating individual rules, checking validity, ensuring validation passes, and bulk validation of multiple rules. The class provides both detailed error reporting (returning collections of error messages) and convenience methods for quick boolean checks.
+
+Example usage:
+
+```csharp
+// Define validation rules for a type
+var projectNameRule = new ValidationRule<DeploymentNotification>(
+    nameof(DeploymentNotification.ProjectName),
+    notification => !string.IsNullOrWhiteSpace(notification.ProjectName),
+    "Project name is required");
+
+var versionRule = new ValidationRule<DeploymentNotification>(
+    nameof(DeploymentNotification.Version),
+    notification => !string.IsNullOrWhiteSpace(notification.Version),
+    "Version is required");
+
+var statusRule = new ValidationRule<DeploymentNotification>(
+    nameof(DeploymentNotification.Status),
+    notification => notification.Status != null,
+    "Status must be specified");
+
+// Validate a single rule
+var problems = projectNameRule.Validate();
+if (problems.Any())
+{
+    foreach (var error in problems)
+    {
+        Console.WriteLine(error);
+    }
+}
+
+// Quick validation check
+if (projectNameRule.IsValid())
+{
+    Console.WriteLine("Project name rule is valid");
+}
+
+// Ensure validation passes (throws if invalid)
+projectNameRule.EnsureValid();
+
+// Bulk validation of multiple rules
+var rules = new List<ValidationRule<DeploymentNotification>> { projectNameRule, versionRule, statusRule };
+var allErrors = rules.ValidateAll();
+foreach (var kvp in allErrors)
+{
+    Console.WriteLine($"Rule '{kvp.Key.GetErrorMessage()}': {string.Join(", ", kvp.Value)}");
+}
+
+// Check if all rules are valid
+if (rules.AllValid())
+{
+    Console.WriteLine("All validation rules are valid");
+}
+
+// Get the first problem for a rule
+var firstProblem = projectNameRule.GetFirstProblem();
+if (firstProblem != null)
+{
+    Console.WriteLine($"First validation problem: {firstProblem}");
+}
+```
+
 ## RetryPolicyExtensions
 
 The `RetryPolicyExtensions` class provides extension methods for the `RetryPolicy` type to simplify retry operations. It includes factory methods for creating retry policies with common patterns (immediate retries, exponential backoff), delay calculation methods with and without jitter, and helper methods for executing operations with retry logic. The extensions support both synchronous and asynchronous operations, custom retry conditions, and policy validation.
