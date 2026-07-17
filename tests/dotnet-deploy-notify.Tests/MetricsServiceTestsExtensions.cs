@@ -19,11 +19,12 @@ public static class MetricsServiceTestsExtensions
     /// <param name="tests">The test class instance.</param>
     /// <returns>The underlying <see cref="MetricsService"/> used by the test.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="tests"/> is <c>null</c>.</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the <c>_metricsService</c> field cannot be located.</exception>
     public static MetricsService GetMetricsService(this MetricsServiceTests tests)
     {
         ArgumentNullException.ThrowIfNull(tests);
         var field = typeof(MetricsServiceTests).GetField("_metricsService", BindingFlags.Instance | BindingFlags.NonPublic)
-                    ?? throw new InvalidOperationException("Unable to locate _metricsService field.");
+            ?? throw new InvalidOperationException("Unable to locate _metricsService field.");
         return (MetricsService)field.GetValue(tests)!;
     }
 
