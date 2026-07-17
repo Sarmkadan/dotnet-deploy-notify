@@ -410,11 +410,61 @@ if (retryPolicy.IsValid())
 }
 ```
 
-## MathExtensionsJsonExtensions
+## ValidationRuleJsonExtensions
 
-The `MathExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for `MathExtensions` type information. It enables converting MathExtensions metadata to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+The `ValidationRuleJsonExtensions` class provides System.Text.Json serialization and deserialization helpers for `ValidationRule` types. It enables converting validation rules to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
 
-This extension class is particularly useful for persisting MathExtensions configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
+This extension class is particularly useful for persisting validation rule configuration to configuration files, databases, or remote services, and for restoring them back into application memory. It provides serialization methods for string and numeric validation rules, along with deserialization and safe deserialization methods.
+
+Example usage:
+
+```csharp
+// Create a string validation rule (NotEmptyRule)
+var notEmptyRule = new NotEmptyRule { ErrorMessage = "Field cannot be empty" };
+
+// Serialize to JSON string (compact format)
+string jsonCompact = notEmptyRule.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"errorMessage":"Field cannot be empty","type":"NotEmpty"}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = notEmptyRule.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "errorMessage": "Field cannot be empty",
+  "type": "NotEmpty"
+}
+*/
+
+// Create a numeric validation rule (RangeRule)
+var rangeRule = new RangeRule { Min = 1, Max = 100, ErrorMessage = "Value must be between 1 and 100" };
+
+// Serialize numeric validation rule
+string rangeJson = rangeRule.ToJson();
+Console.WriteLine(rangeJson);
+// Output: {"min":1,"max":100,"errorMessage":"Value must be between 1 and 100","type":"Range"}
+
+// Deserialize string validation rule from JSON
+string ruleJson = "{\"errorMessage\":\"Must not be empty\",\"type\":\"NotEmpty\"}";
+var deserializedRule = ValidationRuleJsonExtensions.FromJsonString(ruleJson);
+Console.WriteLine(deserializedRule.ErrorMessage); // Output: Must not be empty
+
+// Deserialize numeric validation rule from JSON
+string rangeRuleJson = "{\"min\":10,\"max\":100,\"errorMessage\":\"Must be between 10 and 100\",\"type\":\"Range\"}";
+var deserializedRangeRule = ValidationRuleJsonExtensions.FromJsonInt(rangeRuleJson);
+Console.WriteLine($"Range: {deserializedRangeRule.Min}-{deserializedRangeRule.Max}");
+
+// Try deserialization with error handling
+if (ValidationRuleJsonExtensions.TryFromJson(ruleJson, out var safeRule))
+{
+    Console.WriteLine("Successfully deserialized validation rule");
+}
+else
+{
+    Console.WriteLine("Failed to deserialize validation rule");
+}
+```
 
 Example usage:
 
