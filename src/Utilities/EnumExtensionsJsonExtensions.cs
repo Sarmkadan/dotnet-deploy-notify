@@ -5,6 +5,7 @@
 // =============================================================================
 
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DotNetDeployNotify.Utilities;
 
@@ -16,7 +17,8 @@ public static class EnumExtensionsJsonExtensions
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
+        WriteIndented = false,
+        Converters = { new JsonStringEnumConverter() }
     };
 
     /// <summary>
@@ -44,13 +46,11 @@ public static class EnumExtensionsJsonExtensions
     /// <typeparam name="T">The enum type</typeparam>
     /// <param name="json">JSON string to deserialize</param>
     /// <returns>Deserialized enum value</returns>
+    /// <exception cref="ArgumentException">Thrown when JSON string is null or whitespace</exception>
     /// <exception cref="JsonException">Thrown when JSON is invalid or cannot be deserialized</exception>
     public static T FromJson<T>(string json) where T : struct, Enum
     {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            throw new ArgumentException("JSON string cannot be null or whitespace.", nameof(json));
-        }
+        ArgumentException.ThrowIfNullOrEmpty(json, nameof(json));
 
         var result = JsonSerializer.Deserialize<T?>(json, _jsonOptions);
         return result ?? throw new JsonException("Deserialization returned null for non-nullable enum type.");
