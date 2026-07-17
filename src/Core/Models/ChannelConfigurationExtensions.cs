@@ -18,9 +18,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Creates a deep copy of this <see cref="ChannelConfiguration"/> instance.
     /// </summary>
-    /// <param name="configuration">The channel configuration to copy</param>
-    /// <returns>A new instance with all properties copied</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration to copy.</param>
+    /// <returns>A new instance with all properties copied.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static ChannelConfiguration DeepCopy(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -53,10 +53,10 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Determines if this channel configuration is configured for the specified environment.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <param name="environment">The environment to check</param>
-    /// <returns>True if the environment is allowed or if no restrictions exist; otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration or environment is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <param name="environment">The environment to check.</param>
+    /// <returns>True if the environment is allowed or if no restrictions exist; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> or <paramref name="environment"/> is null.</exception>
     public static bool IsEnvironmentAllowed(this ChannelConfiguration configuration, Environment environment)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -69,10 +69,10 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Determines if this channel configuration is configured for the specified build status.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <param name="status">The build status to check</param>
-    /// <returns>True if the status is allowed or if no restrictions exist; otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration or status is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <param name="status">The build status to check.</param>
+    /// <returns>True if the status is allowed or if no restrictions exist; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> or <paramref name="status"/> is null.</exception>
     public static bool IsStatusAllowed(this ChannelConfiguration configuration, BuildStatus status)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -85,10 +85,10 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Gets the effective timeout value for this channel configuration, ensuring it's within valid bounds.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <param name="defaultTimeoutMs">The default timeout to use if configuration timeout is invalid</param>
-    /// <returns>The effective timeout in milliseconds</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <param name="defaultTimeoutMs">The default timeout to use if configuration timeout is invalid.</param>
+    /// <returns>The effective timeout in milliseconds.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static int GetEffectiveTimeout(this ChannelConfiguration configuration, int defaultTimeoutMs = 10000)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -99,10 +99,10 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Gets the effective retry count for this channel configuration, ensuring it's within valid bounds.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <param name="defaultMaxRetries">The default retry count to use if configuration value is invalid</param>
-    /// <returns>The effective retry count</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <param name="defaultMaxRetries">The default retry count to use if configuration value is invalid.</param>
+    /// <returns>The effective retry count.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static int GetEffectiveRetryCount(this ChannelConfiguration configuration, int defaultMaxRetries = 3)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -113,9 +113,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Gets the priority threshold as a string representation for display purposes.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <returns>Human-readable priority threshold</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <returns>Human-readable priority threshold.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static string GetPriorityThresholdDisplay(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -133,9 +133,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Gets the channel type as a string representation for display purposes.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <returns>Human-readable channel type</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <returns>Human-readable channel type.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static string GetChannelTypeDisplay(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -154,9 +154,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Determines if this channel should include commit details based on configuration.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <returns>True if commit details should be included; otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <returns>True if commit details should be included; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static bool ShouldIncludeCommitDetails(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -167,9 +167,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Determines if this channel should include build URL based on configuration.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <returns>True if build URL should be included; otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <returns>True if build URL should be included; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static bool ShouldIncludeBuildUrl(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -180,9 +180,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Gets all custom headers as a read-only dictionary for safe access.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <returns>Read-only dictionary of custom headers</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <returns>Read-only dictionary of custom headers.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static IReadOnlyDictionary<string, string> GetCustomHeaders(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -193,9 +193,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Gets all settings as a read-only dictionary for safe access.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <returns>Read-only dictionary of settings</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <returns>Read-only dictionary of settings.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static IReadOnlyDictionary<string, string> GetSettings(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -206,11 +206,12 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Gets a setting value with a fallback to a default value if not found.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <param name="key">The setting key</param>
-    /// <param name="defaultValue">The default value to return if key is not found</param>
-    /// <returns>The setting value or default</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration or key is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <param name="key">The setting key.</param>
+    /// <param name="defaultValue">The default value to return if key is not found.</param>
+    /// <returns>The setting value or default.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="key"/> is null or empty.</exception>
     public static string GetSettingOrDefault(this ChannelConfiguration configuration, string key, string defaultValue = "")
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -222,9 +223,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Determines if this channel configuration uses Slack Block Kit format.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <returns>True if using Slack Block Kit; otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <returns>True if using Slack Block Kit; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static bool UsesSlackBlockKit(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -235,9 +236,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Determines if emojis are enabled for this channel configuration.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <returns>True if emojis are enabled; otherwise false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <returns>True if emojis are enabled; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static bool EmojisEnabled(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
@@ -248,9 +249,9 @@ public static class ChannelConfigurationExtensions
     /// <summary>
     /// Gets a masked version of the configuration for logging purposes.
     /// </summary>
-    /// <param name="configuration">The channel configuration</param>
-    /// <returns>A masked copy with sensitive data obscured</returns>
-    /// <exception cref="ArgumentNullException">Thrown when configuration is null</exception>
+    /// <param name="configuration">The channel configuration.</param>
+    /// <returns>A masked copy with sensitive data obscured.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="configuration"/> is null.</exception>
     public static ChannelConfiguration GetMaskedForLogging(this ChannelConfiguration configuration)
     {
         ArgumentNullException.ThrowIfNull(configuration);
