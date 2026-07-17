@@ -206,9 +206,11 @@ public static class DeploymentHistoryEntryExtensions
     /// <param name="environment">The environment to match against.</param>
     /// <returns>True if the deployment matches the environment; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="entry"/> is null.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="environment"/> is null.</exception>
     public static bool IsInEnvironment(this DeploymentHistoryEntry entry, Environment environment)
     {
         ArgumentNullException.ThrowIfNull(entry);
+        ArgumentNullException.ThrowIfNull(environment);
 
         return entry.TargetEnvironment == environment;
     }
