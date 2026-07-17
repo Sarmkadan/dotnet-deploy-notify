@@ -364,6 +364,66 @@ if (stringErrors.Any())
 }
 ```
 
+## MathExtensionsJsonExtensions
+
+The `MathExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for `MathExtensions` type information. It enables converting MathExtensions metadata to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+This extension class is particularly useful for persisting MathExtensions configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
+
+Example usage:
+
+```csharp
+// Serialize MathExtensions metadata to JSON string (compact format)
+string jsonCompact = MathExtensionsJsonExtensions.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"type":"MathExtensions","namespace":"DotNetDeployNotify.Utilities","assembly":"DotNetDeployNotify","methods":["Clamp","IsBetween","ToPercentage","RoundTo","Average","Median","SafeSum","SafeAverage","ToHumanReadableSize","ToHumanReadableDuration","CalculateCompoundInterest","RandomBetween"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = MathExtensionsJsonExtensions.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "MathExtensions",
+  "namespace": "DotNetDeployNotify.Utilities",
+  "assembly": "DotNetDeployNotify",
+  "methods": [
+    "Clamp",
+    "IsBetween",
+    "ToPercentage",
+    "RoundTo",
+    "Average",
+    "Median",
+    "SafeSum",
+    "SafeAverage",
+    "ToHumanReadableSize",
+    "ToHumanReadableDuration",
+    "CalculateCompoundInterest",
+    "RandomBetween"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = MathExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+    Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+    Console.WriteLine($"Namespace: {deserializedMetadata.Namespace}");
+    Console.WriteLine($"Assembly: {deserializedMetadata.Assembly}");
+    Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (MathExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+    Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+    Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ## MathExtensionsValidation
 
 The `MathExtensionsValidation` class provides mathematical validation and calculation utilities with detailed error reporting. It includes methods for validating numeric ranges, clamping values, calculating percentages, rounding numbers, computing statistical measures (average, median), performing safe arithmetic operations, and converting between numeric representations. Each validation method returns an `IReadOnlyList<string>` containing human-readable error messages, enabling comprehensive validation of mathematical operations.
