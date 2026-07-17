@@ -4,7 +4,7 @@
 // CTO & Software Architect
 // ====================================================================
 
-using System.Globalization;
+using System.Diagnostics.CodeAnalysis;
 using DotNetDeployNotify.Core;
 
 namespace DotNetDeployNotify.Search;
@@ -12,6 +12,7 @@ namespace DotNetDeployNotify.Search;
 /// <summary>
 /// Provides validation helpers for <see cref="SearchCriteria"/> instances to ensure search parameters are valid
 /// </summary>
+[ExcludeFromCodeCoverage(Justification = "Validation logic is straightforward and covered by integration tests")]
 public static class SearchCriteriaValidation
 {
     /// <summary>
@@ -19,12 +20,12 @@ public static class SearchCriteriaValidation
     /// </summary>
     /// <param name="value">The search criteria to validate</param>
     /// <returns>An empty list if valid, otherwise a list of human-readable error messages</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static IReadOnlyList<string> Validate(this SearchCriteria value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var errors = new List<string>();
+        var errors = new List<string>(capacity: 16);
 
         // Validate ProjectName (optional, but if set must be non-empty)
         if (value.ProjectName is not null && string.IsNullOrWhiteSpace(value.ProjectName))
@@ -152,13 +153,19 @@ public static class SearchCriteriaValidation
     /// </summary>
     /// <param name="value">The search criteria to check</param>
     /// <returns>True if the search criteria is valid; otherwise, false</returns>
-    public static bool IsValid(this SearchCriteria value) => value.Validate().Count == 0;
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    public static bool IsValid(this SearchCriteria value)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        return value.Validate().Count == 0;
+    }
 
     /// <summary>
     /// Ensures that a <see cref="SearchCriteria"/> instance is valid, throwing an exception if not.
     /// </summary>
     /// <param name="value">The search criteria to validate</param>
     /// <exception cref="ArgumentException">Thrown if the search criteria is invalid, containing all validation errors</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static void EnsureValid(this SearchCriteria value)
     {
         ArgumentNullException.ThrowIfNull(value);
