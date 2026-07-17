@@ -478,9 +478,54 @@ if (retryPolicy.IsValid())
 
 The `ValidationRuleJsonExtensions` class provides System.Text.Json serialization and deserialization helpers for `ValidationRule` types. It enables converting validation rules to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
 
-This extension class is particularly useful for persisting validation rule configuration to configuration files, databases, or remote services, and for restoring them back into application memory. It provides serialization methods for string and numeric validation rules, along with deserialization and safe deserialization methods.
+## ResultTestsJsonExtensions
+
+The `ResultTestsJsonExtensions` class provides System.Text.Json serialization and deserialization extension methods specifically designed for testing the `Result` and `Result<T>` types. It mirrors the functionality of `ResultJsonExtensions` but is placed in the test project to avoid production dependencies on test utilities.
+
+This extension class enables converting result objects to and from JSON format during unit tests, supporting both serialization (`ToJson`) and deserialization (`FromJson`, `TryFromJson`) operations with configurable formatting options.
 
 Example usage:
+
+```csharp
+// Create a successful result for testing
+var successResult = Result<string>.Ok("Operation completed successfully");
+
+// Serialize to JSON string (compact format) for test assertions
+string jsonCompact = successResult.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"value":"Operation completed successfully","isSuccess":true}
+
+// Serialize to JSON string (indented format) for debugging
+string jsonIndented = successResult.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "value": "Operation completed successfully",
+  "isSuccess": true
+}
+*/
+
+// Create a failed result for testing
+var failedResult = Result<int>.Fail("Division by zero error");
+
+// Serialize failed result to JSON
+string failedJson = failedResult.ToJson();
+Console.WriteLine(failedJson);
+// Output: {"error":"Division by zero error","isSuccess":false}
+
+// Deserialize from JSON string in tests
+var deserializedResult = ResultTestsJsonExtensions.FromJson<string>(jsonCompact);
+Assert.NotNull(deserializedResult);
+Assert.True(deserializedResult.IsSuccess);
+Assert.Equal("Operation completed successfully", deserializedResult.Value);
+
+// Try deserialization with error handling in tests
+if (ResultTestsJsonExtensions.TryFromJson<int>(failedJson, out var parsedFailedResult))
+{
+    Assert.False(parsedFailedResult.IsSuccess);
+    Assert.Equal("Division by zero error", parsedFailedResult.Error);
+}
+```
 
 ```csharp
 // Create a string validation rule (NotEmptyRule)
@@ -529,8 +574,6 @@ else
     Console.WriteLine("Failed to deserialize validation rule");
 }
 ```
-
-Example usage:
 
 ```csharp
 // Serialize MathExtensions metadata to JSON string (compact format)
@@ -956,8 +999,6 @@ this.ShouldRenderTemplateCorrectly(
     "Deployment MyWebApp version 2.1.0 to Development"
 );
 ```
-
-Example usage:
 
 ```csharp
 // Create test data
