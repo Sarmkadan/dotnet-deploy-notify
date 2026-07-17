@@ -29,10 +29,16 @@ public static class CacheBenchmarksJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>A <see cref="CacheBenchmarks"/> instance if deserialization is successful; otherwise, null.</returns>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is empty or consists only of whitespace.</exception>
     public static CacheBenchmarks? FromJson(string json)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentNullException.ThrowIfNull(json);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new ArgumentException("JSON string cannot be empty or whitespace.", nameof(json));
+        }
+
         try
         {
             return JsonSerializer.Deserialize<CacheBenchmarks>(json, _jsonSerializerOptions);
@@ -49,10 +55,16 @@ public static class CacheBenchmarksJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">The deserialized <see cref="CacheBenchmarks"/> instance if successful; otherwise, null.</param>
     /// <returns>True if deserialization is successful; otherwise, false.</returns>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is empty or consists only of whitespace.</exception>
     public static bool TryFromJson(string json, out CacheBenchmarks? value)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentNullException.ThrowIfNull(json);
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            throw new ArgumentException("JSON string cannot be empty or whitespace.", nameof(json));
+        }
+
         try
         {
             value = JsonSerializer.Deserialize<CacheBenchmarks>(json, _jsonSerializerOptions);
