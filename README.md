@@ -4114,6 +4114,28 @@ foreach (var error in errors)
 }
 ```
 
+## BatchNotificationExtensionsJsonExtensions
+
+The `BatchNotificationExtensionsJsonExtensions` class provides utility methods for serializing and deserializing metadata information about the `BatchNotificationExtensions` class. It simplifies exporting and importing type-related information, such as namespace, assembly, and available methods, as JSON.
+
+Example usage:
+
+```csharp
+using DotNetDeployNotify.Core.Models;
+
+// Serialize BatchNotificationExtensions metadata to JSON
+string json = BatchNotificationExtensionsJsonExtensions.ToJson();
+Console.WriteLine(json);
+
+// Deserialize from JSON
+if (BatchNotificationExtensionsJsonExtensions.TryFromJson(json, out var metadata))
+{
+    Console.WriteLine($"Type: {metadata.Type}");
+    Console.WriteLine($"Assembly: {metadata.Assembly}");
+    Console.WriteLine($"Methods: {string.Join(", ", metadata.Methods)}");
+}
+```
+
 ## License
 
 MIT License - see LICENSE file for details.
