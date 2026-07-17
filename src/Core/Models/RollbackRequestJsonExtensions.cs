@@ -37,12 +37,17 @@ public static class RollbackRequestJsonExtensions
     /// Deserializes a JSON string into a <see cref="RollbackRequest"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized rollback request, or null if the JSON is null or empty.</returns>
+    /// <returns>The deserialized rollback request, or null if the JSON is null, empty, or whitespace.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="json"/> is null.</exception>
     /// <exception cref="JsonException">Thrown if the JSON is invalid or cannot be deserialized.</exception>
     public static RollbackRequest? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            return null;
+        }
 
         return JsonSerializer.Deserialize<RollbackRequest>(json, _jsonOptions);
     }
@@ -56,6 +61,12 @@ public static class RollbackRequestJsonExtensions
     public static bool TryFromJson(string json, out RollbackRequest? value)
     {
         ArgumentNullException.ThrowIfNull(json);
+
+        if (string.IsNullOrWhiteSpace(json))
+        {
+            value = null;
+            return false;
+        }
 
         try
         {
