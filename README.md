@@ -347,6 +347,59 @@ The class also provides convenience methods (`IsValid` family) for quick validat
 
 Example usage:
 
+[...previous content...]
+
+## CollectionExtensionsJsonExtensions
+
+The `CollectionExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for collection metadata. It enables converting collection extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+This extension class is particularly useful for persisting collection extension configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
+
+Example usage:
+
+```csharp
+// Serialize to JSON string (compact format)
+string jsonCompact = CollectionExtensionsJsonExtensions.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"type":"CollectionExtensions","namespace":"DotNetDeployNotify.Utilities","assembly":"DotNetDeployNotify","methods":["IsNullOrEmpty","ToReadOnlyCollection","AddRange"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = CollectionExtensionsJsonExtensions.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "CollectionExtensions",
+  "namespace": "DotNetDeployNotify.Utilities",
+  "assembly": "DotNetDeployNotify",
+  "methods": [
+    "IsNullOrEmpty",
+    "ToReadOnlyCollection",
+    "AddRange"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = CollectionExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+    Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+    Console.WriteLine($"Namespace: {deserializedMetadata.Namespace}");
+    Console.WriteLine($"Assembly: {deserializedMetadata.Assembly}");
+    Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (CollectionExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+    Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+    Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ```csharp
 // Validate an object reference
 var validationResults = myObject.ValidateObject(nameof(myObject));
