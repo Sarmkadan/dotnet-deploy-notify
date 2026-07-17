@@ -17,7 +17,8 @@ namespace DotNetDeployNotify.BackgroundWorkers;
 public static class NotificationProcessingWorkerExtensionsJsonExtensions
 {
     /// <summary>
-    /// JSON serialization options with camelCase naming policy.
+    /// Gets the JSON serialization options configured with camelCase naming policy for serializing
+    /// <see cref="NotificationProcessingWorker"/> instances.
     /// </summary>
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
     {
@@ -37,10 +38,7 @@ public static class NotificationProcessingWorkerExtensionsJsonExtensions
         ArgumentNullException.ThrowIfNull(value);
 
         var options = indented
-            ? new JsonSerializerOptions(_jsonOptions)
-            {
-                WriteIndented = true
-            }
+            ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
             : _jsonOptions;
 
         return JsonSerializer.Serialize(value, options);
@@ -50,13 +48,13 @@ public static class NotificationProcessingWorkerExtensionsJsonExtensions
     /// Deserializes a JSON string to a <see cref="NotificationProcessingWorker"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A <see cref="NotificationProcessingWorker"/> instance populated from the JSON string.</returns>
+    /// <returns>A <see cref="NotificationProcessingWorker"/> instance populated from the JSON string,
+    /// or <see langword="null"/> if the JSON represents a null value.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static NotificationProcessingWorker? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
-
         return JsonSerializer.Deserialize<NotificationProcessingWorker>(json, _jsonOptions);
     }
 
@@ -64,7 +62,8 @@ public static class NotificationProcessingWorkerExtensionsJsonExtensions
     /// Attempts to deserialize a JSON string to a <see cref="NotificationProcessingWorker"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized <see cref="NotificationProcessingWorker"/> instance, or <see langword="null"/> if deserialization fails.</param>
+    /// <param name="value">Receives the deserialized <see cref="NotificationProcessingWorker"/> instance,
+    /// or <see langword="null"/> if deserialization fails.</param>
     /// <returns><see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
     public static bool TryFromJson(string json, out NotificationProcessingWorker? value)
