@@ -1625,6 +1625,129 @@ var maskedConfig = ChannelConfigurationBuilder.ForSlack()
 Console.WriteLine($"Masked config display: {maskedConfig.DisplayName}");
 ```
 
+## MetricsCollectorJsonExtensions
+
+The `MetricsCollectorJsonExtensions` class provides System.Text.Json serialization helpers for `MetricsCollector` and related metric types (`MetricValue`, `MetricStatistics`, `PerformanceMonitor`, `PerformanceReport`). It enables converting metrics objects to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+This extension class is particularly useful for persisting metrics data to configuration files, databases, or remote services, and for restoring it back into application memory. It provides methods for serialization (`ToJson()`), deserialization (`FromJsonTo*`), and safe deserialization with error handling (`TryFromJsonTo*`).
+
+Example usage:
+
+```csharp
+// Create a metrics collector with sample data
+var metricsCollector = new MetricsCollector
+{
+    Timestamp = DateTime.UtcNow,
+    ServiceName = "DeploymentService",
+    Environment = "Production",
+    Metrics = new List<MetricValue>
+    {
+        new MetricValue
+        {
+            Name = "DeploymentDurationMs",
+            Value = 1250,
+            Unit = "ms",
+            Tags = new Dictionary<string, string> { { "version", "2.1.0" } }
+        },
+        new MetricValue
+        {
+            Name = "DeploymentsCount",
+            Value = 42,
+            Unit = "count"
+        },
+        new MetricValue
+        {
+            Name = "FailedDeployments",
+            Value = 2,
+            Unit = "count"
+        }
+    },
+    Statistics = new MetricStatistics
+    {
+        Average = 1250,
+        Max = 2800,
+        Min = 850,
+        P95 = 2100,
+        P99 = 2500,
+        Samples = 42
+    }
+};
+
+// Serialize to JSON string (compact format)
+string jsonCompact = metricsCollector.ToJson();
+Console.WriteLine(jsonCompact);
+/* Output (compact):
+{"timestamp":"2025-07-19T14:30:00Z","serviceName":"DeploymentService","environment":"Production","metrics":[{"name":"DeploymentDurationMs","value":1250,"unit":"ms","tags":{"version":"2.1.0"}},{"name":"DeploymentsCount","value":42,"unit":"count"},{"name":"FailedDeployments","value":2,"unit":"count"}],"statistics":{"average":1250,"max":2800,"min":850,"p95":2100,"p99":2500,"samples":42}}
+*/
+
+// Serialize to JSON string (indented format for readability)
+string jsonIndented = metricsCollector.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output (indented):
+{
+  "timestamp": "2025-07-19T14:30:00Z",
+  "serviceName": "DeploymentService",
+  "environment": "Production",
+  "metrics": [
+    {
+      "name": "DeploymentDurationMs",
+      "value": 1250,
+      "unit": "ms",
+      "tags": {
+        "version": "2.1.0"
+      }
+    },
+    {
+      "name": "DeploymentsCount",
+      "value": 42,
+      "unit": "count"
+    },
+    {
+      "name": "FailedDeployments",
+      "value": 2,
+      "unit": "count"
+    }
+  ],
+  "statistics": {
+    "average": 1250,
+    "max": 2800,
+    "min": 850,
+    "p95": 2100,
+    "p99": 2500,
+    "samples": 42
+  }
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetrics = MetricsCollectorJsonExtensions.FromJsonToMetricsCollector(jsonCompact);
+if (deserializedMetrics != null)
+{
+    Console.WriteLine($"Deserialized service: {deserializedMetrics.ServiceName}");
+    Console.WriteLine($"Metrics count: {deserializedMetrics.Metrics?.Count ?? 0}");
+    Console.WriteLine($"Average duration: {deserializedMetrics.Statistics?.Average}ms");
+}
+
+// Try deserialization with error handling
+if (MetricsCollectorJsonExtensions.TryFromJsonToMetricsCollector(jsonCompact, out var result))
+{
+    Console.WriteLine("Successfully deserialized metrics");
+}
+else
+{
+    Console.WriteLine("Failed to deserialize metrics");
+}
+
+// Serialize individual metric types
+var metricValue = new MetricValue { Name = "ResponseTime", Value = 150, Unit = "ms" };
+string metricJson = metricValue.ToJson();
+Console.WriteLine(metricJson);
+
+var stats = new MetricStatistics { Average = 1250, Max = 2800, Min = 850, Samples = 42 };
+string statsJson = stats.ToJson();
+Console.WriteLine(statsJson);
+```
+
 ## CacheEntryExtensionsJsonExtensions
 
 The `CacheEntryExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for `CacheEntryExtensions` metadata. It enables converting cache entry extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
