@@ -425,6 +425,146 @@ builder.Services.Configure<DotnetDeployNotifyOptions>(options =>
     };
 });
 
+## DotnetDeployNotifyOptionsExtensions
+
+The `DotnetDeployNotifyOptionsExtensions` class provides extension methods for the `DotnetDeployNotifyOptions` configuration class. These extension methods offer a fluent and type-safe way to access configuration values for specific environments, with fallback to default values when environment-specific settings are not configured.
+
+The extension methods handle null checks and provide consistent error handling through `ArgumentNullException` and `ArgumentException` for invalid inputs, making them safe to use throughout the application.
+
+Example usage:
+
+```csharp
+// Configure DotnetDeployNotifyOptions
+builder.Services.Configure<DotnetDeployNotifyOptions>(options =>
+{
+    options.MaxRetries = 3;
+    options.WebhookTimeoutMs = 5000;
+    options.Notification = new NotificationConfig
+    {
+        AutoProcessNotifications = true,
+        DefaultPriority = "High",
+        EnableAuditLogging = true,
+        LogLevel = "Debug",
+        MaxRetries = 3,
+        ProcessingIntervalSeconds = 30,
+        RetentionDays = 30,
+        StoragePath = "/var/data/notifications",
+        StorageType = "Database",
+        WebhookTimeoutMs = 5000,
+        IncludeBuildUrl = true,
+        IncludeCommitDetails = true,
+        EnvironmentChannels = new Dictionary<string, EnvironmentChannelConfig>
+        {
+            ["Production"] = new EnvironmentChannelConfig
+            {
+                ChannelType = "Slack",
+                WebhookUrl = "https://hooks.slack.com/services/T123/B456/C789",
+                DisplayName = "Production Alerts",
+                TargetId = "C123456"
+            },
+            ["Staging"] = new EnvironmentChannelConfig
+            {
+                ChannelType = "Discord",
+                WebhookUrl = "https://discord.com/api/webhooks/789/abc",
+                DisplayName = "Staging Notifications",
+                TargetId = "D789012"
+            }
+        }
+    };
+    options.Canary = new CanaryOptions
+    {
+        Enabled = true,
+        AutoRollbackOnFailure = true,
+        AutoAdvanceOnSuccess = true,
+        LinearStepCount = 5,
+        StepSoakDuration = TimeSpan.FromMinutes(5),
+        MaxDeploymentDuration = TimeSpan.FromHours(2),
+        AlertPriority = NotificationPriority.High,
+        Thresholds = new CanaryThresholds
+        {
+            MaxErrorRatePercent = 1.5,
+            MaxP95LatencyMs = 500,
+            MaxP99LatencyMs = 1000
+        }
+    };
+});
+
+// Access configuration values for specific environments
+var options = services.BuildServiceProvider().GetRequiredService<IOptions<DotnetDeployNotifyOptions>>().Value;
+
+// Get webhook timeout for Production environment (returns 5000ms)
+int timeoutMs = options.GetWebhookTimeoutMs("Production");
+
+// Get maximum retry count for Staging environment (returns 3)
+int maxRetries = options.GetMaxRetries("Staging");
+
+// Check if auto-processing is enabled for Production (returns true)
+bool isAutoProcessingEnabled = options.IsAutoProcessingEnabled("Production");
+
+// Get notification priority for Production (returns NotificationPriority.High)
+NotificationPriority priority = options.GetPriority("Production");
+
+// Check if audit logging is enabled for Staging (returns true)
+bool isAuditLoggingEnabled = options.IsAuditLoggingEnabled("Staging");
+
+// Get display name for Production channel (returns "Production Alerts")
+string displayName = options.GetDisplayName("Production");
+
+// Get storage path for Production (returns "/var/data/notifications")
+string? storagePath = options.GetStoragePath("Production");
+
+// Get log level for Production (returns "Debug")
+string logLevel = options.GetLogLevel("Production");
+
+// Check if canary is enabled (returns true)
+bool isCanaryEnabled = options.IsCanaryEnabled();
+
+// Check if canary auto-rollback is enabled (returns true)
+bool isCanaryAutoRollbackEnabled = options.IsCanaryAutoRollbackEnabled();
+
+// Check if canary auto-advance is enabled (returns true)
+bool isCanaryAutoAdvanceEnabled = options.IsCanaryAutoAdvanceEnabled();
+
+// Get canary alert priority (returns NotificationPriority.High)
+NotificationPriority canaryAlertPriority = options.GetCanaryAlertPriority();
+
+// Get canary maximum deployment duration (returns 2 hours)
+TimeSpan maxDeploymentDuration = options.GetCanaryMaxDeploymentDuration();
+
+// Get canary step soak duration (returns 5 minutes)
+TimeSpan stepSoakDuration = options.GetCanaryStepSoakDuration();
+
+// Get canary linear step count (returns 5)
+int linearStepCount = options.GetCanaryLinearStepCount();
+
+// Get canary thresholds (returns (1.5, 500, 1000))
+var thresholds = options.GetCanaryThresholds();
+
+// Get all configured environments (returns ["Production", "Staging"])
+IEnumerable<string> environments = options.GetConfiguredEnvironments();
+
+// Get webhook URL for Production (returns "https://hooks.slack.com/services/T123/B456/C789")
+string? webhookUrl = options.GetWebhookUrl("Production");
+
+// Get channel type for Production (returns "Slack")
+string channelType = options.GetChannelType("Production");
+
+// Get target ID for Production (returns "C123456")
+string? targetId = options.GetTargetId("Production");
+
+// Check if commit details should be included for Production (returns true)
+bool includeCommitDetails = options.IncludeCommitDetails("Production");
+
+// Check if build URL should be included for Production (returns true)
+bool includeBuildUrl = options.IncludeBuildUrl("Production");
+
+// Get retention days for Production (returns 30)
+int retentionDays = options.GetRetentionDays("Production");
+
+// Get processing interval in seconds (returns 30)
+int processingInterval = options.GetProcessingIntervalSeconds();
+```
+
 ## CanaryDeploymentEngineExtensionsJsonExtensions
 
 The `CanaryDeploymentEngineExtensionsJsonExtensions` class provides System.Text.Json serialization helpers for the `CanaryDeploymentEngineExtensions` class metadata. It enables converting canary deployment engine extension type information to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
