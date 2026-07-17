@@ -41,11 +41,15 @@ namespace DotNetDeployNotify.Core.Models
         {
             ArgumentNullException.ThrowIfNull(notificationResult);
 
-            return $@"Notification: {notificationResult.Id}
-Status: {notificationResult.Status}
-Attempt: {notificationResult.AttemptNumber}
-Duration: {notificationResult.DurationMs}ms
-Attempted: {notificationResult.AttemptedAt:O}";
+            return notificationResult.Status switch
+            {
+                DeliveryStatus.Delivered => $"Notification: {notificationResult.Id}\nStatus: {notificationResult.Status}\nAttempt: {notificationResult.AttemptNumber}\nDuration: {notificationResult.DurationMs}ms\nAttempted: {notificationResult.AttemptedAt:O}",
+                DeliveryStatus.Failed => $"Notification: {notificationResult.Id}\nStatus: {notificationResult.Status}\nAttempt: {notificationResult.AttemptNumber}\nError: {notificationResult.ErrorMessage}\nDuration: {notificationResult.DurationMs}ms\nAttempted: {notificationResult.AttemptedAt:O}",
+                DeliveryStatus.Timeout => $"Notification: {notificationResult.Id}\nStatus: {notificationResult.Status}\nAttempt: {notificationResult.AttemptNumber}\nDuration: {notificationResult.DurationMs}ms\nAttempted: {notificationResult.AttemptedAt:O}",
+                DeliveryStatus.Retried => $"Notification: {notificationResult.Id}\nStatus: {notificationResult.Status}\nAttempt: {notificationResult.AttemptNumber}\nNextRetry: {notificationResult.NextRetryAt:u}\nDuration: {notificationResult.DurationMs}ms\nAttempted: {notificationResult.AttemptedAt:O}",
+                DeliveryStatus.Skipped => $"Notification: {notificationResult.Id}\nStatus: {notificationResult.Status}\nAttempt: {notificationResult.AttemptNumber}\nReason: {notificationResult.ResponseBody}\nDuration: {notificationResult.DurationMs}ms\nAttempted: {notificationResult.AttemptedAt:O}",
+                _ => $"Notification: {notificationResult.Id}\nStatus: {notificationResult.Status}\nAttempt: {notificationResult.AttemptNumber}\nDuration: {notificationResult.DurationMs}ms\nAttempted: {notificationResult.AttemptedAt:O}"
+            };
         }
     }
 }
