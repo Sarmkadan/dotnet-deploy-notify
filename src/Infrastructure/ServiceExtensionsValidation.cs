@@ -2,14 +2,16 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
+using System;
 using DotNetDeployNotify.Core.Models;
 
 namespace DotNetDeployNotify.Infrastructure;
 
 /// <summary>
-/// Provides validation helpers for ServiceExtensions extension methods and their parameters
+/// Provides validation helpers for DeploymentNotification and NotificationResult objects.
+/// Contains comprehensive validation logic that extends the basic model-level validation.
 /// </summary>
 public static class ServiceExtensionsValidation
 {
@@ -74,7 +76,7 @@ public static class ServiceExtensionsValidation
         {
             problems.Add("CreatedAt must be a valid DateTime");
         }
-        else if (value.CreatedAt > DateTime.UtcNow.AddMinutes(5))
+        else if (value.CreatedAt > DateTime.UtcNow)
         {
             problems.Add("CreatedAt cannot be in the future");
         }
@@ -139,7 +141,7 @@ public static class ServiceExtensionsValidation
         {
             problems.Add("AttemptedAt must be a valid DateTime");
         }
-        else if (value.AttemptedAt > DateTime.UtcNow.AddMinutes(5))
+        else if (value.AttemptedAt > DateTime.UtcNow)
         {
             problems.Add("AttemptedAt cannot be in the future");
         }
