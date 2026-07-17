@@ -158,6 +158,37 @@ if (result.IsSuccess)
 }
 ```
 
+## ResultExtensions
+
+The `ResultExtensions` class provides fluent extension methods for the `Result` and `Result<T>` types, enabling cleaner, more readable functional pipelines. It includes `Try` wrappers for safe exception handling and various composition methods like `Select`, `SelectMany`, `Where`, and `Do` for processing successful results while maintaining state.
+
+Example usage:
+
+```csharp
+// Use Try to safely execute operations
+Result<string> GetUserResult() => ResultExtensions.Try(() => 
+    FetchUserFromDb() ?? throw new Exception("User not found"));
+
+// Fluent composition with Select, Where, and Do
+var result = GetUserResult()
+    .Where(user => user.IsActive, "User is inactive")
+    .Select(user => user.Email)
+    .Do(email => Console.WriteLine($"Processing email: {email}"));
+
+if (result.IsSuccess)
+{
+    Console.WriteLine($"Successfully processed: {result.Value}");
+}
+else
+{
+    Console.WriteLine($"Operation failed: {result.Error}");
+}
+
+// Combine multiple results
+var results = new List<Result<int>> { Result<int>.Ok(1), Result<int>.Ok(2) };
+Result<IReadOnlyList<int>> combined = results.Combine();
+```
+
 ## ResultValidation
 
 The `ResultValidation` class provides validation helpers for `Result` and `Result<T>` types to ensure data integrity when working with functional error handling patterns. It offers methods to validate result instances, check their validity, and throw exceptions when invalid results are encountered.
