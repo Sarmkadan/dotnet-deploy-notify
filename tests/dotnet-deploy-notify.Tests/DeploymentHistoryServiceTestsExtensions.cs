@@ -48,7 +48,8 @@ public static class DeploymentHistoryServiceTestsExtensions
     /// </summary>
     /// <param name="tests">The test class instance.</param>
     /// <param name="entries">The collection of entries to check.</param>
-    /// <exception cref="ArgumentNullException">Thrown when entries is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="entries"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="entries"/> is empty.</exception>
     public static void AssertSortedByDateDescending(
         this DeploymentHistoryServiceTests tests,
         IEnumerable<DeploymentHistoryEntry> entries)
@@ -56,6 +57,8 @@ public static class DeploymentHistoryServiceTestsExtensions
         ArgumentNullException.ThrowIfNull(entries);
 
         var list = entries.ToList();
+        list.Should().NotBeEmpty("the collection must contain at least one entry to verify sorting");
+
         for (int i = 0; i < list.Count - 1; i++)
         {
             list[i].DeployedAt.Should().BeOnOrAfter(list[i + 1].DeployedAt);
