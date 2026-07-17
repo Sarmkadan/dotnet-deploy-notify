@@ -2091,6 +2091,82 @@ public string GetConfigValue(string key)
 }
 ```
 
+## ObjectExtensionsValidation
+
+The `ObjectExtensionsValidation` class provides validation extension methods for objects that enable comprehensive validation of object instances, properties, and collections. It validates null values, empty strings, whitespace strings, default value types, default DateTime/DateTimeOffset values, and empty collections, returning detailed error messages for any validation failures.
+
+Example usage:
+
+```csharp
+// Define a sample class with properties to validate
+public class DeploymentConfig
+{
+    public string ProjectName { get; set; } = string.Empty;
+    public string Version { get; set; } = string.Empty;
+    public DateTime DeployedAt { get; set; }
+    public int TimeoutSeconds { get; set; }
+    public List<string> Channels { get; set; } = new();
+}
+
+// Validate an object and get detailed problems
+var config = new DeploymentConfig
+{
+    ProjectName = "MyWebApp",
+    Version = "", // Empty string - will be detected
+    DeployedAt = default, // Default DateTime - will be detected
+    TimeoutSeconds = 0, // Default int - will be detected
+    Channels = new() // Empty collection - will be detected
+};
+
+var validationProblems = config.Validate();
+if (validationProblems.Count > 0)
+{
+    Console.WriteLine("Validation failed:");
+    foreach (var problem in validationProblems)
+    {
+        Console.WriteLine($"- {problem}");
+    }
+}
+
+// Check if an object is valid (returns false)
+bool isValid = config.IsValid(); // Returns false
+
+// Validate a specific property
+var versionProblems = config.ValidateProperty(nameof(config.Version));
+bool isVersionValid = config.IsValidProperty(nameof(config.Version)); // Returns false
+
+// Use EnsureValid to throw exceptions on invalid objects
+try
+{
+    config.EnsureValid(); // Throws ArgumentException with detailed problems
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
+
+// Use EnsureValidProperty to throw exceptions on invalid properties
+try
+{
+    config.EnsureValidProperty(nameof(config.Version)); // Throws ArgumentException
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Property validation failed: {ex.Message}");
+}
+
+// After fixing the issues
+config.Version = "2.0.0";
+config.DeployedAt = DateTime.UtcNow;
+config.TimeoutSeconds = 30;
+config.Channels.Add("Slack");
+config.Channels.Add("Discord");
+
+// Now validation passes
+validationProblems = config.Validate();
+isValid = config.IsValid(); // Returns true
+```
+
 ## MathExtensions
 
 The `MathExtensions` class provides a comprehensive set of extension methods for mathematical operations, unit conversions, and statistical calculations. It includes generic methods for value clamping and range checking, percentage calculations, rounding operations, and collection statistics like average and median calculations. The class also provides human-readable formatting for file sizes and time durations, plus financial calculations like compound interest.
