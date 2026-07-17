@@ -62,10 +62,7 @@ public static class NotificationPipelineValidation
     /// <param name="value">The pipeline result to check.</param>
     /// <returns>True if valid; otherwise, false.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static bool IsValid(this PipelineResult value)
-    {
-        return value.Validate().Count == 0;
-    }
+    public static bool IsValid(this PipelineResult value) => value.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the specified <see cref="PipelineResult"/> is valid.
@@ -81,7 +78,7 @@ public static class NotificationPipelineValidation
         if (errors.Count > 0)
         {
             throw new ArgumentException(
-                "PipelineResult validation failed:\n" + string.Join("\n", errors),
+                $"PipelineResult validation failed:\n{string.Join("\n", errors)}",
                 nameof(value));
         }
     }
