@@ -3,7 +3,7 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// ===================================================================
 
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
@@ -60,22 +60,27 @@ public static class DeploymentNotificationExtensions
             return notification.BuildUrl;
         }
 
-        if (string.IsNullOrWhiteSpace(notification.RepositoryUrl) ||
-            string.IsNullOrWhiteSpace(notification.CommitHash))
+        if (string.IsNullOrWhiteSpace(notification.RepositoryUrl))
         {
             return null;
         }
 
         string repoUrl = notification.RepositoryUrl.TrimEnd('/');
+        string commitHash = notification.CommitHash?.Trim() ?? string.Empty;
+
+        if (string.IsNullOrEmpty(commitHash))
+        {
+            return repoUrl;
+        }
 
         if (repoUrl.Contains("github.com", StringComparison.OrdinalIgnoreCase))
         {
-            return $"{repoUrl}/commit/{notification.CommitHash}";
+            return $"{repoUrl}/commit/{commitHash}";
         }
 
         if (repoUrl.Contains("gitlab.com", StringComparison.OrdinalIgnoreCase))
         {
-            return $"{repoUrl}/-/commit/{notification.CommitHash}";
+            return $"{repoUrl}/-/commit/{commitHash}";
         }
 
         return repoUrl;
@@ -91,12 +96,12 @@ public static class DeploymentNotificationExtensions
     {
         ArgumentNullException.ThrowIfNull(notification);
 
-        if (notification.DurationSeconds == null || notification.DurationSeconds <= 0)
+        if (notification.DurationSeconds is not { } seconds || seconds <= 0)
         {
             return "N/A";
         }
 
-        int totalSeconds = notification.DurationSeconds.Value;
+        int totalSeconds = seconds;
         var parts = new List<string>();
 
         int hours = totalSeconds / 3600;
