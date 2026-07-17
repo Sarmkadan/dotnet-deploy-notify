@@ -18,10 +18,11 @@ public static class CanaryOptionsExtensions
     {
         ArgumentNullException.ThrowIfNull(options);
 
-        return options.LinearStepCount >= 2 &&
-               options.LinearStepCount <= 20 &&
-               options.StepSoakDuration >= TimeSpan.Zero &&
-               options.MaxDeploymentDuration > TimeSpan.Zero;
+        return options.LinearStepCount is >= 2 and <= 20
+            && options.StepSoakDuration >= TimeSpan.Zero
+            && options.MaxDeploymentDuration > TimeSpan.Zero
+            && options.StepSoakDuration != TimeSpan.Zero
+            && options.MaxDeploymentDuration != TimeSpan.Zero;
     }
 
     /// <summary>
@@ -29,10 +30,16 @@ public static class CanaryOptionsExtensions
     /// </summary>
     /// <param name="options">The options.</param>
     /// <returns>A <see cref="TimeSpan"/> representing the total soak duration.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>. </exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="options"/>.StepSoakDuration is zero or negative.</exception>
     public static TimeSpan GetTotalSoakTime(this CanaryOptions options)
     {
         ArgumentNullException.ThrowIfNull(options);
-        return TimeSpan.FromTicks(options.StepSoakDuration.Ticks * options.LinearStepCount);
+
+        return options.StepSoakDuration.Ticks > 0
+            ? TimeSpan.FromTicks(options.StepSoakDuration.Ticks * options.LinearStepCount)
+            : throw new ArgumentException(
+                "StepSoakDuration must be a positive time span.",
+                nameof(options));
     }
 }
