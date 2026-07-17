@@ -4550,6 +4550,32 @@ if (BatchNotificationExtensionsJsonExtensions.TryFromJson(json, out var metadata
 }
 ```
 
+## NotificationBuilderExtensions
+
+The `NotificationBuilderExtensions` class provides a set of extension methods for `NotificationBuilder`, enabling fluent and concise construction of complex deployment notifications. These methods simplify the addition of common metadata, such as deployment details, source control information, build status, infrastructure context, and test results, promoting clean and readable notification builder code.
+
+Example usage:
+```csharp
+// Fluent notification construction using extensions
+var builder = new NotificationBuilder();
+
+var notification = builder
+    .WithDeploymentMetadata("Vladyslav Zaiets", "deploy-id-12345")
+    .WithPriorityForStatus(BuildStatus.Success)
+    .WithSourceControl(
+        "https://github.com/org/repo", 
+        "main", 
+        "abc123commit", 
+        "Fix: Resolve build issue"
+    )
+    .WithTiming(DateTime.UtcNow.AddMinutes(-5), DateTime.UtcNow)
+    .WithBuildReference("https://ci.example.com/job/1", BuildStatus.Success)
+    .WithInfrastructureMetadata("server-01", "PaymentService")
+    .WithTestResults(100, 95, 5, 0)
+    .WithChannels(NotificationChannel.Slack, NotificationChannel.Discord)
+    .Build();
+```
+
 ## License
 
 MIT License - see LICENSE file for details.
