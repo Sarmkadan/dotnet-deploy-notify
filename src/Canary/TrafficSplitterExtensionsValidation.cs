@@ -15,7 +15,7 @@ namespace DotNetDeployNotify.Canary;
 /// Validates parameters passed to extension methods like CreateLinearCanaryDeployment,
 /// CreateExponentialCanaryDeployment, etc.
 /// </summary>
-public static class TrafficSplitterExtensionsValidation
+public sealed class TrafficSplitterExtensionsValidation
 {
     /// <summary>
     /// Validates parameters for <see cref="TrafficSplitterExtensions.CreateLinearCanaryDeployment"/> extension method.
@@ -23,7 +23,7 @@ public static class TrafficSplitterExtensionsValidation
     /// <param name="projectName">Project name to validate.</param>
     /// <param name="canaryVersion">Canary version to validate.</param>
     /// <param name="stableVersion">Stable version to validate.</param>
-    /// <param name="stepCount">Step count to validate.</param>
+    /// <param name="stepCount">Number of steps in the linear rollout (default: 5).</param>
     /// <returns>An empty list if all parameters are valid; otherwise, a list of validation problems.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="projectName"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="canaryVersion"/> is <see langword="null"/>.</exception>
@@ -38,6 +38,7 @@ public static class TrafficSplitterExtensionsValidation
         ArgumentNullException.ThrowIfNull(canaryVersion);
         ArgumentNullException.ThrowIfNull(stableVersion);
 
+    ArgumentOutOfRangeException.ThrowIfLessThan(stepCount, 1);
         var problems = new List<string>();
 
         if (string.IsNullOrWhiteSpace(projectName))
@@ -55,10 +56,6 @@ public static class TrafficSplitterExtensionsValidation
             problems.Add("StableVersion cannot be null or whitespace.");
         }
 
-        if (stepCount < 1)
-        {
-            problems.Add("StepCount must be at least 1.");
-        }
 
         return problems.AsReadOnly();
     }
@@ -143,22 +140,22 @@ public static class TrafficSplitterExtensionsValidation
             problems.Add("Deployment.RolloutPlan must contain at least one step.");
         }
 
-        if (!Enum.IsDefined(typeof(Environment), deployment.TargetEnvironment))
+        if (!Enum.IsDefined(deployment.TargetEnvironment))
         {
             problems.Add("Deployment.TargetEnvironment must be a valid Environment value.");
         }
 
-        if (!Enum.IsDefined(typeof(CanaryStatus), deployment.Status))
+        if (!Enum.IsDefined(deployment.Status))
         {
             problems.Add("Deployment.Status must be a valid CanaryStatus value.");
         }
 
-        if (!Enum.IsDefined(typeof(CanaryStrategy), deployment.Strategy))
+        if (!Enum.IsDefined(deployment.Strategy))
         {
             problems.Add("Deployment.Strategy must be a valid CanaryStrategy value.");
         }
 
-        if (deployment.CurrentSplit.StablePercent < 0 || deployment.CurrentSplit.StablePercent > 100)
+        if (deployment.CurrentSplit.StablePercent is < 0 or > 100)
         {
             problems.Add(string.Format(
                 CultureInfo.InvariantCulture,
@@ -166,7 +163,7 @@ public static class TrafficSplitterExtensionsValidation
                 deployment.CurrentSplit.StablePercent));
         }
 
-        if (deployment.CurrentSplit.CanaryPercent < 0 || deployment.CurrentSplit.CanaryPercent > 100)
+        if (deployment.CurrentSplit.CanaryPercent is < 0 or > 100)
         {
             problems.Add(string.Format(
                 CultureInfo.InvariantCulture,
@@ -278,16 +275,14 @@ public static class TrafficSplitterExtensionsValidation
     /// <param name="projectName">Project name to check.</param>
     /// <param name="canaryVersion">Canary version to check.</param>
     /// <param name="stableVersion">Stable version to check.</param>
-    /// <param name="stepCount">Step count to check.</param>
+    /// <param name="stepCount">Number of steps in the linear rollout.</param>
     /// <returns>True if all parameters are valid; otherwise, false.</returns>
     public static bool IsValidCreateLinearCanaryDeployment(
         string projectName,
         string canaryVersion,
         string stableVersion,
         int stepCount = 5)
-    {
-        return ValidateCreateLinearCanaryDeployment(projectName, canaryVersion, stableVersion, stepCount).Count == 0;
-    }
+        => ValidateCreateLinearCanaryDeployment(projectName, canaryVersion, stableVersion, stepCount).Count == 0;
 
     /// <summary>
     /// Determines if the provided parameters for CreateExponentialCanaryDeployment are valid.
@@ -300,9 +295,7 @@ public static class TrafficSplitterExtensionsValidation
         string projectName,
         string canaryVersion,
         string stableVersion)
-    {
-        return ValidateCreateExponentialCanaryDeployment(projectName, canaryVersion, stableVersion).Count == 0;
-    }
+        => ValidateCreateExponentialCanaryDeployment(projectName, canaryVersion, stableVersion).Count == 0;
 
     /// <summary>
     /// Determines if the provided parameters for ShouldProceedToNextStepAsync are valid.
@@ -313,9 +306,7 @@ public static class TrafficSplitterExtensionsValidation
     public static bool IsValidShouldProceedToNextStepAsync(
         CanaryDeployment deployment,
         CanaryHealthEvaluator healthEvaluator)
-    {
-        return ValidateShouldProceedToNextStepAsync(deployment, healthEvaluator).Count == 0;
-    }
+        => ValidateShouldProceedToNextStepAsync(deployment, healthEvaluator).Count == 0;
 
     /// <summary>
     /// Determines if the provided traffic split is valid.
@@ -323,9 +314,7 @@ public static class TrafficSplitterExtensionsValidation
     /// <param name="split">Traffic split to check.</param>
     /// <returns>True if the traffic split is valid; otherwise, false.</returns>
     public static bool IsValidGetCanaryPercentageNormalized(TrafficSplit split)
-    {
-        return ValidateGetCanaryPercentageNormalized(split).Count == 0;
-    }
+        => ValidateGetCanaryPercentageNormalized(split).Count == 0;
 
     /// <summary>
     /// Determines if the provided parameters for CreateBlueGreenCanaryDeployment are valid.
@@ -338,9 +327,7 @@ public static class TrafficSplitterExtensionsValidation
         string projectName,
         string canaryVersion,
         string stableVersion)
-    {
-        return ValidateCreateBlueGreenCanaryDeployment(projectName, canaryVersion, stableVersion).Count == 0;
-    }
+        => ValidateCreateBlueGreenCanaryDeployment(projectName, canaryVersion, stableVersion).Count == 0;
 
     /// <summary>
     /// Ensures that the provided parameters for CreateLinearCanaryDeployment are valid,
@@ -349,7 +336,7 @@ public static class TrafficSplitterExtensionsValidation
     /// <param name="projectName">Project name to validate.</param>
     /// <param name="canaryVersion">Canary version to validate.</param>
     /// <param name="stableVersion">Stable version to validate.</param>
-    /// <param name="stepCount">Step count to validate.</param>
+    /// <param name="stepCount">Number of steps in the linear rollout (default: 5).</param>
     /// <exception cref="ArgumentException">Thrown when validation fails, containing a list of all problems.</exception>
     public static void EnsureValidCreateLinearCanaryDeployment(
         string projectName,
@@ -361,7 +348,8 @@ public static class TrafficSplitterExtensionsValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                $"CreateLinearCanaryDeployment validation failed:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, problems)}");
+                $"CreateLinearCanaryDeployment validation failed:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, problems)}",
+                nameof(stepCount));
         }
     }
 
@@ -382,7 +370,8 @@ public static class TrafficSplitterExtensionsValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                $"CreateExponentialCanaryDeployment validation failed:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, problems)}");
+                $"CreateExponentialCanaryDeployment validation failed:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, problems)}",
+                nameof(stableVersion));
         }
     }
 
@@ -402,7 +391,7 @@ public static class TrafficSplitterExtensionsValidation
         {
             throw new ArgumentException(
                 $"ShouldProceedToNextStepAsync validation failed:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, problems)}",
-                nameof(deployment));
+                nameof(healthEvaluator));
         }
     }
 
@@ -439,7 +428,8 @@ public static class TrafficSplitterExtensionsValidation
         if (problems.Count > 0)
         {
             throw new ArgumentException(
-                $"CreateBlueGreenCanaryDeployment validation failed:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, problems)}");
+                $"CreateBlueGreenCanaryDeployment validation failed:{System.Environment.NewLine}{string.Join(System.Environment.NewLine, problems)}",
+                nameof(stableVersion));
         }
     }
 }
