@@ -37,11 +37,11 @@ public static class IntegrationTestsJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>An <see cref="IntegrationTests"/> instance deserialized from JSON.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty or whitespace.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is empty, whitespace, or null.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static IntegrationTests? FromJson(string json)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+        ArgumentException.ThrowIfNullOrWhiteSpace(json);
 
         return JsonSerializer.Deserialize<IntegrationTests>(json, _jsonSerializerOptions);
     }
@@ -56,14 +56,14 @@ public static class IntegrationTestsJsonExtensions
     public static bool TryFromJson(string json, out IntegrationTests? value)
     {
         ArgumentNullException.ThrowIfNull(json);
+            value = null;
 
         try
         {
             value = JsonSerializer.Deserialize<IntegrationTests>(json, _jsonSerializerOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
-        {
             value = null;
             return false;
         }
