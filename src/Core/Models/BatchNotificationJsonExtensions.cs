@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 
@@ -32,7 +33,6 @@ public static class BatchNotificationJsonExtensions
     public static string ToJson(this BatchNotification value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
-
         return JsonSerializer.Serialize(value, indented ? _jsonOptionsIndented : _jsonOptions);
     }
 
@@ -40,9 +40,9 @@ public static class BatchNotificationJsonExtensions
     /// Deserializes a <see cref="BatchNotification"/> instance from a JSON string.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized notification, or <see langword="null"/> if the JSON is empty or whitespace.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is <see langword="null"/> or empty.</exception>
-    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+    /// <returns>The deserialized notification, or <see langword="null"/> if JSON parsing succeeds but produces a null result.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized into a <see cref="BatchNotification"/> instance.</exception>
     public static BatchNotification? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -54,17 +54,17 @@ public static class BatchNotificationJsonExtensions
     /// Attempts to deserialize a <see cref="BatchNotification"/> instance from a JSON string.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized notification if successful.</param>
+    /// <param name="value">Receives the deserialized notification if successful; otherwise, <see langword="null"/>.</param>
     /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is <see langword="null"/> or empty.</exception>
-    public static bool TryFromJson(string json, out BatchNotification? value)
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+    public static bool TryFromJson(string json, [NotNullWhen(true)] out BatchNotification? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
 
         try
         {
             value = JsonSerializer.Deserialize<BatchNotification>(json, _jsonOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
         {
