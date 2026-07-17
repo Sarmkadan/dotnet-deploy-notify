@@ -1,8 +1,6 @@
 #nullable enable
 
 using System.Text.Json;
-using System.Text.Json.Serialization;
-using System.Text.Json.Serialization.Metadata;
 
 namespace DotNetDeployNotify.Tests;
 
@@ -11,14 +9,6 @@ namespace DotNetDeployNotify.Tests;
 /// </summary>
 public static class NotificationProcessorTestsJsonExtensions
 {
-	private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
-	{
-		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-		WriteIndented = false,
-		TypeInfoResolver = new DefaultJsonTypeInfoResolver(),
-		ReferenceHandler = ReferenceHandler.IgnoreCycles
-	};
-
 	/// <summary>
 	/// Serializes the specified <see cref="NotificationProcessorTests"/> instance to a JSON string.
 	/// </summary>
@@ -31,8 +21,8 @@ public static class NotificationProcessorTestsJsonExtensions
 		ArgumentNullException.ThrowIfNull(value);
 
 		var options = indented
-			? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
-			: _jsonOptions;
+			? new JsonSerializerOptions(NotificationProcessorTestsExtensionsJsonExtensions.JsonOptions) { WriteIndented = true }
+			: NotificationProcessorTestsExtensionsJsonExtensions.JsonOptions;
 
 		return JsonSerializer.Serialize(value, options);
 	}
@@ -50,7 +40,7 @@ public static class NotificationProcessorTestsJsonExtensions
 
 		return string.IsNullOrWhiteSpace(json)
 			? null
-			: JsonSerializer.Deserialize<NotificationProcessorTests>(json, _jsonOptions);
+			: JsonSerializer.Deserialize<NotificationProcessorTests>(json, NotificationProcessorTestsExtensionsJsonExtensions.JsonOptions);
 	}
 
 	/// <summary>
@@ -73,7 +63,7 @@ public static class NotificationProcessorTestsJsonExtensions
 				return true;
 			}
 
-			value = JsonSerializer.Deserialize<NotificationProcessorTests>(json, _jsonOptions);
+			value = JsonSerializer.Deserialize<NotificationProcessorTests>(json, NotificationProcessorTestsExtensionsJsonExtensions.JsonOptions);
 			return true;
 		}
 		catch (JsonException)
