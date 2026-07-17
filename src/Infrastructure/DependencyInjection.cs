@@ -31,7 +31,6 @@ public static class DependencyInjection
         services.AddScoped<IValidationService, ValidationService>();
         services.AddScoped<IPayloadBuilder, PayloadBuilder>();
         services.AddScoped<INotificationService, NotificationService>();
-        services.AddScoped<IWebhookDispatcher, WebhookDispatcher>();
         services.AddScoped<IDryRunRenderer, DryRunRenderer>();
 
         // Configuration
@@ -65,8 +64,12 @@ public static class DependencyInjection
             return new ChannelConfigRepository(logger, initialChannels);
         });
 
-        // HTTP client for webhooks
-        services.AddHttpClient<WebhookDispatcher>()
+        // HTTP client for webhooks.
+        // Registered as a typed client so the configured HttpClient (User-Agent,
+        // X-Client-Name headers) is the one actually injected. A separate
+        // AddScoped<IWebhookDispatcher, WebhookDispatcher> registration would
+        // resolve the default unnamed HttpClient and silently drop these headers.
+        services.AddHttpClient<IWebhookDispatcher, WebhookDispatcher>()
             .ConfigureHttpClient(client =>
             {
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("DotNetDeployNotify/1.0");
