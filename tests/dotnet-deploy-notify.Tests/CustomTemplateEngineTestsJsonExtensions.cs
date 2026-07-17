@@ -3,9 +3,12 @@ using System.Text.Json.Serialization;
 
 namespace DotNetDeployNotify.Tests;
 
+/// <summary>
+/// Provides JSON serialization and deserialization extensions for <see cref="CustomTemplateEngineTests"/>.
+/// </summary>
 public static class CustomTemplateEngineTestsJsonExtensions
 {
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions _jsonSerializerOptions = new()
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false
@@ -21,11 +24,13 @@ public static class CustomTemplateEngineTestsJsonExtensions
     public static string ToJson(this CustomTemplateEngineTests value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
-        if (indented)
+        ArgumentOutOfRangeException.ThrowIfNegative(indented.GetHashCode());
+
+        var options = new JsonSerializerOptions(_jsonSerializerOptions)
         {
-            _jsonSerializerOptions.WriteIndented = true;
-        }
-        return JsonSerializer.Serialize(value, _jsonSerializerOptions);
+            WriteIndented = indented
+        };
+        return JsonSerializer.Serialize(value, options);
     }
 
     /// <summary>
@@ -37,6 +42,7 @@ public static class CustomTemplateEngineTestsJsonExtensions
     public static CustomTemplateEngineTests? FromJson(string json)
     {
         ArgumentNullException.ThrowIfNull(json);
+
         try
         {
             return JsonSerializer.Deserialize<CustomTemplateEngineTests>(json, _jsonSerializerOptions);
@@ -57,6 +63,7 @@ public static class CustomTemplateEngineTestsJsonExtensions
     public static bool TryFromJson(string json, out CustomTemplateEngineTests? value)
     {
         ArgumentNullException.ThrowIfNull(json);
+
         try
         {
             value = JsonSerializer.Deserialize<CustomTemplateEngineTests>(json, _jsonSerializerOptions);
