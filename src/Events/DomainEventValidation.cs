@@ -18,7 +18,7 @@ public static class DomainEventValidation
     /// </summary>
     /// <param name="value">The domain event to validate</param>
     /// <returns>An empty list if valid, otherwise a list of human-readable error messages</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this DomainEvent? value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -28,7 +28,7 @@ public static class DomainEventValidation
         // Validate EventId
         if (string.IsNullOrWhiteSpace(value.EventId))
         {
-            errors.Add($"EventId cannot be null, empty, or whitespace.");
+            errors.Add("EventId cannot be null, empty, or whitespace.");
         }
         else if (!Guid.TryParse(value.EventId, out _))
         {
@@ -36,15 +36,16 @@ public static class DomainEventValidation
         }
 
         // Validate OccurredAt
+        var now = DateTime.UtcNow;
         if (value.OccurredAt == default)
         {
             errors.Add("OccurredAt cannot be the default DateTime value.");
         }
-        else if (value.OccurredAt > DateTime.UtcNow.AddMinutes(5))
+        else if (value.OccurredAt > now.AddMinutes(5))
         {
             errors.Add("OccurredAt cannot be in the future (more than 5 minutes ahead).");
         }
-        else if (value.OccurredAt < DateTime.UtcNow.AddYears(-1))
+        else if (value.OccurredAt < now.AddYears(-1))
         {
             errors.Add("OccurredAt cannot be more than one year in the past.");
         }
@@ -63,7 +64,7 @@ public static class DomainEventValidation
     /// </summary>
     /// <param name="value">The notification created event to validate</param>
     /// <returns>An empty list if valid, otherwise a list of human-readable error messages</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this NotificationCreatedEvent? value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -121,7 +122,7 @@ public static class DomainEventValidation
     /// </summary>
     /// <param name="value">The notification processed event to validate</param>
     /// <returns>An empty list if valid, otherwise a list of human-readable error messages</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this NotificationProcessedEvent? value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -141,9 +142,19 @@ public static class DomainEventValidation
             errors.Add($"NotificationId '{value.NotificationId}' is not a valid GUID.");
         }
 
+        // Success is always valid (boolean property)
+        if (value.Error is not null && string.IsNullOrWhiteSpace(value.Error))
+        {
+            errors.Add("Error must be either null or a non-empty string.");
+        }
+
         if (value.Channels is null)
         {
             errors.Add("Channels cannot be null.");
+        }
+        else if (value.Channels.Count == 0)
+        {
+            errors.Add("Channels cannot be empty.");
         }
         else
         {
@@ -165,7 +176,7 @@ public static class DomainEventValidation
     /// </summary>
     /// <param name="value">The channel delivery failed event to validate</param>
     /// <returns>An empty list if valid, otherwise a list of human-readable error messages</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static IReadOnlyList<string> Validate(this ChannelDeliveryFailedEvent? value)
     {
         ArgumentNullException.ThrowIfNull(value);
@@ -208,7 +219,7 @@ public static class DomainEventValidation
     /// </summary>
     /// <param name="value">The domain event to check</param>
     /// <returns>True if valid; otherwise, false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static bool IsValid(this DomainEvent? value) => value?.Validate().Count == 0;
 
     /// <summary>
@@ -216,7 +227,7 @@ public static class DomainEventValidation
     /// </summary>
     /// <param name="value">The notification created event to check</param>
     /// <returns>True if valid; otherwise, false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static bool IsValid(this NotificationCreatedEvent? value) => value?.Validate().Count == 0;
 
     /// <summary>
@@ -224,7 +235,7 @@ public static class DomainEventValidation
     /// </summary>
     /// <param name="value">The notification processed event to check</param>
     /// <returns>True if valid; otherwise, false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static bool IsValid(this NotificationProcessedEvent? value) => value?.Validate().Count == 0;
 
     /// <summary>
@@ -232,14 +243,14 @@ public static class DomainEventValidation
     /// </summary>
     /// <param name="value">The channel delivery failed event to check</param>
     /// <returns>True if valid; otherwise, false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     public static bool IsValid(this ChannelDeliveryFailedEvent? value) => value?.Validate().Count == 0;
 
     /// <summary>
     /// Validates the domain event and throws an ArgumentException if invalid.
     /// </summary>
     /// <param name="value">The domain event to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     /// <exception cref="ArgumentException">Thrown when the event is invalid with a detailed error message</exception>
     public static void EnsureValid(this DomainEvent? value)
     {
@@ -257,7 +268,7 @@ public static class DomainEventValidation
     /// Validates the NotificationCreatedEvent and throws an ArgumentException if invalid.
     /// </summary>
     /// <param name="value">The notification created event to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     /// <exception cref="ArgumentException">Thrown when the event is invalid with a detailed error message</exception>
     public static void EnsureValid(this NotificationCreatedEvent? value)
     {
@@ -274,8 +285,8 @@ public static class DomainEventValidation
     /// <summary>
     /// Validates the NotificationProcessedEvent and throws an ArgumentException if invalid.
     /// </summary>
-    /// <param name="value">The notification processed event to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <param name="value">The notification processed event to check</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     /// <exception cref="ArgumentException">Thrown when the event is invalid with a detailed error message</exception>
     public static void EnsureValid(this NotificationProcessedEvent? value)
     {
@@ -292,8 +303,8 @@ public static class DomainEventValidation
     /// <summary>
     /// Validates the ChannelDeliveryFailedEvent and throws an ArgumentException if invalid.
     /// </summary>
-    /// <param name="value">The channel delivery failed event to validate</param>
-    /// <exception cref="ArgumentNullException">Thrown when value is null</exception>
+    /// <param name="value">The channel delivery failed event to check</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
     /// <exception cref="ArgumentException">Thrown when the event is invalid with a detailed error message</exception>
     public static void EnsureValid(this ChannelDeliveryFailedEvent? value)
     {
