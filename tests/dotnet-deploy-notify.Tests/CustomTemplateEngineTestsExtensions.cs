@@ -9,20 +9,21 @@ using DotNetDeployNotify.Tests;
 namespace DotNetDeployNotify.Tests;
 
 /// <summary>
-/// Extension methods for <see cref="CustomTemplateEngineTests"/> that provide additional test utilities
-/// for working with CustomTemplate-related types in test scenarios.
+/// Provides extension methods for <see cref="CustomTemplateEngineTests"/> to simplify creation of test data
+/// for <see cref="CustomTemplate"/> and <see cref="DeploymentNotification"/> instances in test scenarios.
 /// </summary>
 public static class CustomTemplateEngineTestsExtensions
 {
     /// <summary>
-    /// Creates a new <see cref="CustomTemplate"/> instance.
+    /// Creates a new <see cref="CustomTemplate"/> instance with the specified name and content.
     /// </summary>
-    /// <param name="tests">The test instance.</param>
-    /// <param name="name">The template name.</param>
-    /// <param name="content">The template content.</param>
-    /// <exception cref="ArgumentNullException">Thrown when tests or content is null.</exception>
-    /// <exception cref="ArgumentException">Thrown when name is null or whitespace.</exception>
-    /// <returns>A new CustomTemplate instance.</returns>
+    /// <param name="tests">The test instance. Must not be <see langword="null"/>.</param>
+    /// <param name="name">The template name. Must not be <see langword="null"/> or whitespace.</param>
+    /// <param name="content">The template content. Must not be <see langword="null"/>.</param>
+    /// <returns>A new <see cref="CustomTemplate"/> instance with the specified properties.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentNullException"><paramref name="content"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException"><paramref name="name"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
     public static CustomTemplate CreateTemplate(this CustomTemplateEngineTests tests, string name, string content)
     {
         ArgumentNullException.ThrowIfNull(tests);
@@ -33,11 +34,11 @@ public static class CustomTemplateEngineTestsExtensions
     }
 
     /// <summary>
-    /// Creates a default <see cref="DeploymentNotification"/> for testing purposes.
+    /// Creates a default <see cref="DeploymentNotification"/> for testing purposes with common test values.
     /// </summary>
-    /// <param name="tests">The test instance.</param>
-    /// <exception cref="ArgumentNullException">Thrown when tests is null.</exception>
-    /// <returns>A new DeploymentNotification instance.</returns>
+    /// <param name="tests">The test instance. Must not be <see langword="null"/>.</param>
+    /// <returns>A new <see cref="DeploymentNotification"/> instance populated with representative test data.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="tests"/> is <see langword="null"/>.</exception>
     public static DeploymentNotification CreateDefaultNotification(this CustomTemplateEngineTests tests)
     {
         ArgumentNullException.ThrowIfNull(tests);
