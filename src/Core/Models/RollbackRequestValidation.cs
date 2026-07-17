@@ -2,10 +2,9 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System;
-using System.Globalization;
 
 namespace DotNetDeployNotify.Core.Models;
 
@@ -67,7 +66,7 @@ public static class RollbackRequestValidation
         }
 
         // Validate TargetEnvironment
-        if (!Enum.IsDefined(typeof(Environment), value.TargetEnvironment))
+        if (!Enum.IsDefined(value.TargetEnvironment))
         {
             errors.Add("TargetEnvironment must be a valid Environment value.");
         }
@@ -105,7 +104,7 @@ public static class RollbackRequestValidation
         {
             foreach (var channel in value.Channels)
             {
-                if (!Enum.IsDefined(typeof(NotificationChannel), channel))
+                if (!Enum.IsDefined(channel))
                 {
                     errors.Add($"Invalid notification channel value: {channel}.");
                 }
@@ -113,7 +112,7 @@ public static class RollbackRequestValidation
         }
 
         // Validate Priority
-        if (!Enum.IsDefined(typeof(NotificationPriority), value.Priority))
+        if (!Enum.IsDefined(value.Priority))
         {
             errors.Add("Priority must be a valid NotificationPriority value.");
         }
@@ -160,10 +159,7 @@ public static class RollbackRequestValidation
     /// <param name="value">The rollback request to check</param>
     /// <returns>True if the request is valid; otherwise, false</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
-    public static bool IsValid(this RollbackRequest? value)
-    {
-        return Validate(value).Count == 0;
-    }
+    public static bool IsValid(this RollbackRequest? value) => Validate(value).Count == 0;
 
     /// <summary>
     /// Validates the specified rollback request and throws an <see cref="ArgumentException"/> if invalid.
@@ -179,7 +175,9 @@ public static class RollbackRequestValidation
         if (errors.Count > 0)
         {
             throw new ArgumentException(
-                $"RollbackRequest validation failed:{System.Environment.NewLine}- {string.Join($"{System.Environment.NewLine}- ", errors)}");
+                $"RollbackRequest validation failed:{System.Environment.NewLine}- {
+                    string.Join($"{System.Environment.NewLine}- ", errors)
+                }");
         }
     }
 
