@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace DotNetDeployNotify.Tests;
 
 /// <summary>
-/// Provides JSON serialization and deserialization extensions for <see cref="NotificationServiceTests"/>.
+/// Provides JSON serialization and deserialization extensions for <see cref="NotificationServiceTests"/> test class.
 /// </summary>
 public static class NotificationServiceTestsJsonExtensions
 {
@@ -39,9 +39,12 @@ public static class NotificationServiceTestsJsonExtensions
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>The deserialized instance, or null if the JSON is empty or whitespace.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
     public static NotificationServiceTests? FromJson(string json)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         if (string.IsNullOrWhiteSpace(json))
         {
             return null;
@@ -54,10 +57,13 @@ public static class NotificationServiceTestsJsonExtensions
     /// Attempts to deserialize a JSON string to a <see cref="NotificationServiceTests"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized instance if successful.</param>
+    /// <param name="value">Receives the deserialized instance if successful; otherwise, null.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static bool TryFromJson(string json, out NotificationServiceTests? value)
     {
+        ArgumentNullException.ThrowIfNull(json);
+
         value = null;
 
         if (string.IsNullOrWhiteSpace(json))
