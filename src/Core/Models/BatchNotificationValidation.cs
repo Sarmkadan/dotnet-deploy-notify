@@ -42,45 +42,38 @@ public static class BatchNotificationValidation
         }
 
         // Validate Description
-        if (value.Description.Length > 2048)
+        if (value.Description?.Length > 2048)
         {
-            errors.Add($"{nameof(BatchNotification)}.{nameof(value.Description)} cannot exceed 2048 characters, but was {value.Description.Length}.");
+            errors.Add($"{nameof(BatchNotification)}.{nameof(value.Description)} cannot exceed 2048 characters, but was {value.Description?.Length}.");
         }
 
         // Validate Notifications collection
-        if (value.Notifications is null)
+        ArgumentNullException.ThrowIfNull(value.Notifications);
+
+        if (value.Notifications.Count == 0)
         {
-            errors.Add($"{nameof(BatchNotification)}.{nameof(value.Notifications)} collection cannot be null.");
+            errors.Add($"{nameof(BatchNotification)}.{nameof(value.Notifications)} collection cannot be empty.");
         }
         else
         {
-            if (value.Notifications.Count == 0)
+            for (var i = 0; i < value.Notifications.Count; i++)
             {
-                errors.Add($"{nameof(BatchNotification)}.{nameof(value.Notifications)} collection cannot be empty.");
-            }
-            else
-            {
-                for (var i = 0; i < value.Notifications.Count; i++)
+                var notification = value.Notifications[i];
+                if (notification is null)
                 {
-                    var notification = value.Notifications[i];
-                    if (notification is null)
-                    {
-                        errors.Add($"{nameof(BatchNotification)}.{nameof(value.Notifications)}[{i}]: Notification cannot be null.");
-                    }
-                    else if (!notification.IsValid())
-                    {
-                        errors.Add($"{nameof(BatchNotification)}.{nameof(value.Notifications)}[{i}]: Invalid notification.");
-                    }
+                    errors.Add($"{nameof(BatchNotification)}.{nameof(value.Notifications)}[{i}]: Notification cannot be null.");
+                }
+                else if (!notification.IsValid())
+                {
+                    errors.Add($"{nameof(BatchNotification)}.{nameof(value.Notifications)}[{i}]: Invalid notification.");
                 }
             }
         }
 
         // Validate Channels collection
-        if (value.Channels is null)
-        {
-            errors.Add($"{nameof(BatchNotification)}.{nameof(value.Channels)} collection cannot be null.");
-        }
-        else if (value.Channels.Count == 0)
+        ArgumentNullException.ThrowIfNull(value.Channels);
+
+        if (value.Channels.Count == 0)
         {
             errors.Add($"{nameof(BatchNotification)}.{nameof(value.Channels)} collection cannot be empty.");
         }
@@ -164,24 +157,19 @@ public static class BatchNotificationValidation
         }
 
         // Validate Metadata collection
-        if (value.Metadata is null)
-        {
-            errors.Add($"{nameof(BatchNotification)}.{nameof(value.Metadata)} collection cannot be null.");
-        }
-        else
-        {
-            foreach (var kvp in value.Metadata)
-            {
-                if (string.IsNullOrWhiteSpace(kvp.Key))
-                {
-                    errors.Add($"{nameof(BatchNotification)}.{nameof(value.Metadata)}: Keys cannot be null or whitespace.");
-                    break;
-                }
+        ArgumentNullException.ThrowIfNull(value.Metadata);
 
-                if (kvp.Value is null)
-                {
-                    errors.Add($"{nameof(BatchNotification)}.{nameof(value.Metadata)}['{kvp.Key}'] cannot be null.");
-                }
+        foreach (var kvp in value.Metadata)
+        {
+            if (string.IsNullOrWhiteSpace(kvp.Key))
+            {
+                errors.Add($"{nameof(BatchNotification)}.{nameof(value.Metadata)}: Keys cannot be null or whitespace.");
+                break;
+            }
+
+            if (kvp.Value is null)
+            {
+                errors.Add($"{nameof(BatchNotification)}.{nameof(value.Metadata)}['{kvp.Key}'] cannot be null.");
             }
         }
 
