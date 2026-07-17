@@ -902,9 +902,60 @@ catch (ArgumentException ex)
 {
     Console.WriteLine(ex.Message);
 }
-## NotificationServiceTestsExtensions
+## TemplateServiceTestsExtensions
 
-The `NotificationServiceTestsExtensions` class provides extension methods for `NotificationServiceTests` to simplify unit test creation. It includes factory methods for creating test objects (`DeploymentNotification`, `ChannelConfiguration`, `NotificationResult`) and verification helpers for asserting repository interactions. These extensions make tests more readable and maintainable by encapsulating common test setup patterns.
+The `TemplateServiceTestsExtensions` class provides extension methods for `TemplateServiceTests` to simplify unit test creation for template rendering functionality. It includes factory methods for creating test deployment notifications with various configurations and helper methods for accessing internal test dependencies like the `TemplateService` and mock logger. These extensions make tests more readable and maintainable by encapsulating common test setup patterns for template rendering scenarios.
+
+Example usage:
+
+```csharp
+// Create a basic test notification
+var notification = this.CreateTestNotification(
+    projectName: "MyWebApp",
+    version: "2.1.0",
+    status: BuildStatus.Success
+);
+
+// Create a notification with null duration for testing N/A handling
+var nullDurationNotification = this.CreateNotificationWithNullDuration(
+    projectName: "MyWebApp"
+);
+
+// Create a notification with custom priority
+var highPriorityNotification = this.CreateNotificationWithPriority(
+    NotificationPriority.High
+);
+
+// Create a notification with custom environment
+var stagingNotification = this.CreateNotificationWithEnvironment(
+    Environment.Staging
+);
+
+// Create a notification with custom message
+var customMessageNotification = this.CreateNotificationWithMessage(
+    "Custom deployment message for important release"
+);
+
+// Create a notification with custom repository URL
+var customRepoNotification = this.CreateNotificationWithRepositoryUrl(
+    "https://github.com/myorg/mywebapp"
+);
+
+// Access internal dependencies for advanced testing scenarios
+var templateService = this.TemplateService();
+var mockLogger = this.MockLogger();
+
+// Test template rendering with a notification
+var template = "Deployment {ProjectName} version {Version} to {TargetEnvironment}";
+var rendered = templateService.RenderTemplate(template, notification);
+
+// Assert template renders correctly
+this.ShouldRenderTemplateCorrectly(
+    template,
+    notification,
+    "Deployment MyWebApp version 2.1.0 to Development"
+);
+```
 
 Example usage:
 
