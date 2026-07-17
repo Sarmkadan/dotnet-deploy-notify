@@ -11,59 +11,72 @@ using DotNetDeployNotify.Core.Models;
 namespace DotNetDeployNotify.Canary;
 
 /// <summary>
-/// Provides System.Text.Json serialization helpers for <see cref="TrafficSplitter"/> type.
+/// Provides System.Text.Json serialization helpers for <see cref="TrafficSplit"/> type.
 /// </summary>
 public static class TrafficSplitterExtensionsJsonExtensions
 {
     /// <summary>
-    /// Shared JSON serialization options with camelCase naming policy.
+    /// Shared JSON serialization options with camelCase naming policy and default settings.
     /// </summary>
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false
     };
 
     /// <summary>
-    /// Serializes a <see cref="TrafficSplitter"/> instance to JSON.
+    /// Serializes a <see cref="TrafficSplit"/> instance to a compact JSON string.
     /// </summary>
-    /// <param name="value">The traffic splitter to serialize.</param>
-    /// <param name="indented">Whether to format the JSON with indentation.</param>
-    /// <returns>JSON string representation of the traffic splitter.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
-    public static string ToJson(this TrafficSplitter value, bool indented = false)
+    /// <param name="value">The traffic split to serialize. Must not be null.</param>
+    /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
+    /// <returns>JSON string representation of the traffic split.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="value"/> is null.</exception>
+    public static string ToJson(this TrafficSplit value, bool indented = false)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var options = indented ? new JsonSerializerOptions(JsonOptions) { WriteIndented = true } : JsonOptions;
+        var options = indented
+            ? new JsonSerializerOptions(JsonOptions) { WriteIndented = true }
+            : JsonOptions;
         return JsonSerializer.Serialize(value, options);
     }
 
     /// <summary>
-    /// Deserializes a JSON string to a <see cref="TrafficSplitter"/> instance.
+    /// Deserializes a JSON string to a <see cref="TrafficSplit"/> instance.
     /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>A <see cref="TrafficSplitter"/> instance, or null if deserialization failed.</returns>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is null or empty.</exception>
-    public static TrafficSplitter? FromJson(string json)
+    /// <param name="json">The JSON string to deserialize. Must not be null or empty.</param>
+    /// <returns>A <see cref="TrafficSplit"/> instance if deserialization succeeds; otherwise null.</returns>
+    /// <exception cref="ArgumentException"><paramref name="json"/> is null or empty.</exception>
+    /// <remarks>
+    /// Returns null if the JSON is malformed or cannot be deserialized to a <see cref="TrafficSplit"/>.
+    /// </remarks>
+    public static TrafficSplit? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
-        return JsonSerializer.Deserialize<TrafficSplitter>(json, JsonOptions);
+        return JsonSerializer.Deserialize<TrafficSplit>(json, JsonOptions);
     }
 
     /// <summary>
-    /// Attempts to deserialize a JSON string to a <see cref="TrafficSplitter"/> instance.
+    /// Attempts to deserialize a JSON string to a <see cref="TrafficSplit"/> instance.
     /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">The deserialized instance if successful; null otherwise.</param>
+    /// <param name="json">The JSON string to deserialize. Must not be null or empty.</param>
+    /// <param name="value">
+    /// When this method returns, contains the deserialized <see cref="TrafficSplit"/> instance if successful,
+    /// or null if deserialization failed.
+    /// </param>
     /// <returns>True if deserialization succeeded; false otherwise.</returns>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is null or empty.</exception>
-    public static bool TryFromJson(string json, out TrafficSplitter? value)
+    /// <exception cref="ArgumentException"><paramref name="json"/> is null or empty.</exception>
+    /// <remarks>
+    /// This method suppresses <see cref="JsonException"/> and returns false rather than throwing,
+    /// making it suitable for defensive programming scenarios.
+    /// </remarks>
+    public static bool TryFromJson(string json, out TrafficSplit? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
+
         try
         {
-            value = JsonSerializer.Deserialize<TrafficSplitter>(json, JsonOptions);
+            value = JsonSerializer.Deserialize<TrafficSplit>(json, JsonOptions);
             return value is not null;
         }
         catch (JsonException)
