@@ -1,4 +1,5 @@
 #nullable enable
+
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,7 +13,7 @@ public static class CanaryDeploymentJsonExtensions
     /// <summary>
     /// Shared JSON serialization options with camelCase naming policy.
     /// </summary>
-    private static readonly JsonSerializerOptions JsonOptions = new()
+    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
     {
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
         WriteIndented = false
@@ -29,7 +30,9 @@ public static class CanaryDeploymentJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var options = indented ? new JsonSerializerOptions(JsonOptions) { WriteIndented = true } : JsonOptions;
+        var options = indented
+            ? new JsonSerializerOptions(JsonOptions) { WriteIndented = true }
+            : JsonOptions;
         return JsonSerializer.Serialize(value, options);
     }
 
@@ -39,6 +42,7 @@ public static class CanaryDeploymentJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <returns>A <see cref="CanaryDeployment"/> instance, or null if deserialization failed.</returns>
     /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is null or empty.</exception>
+    /// <exception cref="JsonException">Thrown if the JSON is invalid or cannot be deserialized.</exception>
     public static CanaryDeployment? FromJson(string json)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
