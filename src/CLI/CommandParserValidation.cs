@@ -1,4 +1,5 @@
 #nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -44,25 +45,45 @@ public static class CommandParserValidation
         foreach (var kvp in commands)
         {
             var key = kvp.Key;
-            var definition = kvp.Value;
+            var definition = kvp.Value ?? throw new InvalidOperationException("Command definition cannot be null");
 
             // Command key must match definition name (case‑insensitive)
             if (!string.Equals(key, definition.Name, StringComparison.OrdinalIgnoreCase))
+            {
                 problems.Add($"Command dictionary key '{key}' does not match definition name '{definition.Name}'.");
+            }
 
             // Name
             if (string.IsNullOrWhiteSpace(definition.Name))
+            {
                 problems.Add($"Command '{key}' has an empty or whitespace Name.");
+            }
 
             // Description
             if (string.IsNullOrWhiteSpace(definition.Description))
+            {
                 problems.Add($"Command '{definition.Name}' has an empty or whitespace Description.");
+            }
 
             // Parameters
-            ValidateParameters(definition, problems);
+            if (definition.Parameters is null)
+            {
+                problems.Add($"Command '{definition.Name}' has null Parameters collection.");
+            }
+            else
+            {
+                ValidateParameters(definition, problems);
+            }
 
             // Options
-            ValidateOptions(definition, problems);
+            if (definition.Options is null)
+            {
+                problems.Add($"Command '{definition.Name}' has null Options collection.");
+            }
+            else
+            {
+                ValidateOptions(definition, problems);
+            }
         }
 
         return new ReadOnlyCollection<string>(problems);
@@ -87,7 +108,9 @@ public static class CommandParserValidation
         ArgumentNullException.ThrowIfNull(value);
         var problems = value.Validate();
         if (problems.Any())
+        {
             throw new ArgumentException(string.Join("; ", problems), nameof(value));
+        }
     }
 
     // ------------------------------------------------------------------------
@@ -96,40 +119,74 @@ public static class CommandParserValidation
 
     private static void ValidateParameters(CommandDefinition definition, List<string> problems)
     {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(problems);
+
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var param in definition.Parameters)
         {
+            if (param is null)
+            {
+                problems.Add($"Command '{definition.Name}' contains a null parameter.");
+                continue;
+            }
+
             if (string.IsNullOrWhiteSpace(param.Name))
+            {
                 problems.Add($"Command '{definition.Name}' has a parameter with an empty or whitespace Name.");
+            }
 
             if (string.IsNullOrWhiteSpace(param.Description))
+            {
                 problems.Add($"Parameter '{param.Name}' of command '{definition.Name}' has an empty or whitespace Description.");
+            }
 
             if (!seen.Add(param.Name))
+            {
                 problems.Add($"Command '{definition.Name}' contains duplicate parameter name '{param.Name}'.");
+            }
         }
     }
 
     private static void ValidateOptions(CommandDefinition definition, List<string> problems)
     {
+        ArgumentNullException.ThrowIfNull(definition);
+        ArgumentNullException.ThrowIfNull(problems);
+
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         foreach (var opt in definition.Options)
         {
+            if (opt is null)
+            {
+                problems.Add($"Command '{definition.Name}' contains a null option.");
+                continue;
+            }
+
             if (string.IsNullOrWhiteSpace(opt.Name))
+            {
                 problems.Add($"Command '{definition.Name}' has an option with an empty or whitespace Name.");
+            }
 
             if (string.IsNullOrWhiteSpace(opt.Description))
+            {
                 problems.Add($"Option '{opt.Name}' of command '{definition.Name}' has an empty or whitespace Description.");
+            }
 
             if (!seen.Add(opt.Name))
+            {
                 problems.Add($"Command '{definition.Name}' contains duplicate option name '{opt.Name}'.");
+            }
 
             if (opt.ShortName is not null && opt.ShortName.Length != 1)
+            {
                 problems.Add($"Option '{opt.Name}' of command '{definition.Name}' has an invalid ShortName '{opt.ShortName}'. It must be a single character.");
+            }
 
             // Flags cannot be marked as required – they are either present or not.
             if (opt.IsFlag && opt.IsRequired)
+            {
                 problems.Add($"Option '{opt.Name}' of command '{definition.Name}' is a flag but also marked as required.");
+            }
         }
     }
 }
