@@ -12,12 +12,12 @@ namespace DotNetDeployNotify.Tests
         /// Retrieves a list of test method names related to the <see cref="DotNetDeployNotify.Services.NotificationService"/>.
         /// </summary>
         /// <param name="tests">The instance of <see cref="IntegrationTests"/>.</param>
-        /// <returns>A list of notification service integration test method names.</returns>
+        /// <returns>A read-only list of notification service integration test method names.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="tests"/> is null.</exception>
         public static IReadOnlyList<string> GetNotificationServiceIntegrationTestMethods(this IntegrationTests tests)
         {
             ArgumentNullException.ThrowIfNull(tests);
-            return new[]
+            return new List<string>
             {
                 nameof(IntegrationTests.NotificationService_CreateAndSendNotification_EndToEndWorkflow),
                 nameof(IntegrationTests.NotificationService_SendToMultipleChannels_DeliverToAllConfiguredChannels),
@@ -30,12 +30,12 @@ namespace DotNetDeployNotify.Tests
         /// Retrieves a list of test method names related to overall deployment workflows and notification processing.
         /// </summary>
         /// <param name="tests">The instance of <see cref="IntegrationTests"/>.</param>
-        /// <returns>A list of deployment workflow integration test method names.</returns>
+        /// <returns>A read-only list of deployment workflow integration test method names.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="tests"/> is null.</exception>
         public static IReadOnlyList<string> GetDeploymentIntegrationTestMethods(this IntegrationTests tests)
         {
             ArgumentNullException.ThrowIfNull(tests);
-            return new[]
+            return new List<string>
             {
                 nameof(IntegrationTests.MainUseCase_SendDeploymentNotificationToMultipleChannels_CompleteFlow),
                 nameof(IntegrationTests.MultipleNotifications_ProcessConcurrently_AllDeliveredSuccessfully),
@@ -47,12 +47,12 @@ namespace DotNetDeployNotify.Tests
         /// Retrieves a list of test method names related to <see cref="DotNetDeployNotify.Infrastructure.WebhookDispatcher"/> integration.
         /// </summary>
         /// <param name="tests">The instance of <see cref="IntegrationTests"/>.</param>
-        /// <returns>A list of webhook integration test method names.</returns>
+        /// <returns>A read-only list of webhook integration test method names.</returns>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="tests"/> is null.</exception>
         public static IReadOnlyList<string> GetWebhookIntegrationTestMethods(this IntegrationTests tests)
         {
             ArgumentNullException.ThrowIfNull(tests);
-            return new[]
+            return new List<string>
             {
                 nameof(IntegrationTests.WebhookDispatcher_WithValidPayload_SendsSuccessfully)
             };
