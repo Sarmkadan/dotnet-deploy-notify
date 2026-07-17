@@ -5,6 +5,7 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -26,12 +27,14 @@ public static class CacheEntryExtensionsJsonExtensions
     /// Serializes <see cref="CacheEntryExtensions"/> metadata to JSON string.
     /// </summary>
     /// <param name="indented">Whether to format the JSON with indentation.</param>
-    /// <returns>JSON string representation of CacheEntryExtensions metadata.</returns>
+    /// <returns>JSON string representation of <see cref="CacheEntryExtensionsMetadata"/>.</returns>
     public static string ToJson(bool indented = false)
     {
-        var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true }
-            : _jsonSerializerOptions;
+        var options = indented switch
+        {
+            true => new JsonSerializerOptions(_jsonSerializerOptions) { WriteIndented = true },
+            false => _jsonSerializerOptions
+        };
 
         var metadata = new CacheEntryExtensionsMetadata
         {
@@ -39,10 +42,10 @@ public static class CacheEntryExtensionsJsonExtensions
             Namespace = typeof(CacheEntryExtensions).Namespace ?? "DotNetDeployNotify.Caching",
             Assembly = typeof(CacheEntryExtensions).Assembly.GetName().Name ?? "DotNetDeployNotify",
             Methods = [
-                "GetTimeToLive",
-                "IsValid",
-                "GetAge",
-                "GetExpirationPercentage"
+                nameof(CacheEntryExtensions.GetTimeToLive),
+                nameof(CacheEntryExtensions.IsValid),
+                nameof(CacheEntryExtensions.GetAge),
+                nameof(CacheEntryExtensions.GetExpirationPercentage)
             ]
         };
 
@@ -53,7 +56,7 @@ public static class CacheEntryExtensionsJsonExtensions
     /// Deserializes JSON string to <see cref="CacheEntryExtensions"/> metadata.
     /// </summary>
     /// <param name="json">JSON string to deserialize.</param>
-    /// <returns><see cref="CacheEntryExtensions"/> metadata or null if deserialization fails.</returns>
+    /// <returns><see cref="CacheEntryExtensionsMetadata"/> metadata or null if deserialization fails.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
     public static CacheEntryExtensionsMetadata? FromJson(string json)
     {
