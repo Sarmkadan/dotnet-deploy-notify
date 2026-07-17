@@ -21,17 +21,18 @@ public static class CanaryDeploymentEngineValidation
     /// Validates the specified <see cref="CanaryDeploymentEngine"/> instance and returns a list of human-readable problems.
     /// </summary>
     /// <param name="value">The canary deployment engine instance to validate</param>
+    /// <param name="cancellationToken">Cancellation token for async operations</param>
     /// <returns>An immutable list of validation error messages; empty if valid</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/></exception>
-    public static IReadOnlyList<string> Validate(this CanaryDeploymentEngine value)
+    public static async Task<IReadOnlyList<string>> ValidateAsync(this CanaryDeploymentEngine value, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(value);
 
         var errors = new List<string>();
 
         // Get active deployments to validate
-        var activeDeployments = value.GetActiveDeploymentsAsync(CancellationToken.None).Result;
-        var deploymentHistory = value.GetDeploymentHistoryAsync(string.Empty, 100, CancellationToken.None).Result;
+        var activeDeployments = await value.GetActiveDeploymentsAsync(cancellationToken).ConfigureAwait(false);
+        var deploymentHistory = await value.GetDeploymentHistoryAsync(string.Empty, 100, cancellationToken).ConfigureAwait(false);
 
         // Validate active deployments
         foreach (var deployment in activeDeployments)
@@ -51,8 +52,13 @@ public static class CanaryDeploymentEngineValidation
     /// <summary>
     /// Validates a single canary deployment instance.
     /// </summary>
+    /// <param name="deployment">The deployment to validate</param>
+    /// <param name="errors">List to accumulate validation errors</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="errors"/> is <see langword="null"/></exception>
     private static void ValidateDeployment(CanaryDeployment deployment, List<string> errors)
     {
+        ArgumentNullException.ThrowIfNull(errors);
+
         if (string.IsNullOrWhiteSpace(deployment.ProjectName))
             errors.Add($"Deployment {deployment.Id}: ProjectName is required.");
 
@@ -131,11 +137,12 @@ public static class CanaryDeploymentEngineValidation
     /// Determines whether the specified <see cref="CanaryDeploymentEngine"/> instance is valid.
     /// </summary>
     /// <param name="value">The canary deployment engine instance to check</param>
+    /// <param name="cancellationToken">Cancellation token for async operations</param>
     /// <returns><see langword="true"/> if the instance is valid; otherwise, <see langword="false"/></returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/></exception>
-    public static bool IsValid(this CanaryDeploymentEngine value)
+    public static async Task<bool> IsValidAsync(this CanaryDeploymentEngine value, CancellationToken cancellationToken = default)
     {
-        return value.Validate().Count == 0;
+        return (await value.ValidateAsync(cancellationToken).ConfigureAwait(false)).Count == 0;
     }
 
     /// <summary>
@@ -143,13 +150,14 @@ public static class CanaryDeploymentEngineValidation
     /// with a detailed error message if validation fails.
     /// </summary>
     /// <param name="value">The canary deployment engine instance to validate</param>
+    /// <param name="cancellationToken">Cancellation token for async operations</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/></exception>
     /// <exception cref="ArgumentException">Thrown when validation fails, containing a list of all problems</exception>
-    public static void EnsureValid(this CanaryDeploymentEngine value)
+    public static async Task EnsureValidAsync(this CanaryDeploymentEngine value, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var errors = value.Validate();
+        var errors = await value.ValidateAsync(cancellationToken).ConfigureAwait(false);
 
         if (errors.Count > 0)
         {
