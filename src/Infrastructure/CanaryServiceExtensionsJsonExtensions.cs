@@ -27,30 +27,19 @@ public static class CanaryServiceExtensionsJsonExtensions
     };
 
     /// <summary>
-    /// Serializes CanaryServiceExtensions type information to JSON string
+    /// Serializes CanaryServiceExtensions metadata to JSON string
     /// </summary>
+    /// <param name="metadata">The metadata to serialize</param>
     /// <param name="indented">Whether to format the JSON with indentation</param>
     /// <returns>JSON string representation of CanaryServiceExtensions metadata</returns>
-    public static string ToJson(bool indented = false)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="metadata"/> is null</exception>
+    public static string ToJson(CanaryServiceExtensionsMetadata metadata, bool indented = false)
     {
+        ArgumentNullException.ThrowIfNull(metadata);
+
         var options = new JsonSerializerOptions(_jsonOptions)
         {
             WriteIndented = indented
-        };
-
-        var metadata = new CanaryServiceExtensionsMetadata
-        {
-            Type = "CanaryServiceExtensions",
-            Namespace = typeof(CanaryServiceExtensions).Namespace ?? "DotNetDeployNotify.Infrastructure",
-            Assembly = typeof(CanaryServiceExtensions).Assembly.GetName().Name ?? "DotNetDeployNotify",
-            Methods = [
-                "AddCanaryDeployment",
-                "AddCanaryDeployment",
-                "AddCanaryDeployment",
-                "ReplaceCanaryDeployment",
-                "RegisterCoreServices",
-                "RemoveCanaryDescriptors"
-            ]
         };
 
         return JsonSerializer.Serialize(metadata, options);
