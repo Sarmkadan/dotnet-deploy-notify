@@ -1082,3 +1082,98 @@ public async Task Non_success_http_response_is_reported_as_failure()
     result.HttpStatusCode.Should().Be(500);
 }
 ```
+
+## CustomTemplateEngineTestsValidation
+
+The `CustomTemplateEngineTestsValidation` class provides validation extension methods for `CustomTemplateEngine`, `CustomTemplate`, and `DeploymentNotification` types used in unit testing scenarios. It offers comprehensive validation capabilities with detailed error reporting through `IReadOnlyList<string>` return types, along with convenience methods for quick boolean validation checks (`IsValid`) and exception-throwing validation (`EnsureValid`).
+
+This validation class is particularly useful for ensuring test data integrity before executing test scenarios, helping to catch configuration issues early in the test pipeline.
+
+Example usage:
+
+```csharp
+// Create a valid CustomTemplateEngine
+var engine = new CustomTemplateEngine
+{
+    Name = "TestEngine",
+    Description = "Test template engine",
+    IsActive = true,
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow
+};
+
+// Validate the engine - returns empty list if valid
+var engineProblems = engine.Validate();
+if (engineProblems.Any())
+{
+    foreach (var problem in engineProblems)
+    {
+        Console.WriteLine(problem);
+    }
+}
+
+// Quick validation check
+if (engine.IsValid())
+{
+    Console.WriteLine("CustomTemplateEngine is valid");
+}
+
+// Exception-throwing validation
+try
+{
+    engine.EnsureValid();
+    Console.WriteLine("Engine validation passed");
+}
+catch (ArgumentException ex)
+{
+    Console.WriteLine($"Validation failed: {ex.Message}");
+}
+
+// Validate a CustomTemplate
+var template = new CustomTemplate
+{
+    Name = "DeploymentTemplate",
+    Content = "Hello {ProjectName} version {Version}!",
+    Description = "Deployment notification template",
+    CreatedAt = DateTime.UtcNow,
+    UpdatedAt = DateTime.UtcNow,
+    IsActive = true
+};
+
+var templateProblems = template.Validate();
+if (templateProblems.Any())
+{
+    Console.WriteLine(string.Join(Environment.NewLine, templateProblems));
+}
+
+// Validate a DeploymentNotification
+var notification = new DeploymentNotification
+{
+    ProjectName = "MyWebApp",
+    Version = "2.1.0",
+    BranchName = "main",
+    CommitHash = "abc123",
+    CommitAuthor = "testuser@example.com",
+    Message = "Deployment completed successfully",
+    BuildUrl = "https://ci.example.com/build/123",
+    RepositoryUrl = "https://github.com/example/mywebapp",
+    DurationSeconds = 125,
+    TargetEnvironment = 1,
+    CreatedAt = DateTime.UtcNow
+};
+
+var notificationProblems = notification.Validate();
+if (notificationProblems.Any())
+{
+    foreach (var problem in notificationProblems)
+    {
+        Console.WriteLine(problem);
+    }
+}
+
+// Quick boolean check
+if (notification.IsValid())
+{
+    Console.WriteLine("DeploymentNotification is valid for sending");
+}
+```
