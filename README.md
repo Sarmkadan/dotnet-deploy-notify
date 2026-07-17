@@ -719,6 +719,12 @@ The `ServiceExtensionsMetadataJsonExtensions` class provides JSON serialization 
 
 This extension class is particularly useful for persisting service extension configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
 
+## DeploymentHistoryEntryExtensions
+
+The `DeploymentHistoryEntryExtensions` class provides extension methods for the `DeploymentHistoryEntry` type that enable common operations on deployment history records without modifying the original class. It includes methods for checking deployment status, working with tags, calculating durations, and filtering by time windows or environments.
+
+These extension methods are particularly useful for deployment monitoring, rollback analysis, and historical reporting, providing a clean API for querying deployment history data.
+
 Example usage:
 
 ```csharp
@@ -769,6 +775,86 @@ Console.WriteLine("Successfully deserialized metadata");
 else
 {
 Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
+## DeploymentHistoryEntryExtensions
+
+The `DeploymentHistoryEntryExtensions` class provides extension methods for the `DeploymentHistoryEntry` type that enable common operations on deployment history records without modifying the original class. It includes methods for checking deployment status, working with tags, calculating durations, and filtering by time windows or environments.
+
+These extension methods are particularly useful for deployment monitoring, rollback analysis, and historical reporting, providing a clean API for querying deployment history data.
+
+Example usage:
+
+```csharp
+// Create a deployment history entry with tags and duration
+var deploymentEntry = new DeploymentHistoryEntry
+{
+    ProjectName = "MyWebApp",
+    Version = "2.0.0",
+    TargetEnvironment = Environment.Production,
+    DeployedAt = DateTime.UtcNow.AddMinutes(-30),
+    FinalStatus = BuildStatus.Success,
+    DurationSeconds = 125,
+    Tags = new Dictionary<string, string>
+    {
+        {"build_number", "42"},
+        {"triggered_by", "ci-pipeline"},
+        {"canary", "true"}
+    },
+    IsRollback = false
+};
+
+// Check if deployment is within the last hour
+bool isRecent = deploymentEntry.IsWithinTimeWindow(TimeSpan.FromHours(1));
+Console.WriteLine($"Is within last hour: {isRecent}"); // true
+
+// Check if deployment is within a specific time window relative to a reference time
+var referenceTime = DateTime.UtcNow;
+bool isInWindow = deploymentEntry.IsWithinTimeWindow(referenceTime, TimeSpan.FromHours(2));
+Console.WriteLine($"Is within 2 hours of reference time: {isInWindow}");
+
+// Check if deployment has a specific tag
+bool hasCanaryTag = deploymentEntry.HasTag("canary");
+Console.WriteLine($"Has canary tag: {hasCanaryTag}"); // true
+
+// Get the value of a specific tag
+string? buildNumber = deploymentEntry.GetTagValue("build_number");
+Console.WriteLine($"Build number: {buildNumber}"); // "42"
+
+// Get deployment duration as TimeSpan
+TimeSpan? duration = deploymentEntry.GetDuration();
+Console.WriteLine($"Duration: {duration?.TotalSeconds} seconds"); // 125
+
+// Check if deployment was successful
+bool isSuccessful = deploymentEntry.IsSuccessful();
+Console.WriteLine($"Is successful: {isSuccessful}"); // true
+
+// Check if deployment failed
+bool isFailed = deploymentEntry.IsFailed();
+Console.WriteLine($"Is failed: {isFailed}"); // false
+
+// Get formatted duration string
+string formattedDuration = deploymentEntry.GetFormattedDuration();
+Console.WriteLine($"Formatted duration: {formattedDuration}"); // "2m 5s"
+
+// Check if this is a rollback deployment
+bool isRollback = deploymentEntry.IsRollback();
+Console.WriteLine($"Is rollback: {isRollback}"); // false
+
+// Get status summary
+string statusSummary = deploymentEntry.GetStatusSummary();
+Console.WriteLine($"Status summary: {statusSummary}"); // "SUCCESS"
+
+// Check if deployment is in a specific environment
+bool isInProduction = deploymentEntry.IsInEnvironment(Environment.Production);
+Console.WriteLine($"Is in production: {isInProduction}"); // true
+
+// Get all tags as a read-only dictionary
+IReadOnlyDictionary<string, string> tags = deploymentEntry.GetTags();
+foreach (var tag in tags)
+{
+    Console.WriteLine($"{tag.Key}: {tag.Value}");
 }
 ```
 
