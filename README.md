@@ -341,6 +341,65 @@ else
 }
 ```
 
+## ServiceExtensionsMetadataJsonExtensions
+
+The `ServiceExtensionsMetadataJsonExtensions` class provides JSON serialization and deserialization utilities for `ServiceExtensions` type information. It enables converting service extension metadata to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
+
+This extension class is particularly useful for persisting service extension configuration metadata to configuration files, databases, or remote services, and for restoring it back into application memory. It provides three main methods: `ToJson()` for serialization, `FromJson()` for deserialization, and `TryFromJson()` for safe deserialization with error handling.
+
+Example usage:
+
+```csharp
+// Serialize ServiceExtensions metadata to JSON string (compact format)
+string jsonCompact = ServiceExtensionsJsonExtensions.ToJson();
+Console.WriteLine(jsonCompact);
+// Output: {"type":"ServiceExtensions","namespace":"DotNetDeployNotify.Infrastructure","assembly":"DotNetDeployNotify","methods":["IsCritical","IsProduction","SupportsStatus","SupportsEnvironment","GetDescription","MergeMetadata","Clone","ToCompactString","GetSeverityLevel","ShouldRetry","GetRetryDelay"]}
+
+// Serialize to JSON string (indented format)
+string jsonIndented = ServiceExtensionsJsonExtensions.ToJson(indented: true);
+Console.WriteLine(jsonIndented);
+/* Output:
+{
+  "type": "ServiceExtensions",
+  "namespace": "DotNetDeployNotify.Infrastructure",
+  "assembly": "DotNetDeployNotify",
+  "methods": [
+    "IsCritical",
+    "IsProduction",
+    "SupportsStatus",
+    "SupportsEnvironment",
+    "GetDescription",
+    "MergeMetadata",
+    "Clone",
+    "ToCompactString",
+    "GetSeverityLevel",
+    "ShouldRetry",
+    "GetRetryDelay"
+  ]
+}
+*/
+
+// Deserialize from JSON string
+var deserializedMetadata = ServiceExtensionsJsonExtensions.FromJson(jsonCompact);
+if (deserializedMetadata != null)
+{
+Console.WriteLine($"Deserialized type: {deserializedMetadata.Type}");
+Console.WriteLine($"Namespace: {deserializedMetadata.Namespace}");
+Console.WriteLine($"Assembly: {deserializedMetadata.Assembly}");
+Console.WriteLine($"Methods count: {deserializedMetadata.Methods?.Length ?? 0}");
+}
+
+// Try deserialization with error handling
+if (ServiceExtensionsJsonExtensions.TryFromJson(jsonCompact, out var result))
+{
+Console.WriteLine("Successfully deserialized metadata");
+}
+else
+{
+Console.WriteLine("Failed to deserialize metadata");
+}
+```
+
 ## CacheEntry
 
 The `CacheEntry<T>` class represents a single cache entry in the in-memory cache system. It stores a cached value along with metadata such as expiration time and creation timestamp, enabling time-to-live (TTL) functionality for cache entries.
