@@ -10,7 +10,7 @@ using System.Linq;
 namespace DotNetDeployNotify.Infrastructure;
 
 /// <summary>
-/// Provides validation helpers for <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/>.
+/// Provides validation helpers for <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/> instances.
 /// </summary>
 public static class ServiceExtensionsJsonExtensionsValidation
 {
@@ -19,7 +19,7 @@ public static class ServiceExtensionsJsonExtensionsValidation
     /// </summary>
     /// <param name="metadata">The metadata to validate.</param>
     /// <returns>A list of human-readable validation errors, or an empty list if valid.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="metadata"/> is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="metadata"/> is <see langword="null"/>.</exception>
     public static IReadOnlyList<string> Validate(this ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata metadata)
     {
         ArgumentNullException.ThrowIfNull(metadata);
@@ -41,11 +41,15 @@ public static class ServiceExtensionsJsonExtensionsValidation
             errors.Add("Assembly must not be null or empty.");
         }
 
-        if (metadata.Methods is null || metadata.Methods.Length == 0)
+        if (metadata.Methods is null)
         {
-            errors.Add("Methods must not be null or empty.");
+            errors.Add("Methods must not be null.");
         }
-        else if (metadata.Methods.Any(string.IsNullOrEmpty))
+        else if (metadata.Methods.Length == 0)
+        {
+            errors.Add("Methods must not be empty.");
+        }
+        else if (metadata.Methods.Any(method => string.IsNullOrEmpty(method)))
         {
             errors.Add("Methods must not contain null or empty strings.");
         }
@@ -57,8 +61,8 @@ public static class ServiceExtensionsJsonExtensionsValidation
     /// Determines whether the provided <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/> is valid.
     /// </summary>
     /// <param name="metadata">The metadata to validate.</param>
-    /// <returns><c>true</c> if valid; otherwise <c>false</c>.</returns>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="metadata"/> is null.</exception>
+    /// <returns><see langword="true"/> if valid; otherwise <see langword="false"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="metadata"/> is <see langword="null"/>.</exception>
     public static bool IsValid(this ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata metadata)
     {
         return !Validate(metadata).Any();
@@ -68,8 +72,8 @@ public static class ServiceExtensionsJsonExtensionsValidation
     /// Ensures the provided <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/> is valid.
     /// </summary>
     /// <param name="metadata">The metadata to validate.</param>
-    /// <exception cref="ArgumentNullException">Thrown if <paramref name="metadata"/> is null.</exception>
-    /// <exception cref="ArgumentException">Thrown if validation fails, listing all problems.</exception>
+    /// <exception cref="ArgumentNullException">Thrown if <paramref name="metadata"/> is <see langword="null"/>.</exception>
+    /// <exception cref="ArgumentException">Thrown if validation fails, containing all error messages joined with semicolons.</exception>
     public static void EnsureValid(this ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata metadata)
     {
         var errors = Validate(metadata);
