@@ -854,6 +854,68 @@ catch (NotificationException ex)
 }
 ```
 
+## DryRunRenderResult
+
+The `DryRunRenderResult` class represents the result of a dry-run rendering operation for notification payloads. It contains detailed information about what would be sent to each notification channel without actually transmitting the payload, including the rendered content, channel configuration, and whether the notification would be sent based on the configured rules.
+
+This type is primarily used for testing and validation scenarios where you want to preview what notifications would be sent without actually delivering them to external services.
+
+Example usage:
+
+```csharp
+// Create a dry-run renderer
+var renderer = new DryRunRenderer();
+
+// Render notifications for all channels
+var results = renderer.RenderAll(new DeploymentNotification
+{
+    ProjectName = "MyWebApp",
+    Version = "2.0.0",
+    Status = BuildStatus.Success,
+    TargetEnvironment = Environment.Production,
+    BranchName = "main",
+    CommitHash = "abc123def456",
+    Message = "Version 2.0.0 deployed successfully",
+    DurationSeconds = 180,
+    Priority = NotificationPriority.High
+});
+
+// Process the results
+foreach (var result in results)
+{
+    Console.WriteLine($"Channel: {result.Channel}");
+    Console.WriteLine($"Configuration ID: {result.ConfigurationId}");
+    Console.WriteLine($"Display Name: {result.DisplayName}");
+    Console.WriteLine($"Target URL: {result.TargetUrl}");
+    Console.WriteLine($"Would Send: {result.WouldSend}");
+    
+    if (result.WouldSend)
+    {
+        Console.WriteLine($"Rendered Payload: {result.RenderedPayload?.Substring(0, Math.Min(100, result.RenderedPayload.Length))}...");
+    }
+    else
+    {
+        Console.WriteLine($"Skip Reason: {result.SkipReason}");
+    }
+    
+    Console.WriteLine();
+}
+
+// Render a single notification for a specific channel
+var singleResult = renderer.Render(
+    new DeploymentNotification
+    {
+        ProjectName = "PaymentService",
+        Version = "1.5.0",
+        Status = BuildStatus.Failed,
+        Priority = NotificationPriority.Critical
+    },
+    NotificationChannel.Telegram
+);
+
+Console.WriteLine($"Single result - Would Send: {singleResult.WouldSend}");
+```
+
 ## ServiceExtensionsMetadataJsonExtensions
 
 The `ServiceExtensionsMetadataJsonExtensions` class provides JSON serialization and deserialization utilities for `ServiceExtensions` type information. It enables converting service extension metadata to and from JSON format with configurable formatting options, supporting both compact and indented output formats.
