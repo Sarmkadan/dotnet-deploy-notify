@@ -53,11 +53,14 @@ public enum NotificationChannel
     /// <summary>Discord server messaging</summary>
     Discord = 2,
 
+    /// <summary>Microsoft Teams messaging</summary>
+    Teams = 3,
+
     /// <summary>Generic webhook</summary>
-    Webhook = 3,
+    Webhook = 4,
 
     /// <summary>Email notifications</summary>
-    Email = 4
+    Email = 5
 }
 
 /// <summary>
