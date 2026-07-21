@@ -44,28 +44,78 @@ public sealed class RequestContext
 }
 
 /// <summary>
-/// Ambient context for request tracking
+/// Provides ambient storage for request context that flows across asynchronous operations.
+/// This allows request-scoped data to be automatically propagated through async/await boundaries.
 /// </summary>
+/// <remarks>
+/// The context is stored using <see cref="AsyncLocal{T}"/> which ensures proper context flow
+/// across asynchronous operations, unlike <see cref="ThreadLocal{T}"/> which does not flow
+/// with async operations.
+/// </remarks>
 public static class AmbientRequestContext
 {
     private static readonly AsyncLocal<RequestContext?> _context = new();
 
+    /// <summary>
+    /// Gets or sets the current request context.
+    /// </summary>
+    /// <remarks>
+    /// When setting a new context, if a context already exists, an <see cref="InvalidOperationException"/> is thrown
+    /// to prevent accidental overwriting of existing context. Use <see cref="RequestContextScope"/> to
+    /// properly manage context lifetimes when nesting contexts.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">Thrown when attempting to set a context when one already exists.</exception>
     public static RequestContext Current
     {
         get => _context.Value ??= new RequestContext();
-        set => _context.Value = value;
+        set
+        {
+            if (_context.Value is not null)
+            {
+                throw new InvalidOperationException(
+                    "A request context is already set. Use RequestContextScope to manage nested contexts. " +
+                    "If you intentionally want to replace the context, first call ClearContext().");
+            }
+            _context.Value = value;
+        }
     }
 
+    /// <summary>
+    /// Sets the current request context.
+    /// </summary>
+    /// <param name="context">The context to set.</param>
+    /// <remarks>
+    /// If a context already exists, an <see cref="InvalidOperationException"/> is thrown to prevent
+    /// accidental overwriting of existing context. Use <see cref="RequestContextScope"/> for proper
+    /// context lifetime management.
+    /// </remarks>
+    /// <exception cref="InvalidOperationException">Thrown when attempting to set a context when one already exists.</exception>
     public static void SetContext(RequestContext context)
     {
+        if (_context.Value is not null)
+        {
+            throw new InvalidOperationException(
+                "A request context is already set. Use RequestContextScope to manage nested contexts. " +
+                "If you intentionally want to replace the context, first call ClearContext().");
+        }
         _context.Value = context;
     }
 
+    /// <summary>
+    /// Clears the current request context.
+    /// </summary>
     public static void ClearContext()
     {
         _context.Value = null;
     }
 
+    /// <summary>
+    /// Resets the current request context to a new empty context.
+    /// </summary>
+    /// <remarks>
+    /// This method will overwrite any existing context. If you want to preserve the current context,
+    /// consider using <see cref="RequestContextScope"/> instead.
+    /// </remarks>
     public static void Reset()
     {
         _context.Value = new RequestContext();
