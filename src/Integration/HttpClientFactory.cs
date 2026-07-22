@@ -2,54 +2,9 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 namespace DotNetDeployNotify.Integration;
-
-/// <summary>
-/// Factory for creating configured HttpClient instances with retry policies
-/// </summary>
-public interface IHttpClientFactory
-{
-    HttpClient CreateClient(string name = "default");
-    HttpClient CreateClientWithRetry(int maxRetries = 3, TimeSpan? timeout = null);
-}
-
-/// <summary>
-/// Default HttpClient factory implementation
-/// </summary>
-public class DefaultHttpClientFactory : IHttpClientFactory
-{
-    private readonly ILogger<DefaultHttpClientFactory> _logger;
-    private readonly Dictionary<string, HttpClient> _clients = new();
-
-    public DefaultHttpClientFactory(ILogger<DefaultHttpClientFactory> logger)
-    {
-        _logger = logger;
-    }
-
-    public HttpClient CreateClient(string name = "default")
-    {
-        if (_clients.TryGetValue(name, out var client))
-            return client;
-
-        var newClient = new HttpClient();
-        newClient.DefaultRequestHeaders.Add("User-Agent", "DotNetDeployNotify/1.0");
-        newClient.Timeout = TimeSpan.FromSeconds(30);
-
-        _clients[name] = newClient;
-        _logger.LogDebug("Created HttpClient: {Name}", name);
-
-        return newClient;
-    }
-
-    public HttpClient CreateClientWithRetry(int maxRetries = 3, TimeSpan? timeout = null)
-    {
-        var client = CreateClient($"retry-{maxRetries}");
-        client.Timeout = timeout ?? TimeSpan.FromSeconds(30);
-        return client;
-    }
-}
 
 /// <summary>
 /// HTTP response wrapper with status and content
