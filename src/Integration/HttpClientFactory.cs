@@ -69,6 +69,39 @@ public class HttpResponse<T>
 }
 
 /// <summary>
+/// Exception thrown when the circuit breaker is open and prevents execution
+/// </summary>
+public class CircuitOpenException : Exception
+{
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CircuitOpenException"/> class
+    /// </summary>
+    public CircuitOpenException()
+        : base("Circuit breaker is open and prevents execution")
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CircuitOpenException"/> class with a custom message
+    /// </summary>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    public CircuitOpenException(string message)
+        : base(message)
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CircuitOpenException"/> class with a custom message and inner exception
+    /// </summary>
+    /// <param name="message">The error message that explains the reason for the exception.</param>
+    /// <param name="innerException">The exception that is the cause of the current exception.</param>
+    public CircuitOpenException(string message, Exception innerException)
+        : base(message, innerException)
+    {
+    }
+}
+
+/// <summary>
 /// HTTP client wrapper with built-in retry logic and error handling
 /// </summary>
 public class RetryableHttpClient
@@ -77,32 +110,51 @@ public class RetryableHttpClient
     private readonly ILogger<RetryableHttpClient> _logger;
     private readonly int _maxRetries;
     private readonly TimeSpan _retryDelay;
+    private readonly CircuitBreaker _circuitBreaker;
 
     public RetryableHttpClient(
         HttpClient client,
         ILogger<RetryableHttpClient> logger,
         int maxRetries = 3,
-        TimeSpan? retryDelay = null)
+        TimeSpan? retryDelay = null,
+        CircuitBreaker? circuitBreaker = null)
     {
+        ArgumentNullException.ThrowIfNull(client);
+        ArgumentNullException.ThrowIfNull(logger);
+
         _client = client;
         _logger = logger;
         _maxRetries = maxRetries;
         _retryDelay = retryDelay ?? TimeSpan.FromMilliseconds(500);
+        _circuitBreaker = circuitBreaker ?? new CircuitBreaker(logger: logger);
     }
 
     /// <summary>
     /// Sends a POST request with automatic retry on failure
     /// </summary>
+    /// <param name="url">The URL to send the POST request to</param>
+    /// <param name="content">The HTTP content to send</param>
+    /// <returns>HTTP response with status and content</returns>
+    /// <exception cref="CircuitOpenException">Thrown when the circuit breaker is open and prevents execution</exception>
     public async Task<HttpResponse<string>> PostWithRetryAsync(string url, HttpContent content)
     {
+        ArgumentNullException.ThrowIfNull(url);
+        ArgumentNullException.ThrowIfNull(content);
+
         var startTime = DateTime.UtcNow;
 
         for (int attempt = 1; attempt <= _maxRetries; attempt++)
         {
+            // Check circuit breaker before attempting
+            if (!_circuitBreaker.CanExecute())
+            {
+                _logger.LogWarning("Circuit breaker is open, failing fast for request: {Url}", url);
+                throw new CircuitOpenException("Circuit breaker is open and prevents execution");
+            }
+
             try
             {
-                _logger.LogDebug("POST request attempt {Attempt}/{MaxRetries}: {Url}",
-                    attempt, _maxRetries, url);
+                _logger.LogDebug("POST request attempt {Attempt}/{MaxRetries}: {Url}", attempt, _maxRetries, url);
 
                 var response = await _client.PostAsync(url, content);
                 var responseContent = await response.Content.ReadAsStringAsync();
@@ -110,6 +162,7 @@ public class RetryableHttpClient
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogDebug("POST succeeded: {Url} ({StatusCode})", url, response.StatusCode);
+                    _circuitBreaker.RecordSuccess();
                     return new HttpResponse<string>
                     {
                         IsSuccessful = true,
@@ -119,11 +172,11 @@ public class RetryableHttpClient
                     };
                 }
 
-                _logger.LogWarning("POST failed (attempt {Attempt}): {Url} returned {StatusCode}",
-                    attempt, url, response.StatusCode);
+                _logger.LogWarning("POST failed (attempt {Attempt}): {Url} returned {StatusCode}", attempt, url, response.StatusCode);
 
                 if (!IsRetryable((int)response.StatusCode) || attempt == _maxRetries)
                 {
+                    _circuitBreaker.RecordFailure();
                     return new HttpResponse<string>
                     {
                         IsSuccessful = false,
@@ -132,11 +185,13 @@ public class RetryableHttpClient
                         ElapsedTime = DateTime.UtcNow - startTime
                     };
                 }
+
+                _circuitBreaker.RecordFailure();
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "POST request exception (attempt {Attempt}): {Url}",
-                    attempt, url);
+                _logger.LogWarning(ex, "POST request exception (attempt {Attempt}): {Url}", attempt, url);
+                _circuitBreaker.RecordFailure();
 
                 if (attempt == _maxRetries)
                 {
@@ -158,6 +213,7 @@ public class RetryableHttpClient
             }
         }
 
+        _logger.LogError("Failed after {MaxRetries} attempts: {Url}", _maxRetries, url);
         return new HttpResponse<string>
         {
             IsSuccessful = false,
@@ -277,6 +333,25 @@ public class CircuitBreaker
         }
 
         return CurrentState == State.Open;
+    }
+
+    /// <summary>
+    /// Checks if the circuit breaker allows execution and transitions from HalfOpen to Open if the attempt fails
+    /// </summary>
+    /// <returns>True if execution is allowed, false if circuit is open</returns>
+    public bool CanExecute()
+    {
+        if (IsOpen())
+        {
+            return false;
+        }
+
+        if (CurrentState == State.HalfOpen)
+        {
+            return true; // Allow one attempt in half-open state
+        }
+
+        return true;
     }
 
     /// <summary>
