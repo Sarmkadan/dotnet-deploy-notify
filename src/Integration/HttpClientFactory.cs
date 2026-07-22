@@ -4,6 +4,8 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System.Text.Json;
+
 namespace DotNetDeployNotify.Integration;
 
 /// <summary>
@@ -141,7 +143,28 @@ public class RetryableHttpClient
                     };
                 }
 
-                _circuitBreaker.RecordFailure();
+                // Handle 429 Too Many Requests with Retry-After header
+                if ((int)response.StatusCode == 429)
+                {
+                    var retryAfterDelay = await GetRetryAfterDelayAsync(response, responseContent);
+                    if (retryAfterDelay.HasValue)
+                    {
+                        // Cap the delay at 30 seconds to prevent excessive waiting
+                        var cappedDelay = TimeSpan.FromMilliseconds(Math.Min(retryAfterDelay.Value.TotalMilliseconds, TimeSpan.FromSeconds(30).TotalMilliseconds));
+                        _logger.LogInformation("Rate limited with Retry-After header/body, waiting {Delay}ms before retry", cappedDelay.TotalMilliseconds);
+                        await Task.Delay(cappedDelay);
+                        // Don't count 429 against circuit breaker failure count
+                        _circuitBreaker.RecordSuccess(); // Reset failure count since we're respecting the rate limit
+                        continue;
+                    }
+                }
+
+                // Wait before retrying (exponential backoff for non-429 errors)
+                if (attempt < _maxRetries)
+                {
+                    var delay = _retryDelay.Multiply(Math.Pow(2, attempt - 1));
+                    await Task.Delay(delay);
+                }
             }
             catch (Exception ex)
             {
@@ -159,13 +182,6 @@ public class RetryableHttpClient
                     };
                 }
             }
-
-            // Wait before retrying (exponential backoff)
-            if (attempt < _maxRetries)
-            {
-                var delay = _retryDelay.Multiply(Math.Pow(2, attempt - 1));
-                await Task.Delay(delay);
-            }
         }
 
         _logger.LogError("Failed after {MaxRetries} attempts: {Url}", _maxRetries, url);
@@ -176,6 +192,61 @@ public class RetryableHttpClient
             ErrorMessage = $"Failed after {_maxRetries} attempts",
             ElapsedTime = DateTime.UtcNow - startTime
         };
+    }
+
+    /// <summary>
+    /// Extracts the Retry-After delay from the response, either from the Retry-After header or Discord's retry_after field
+    /// </summary>
+    /// <param name="response">The HTTP response</param>
+    /// <param name="responseContent">The response content as string</param>
+    /// <returns>The delay to wait before retrying, or null if no valid Retry-After information is found</returns>
+    private async Task<TimeSpan?> GetRetryAfterDelayAsync(HttpResponseMessage response, string responseContent)
+    {
+        // First try the Retry-After header (standard HTTP header)
+        if (response.Headers.TryGetValues("Retry-After", out var retryAfterValues))
+        {
+            var retryAfterHeader = retryAfterValues.FirstOrDefault();
+            if (retryAfterHeader != null)
+            {
+                // Retry-After can be either a delay in seconds or an HTTP-date
+                if (long.TryParse(retryAfterHeader, out var retryAfterSeconds))
+                {
+                    var delay = TimeSpan.FromSeconds(retryAfterSeconds);
+                    _logger.LogDebug("Retry-After header specifies {Delay} seconds delay", retryAfterSeconds);
+                    return delay;
+                }
+                else if (DateTime.TryParse(retryAfterHeader, out var retryAfterDate))
+                {
+                    var delay = retryAfterDate - DateTime.UtcNow;
+                    if (delay > TimeSpan.Zero)
+                    {
+                        _logger.LogDebug("Retry-After header specifies HTTP-date delay: {Delay}", delay);
+                        return delay;
+                    }
+                }
+            }
+        }
+
+        // Try Discord-specific retry_after field in JSON body
+        try
+        {
+            var jsonDoc = JsonDocument.Parse(responseContent);
+            if (jsonDoc.RootElement.TryGetProperty("retry_after", out var retryAfterElement))
+            {
+                if (retryAfterElement.ValueKind == JsonValueKind.Number && retryAfterElement.TryGetInt64(out var retryAfterMs))
+                {
+                    var delay = TimeSpan.FromMilliseconds(retryAfterMs);
+                    _logger.LogDebug("Discord retry_after field specifies {Delay}ms delay", retryAfterMs);
+                    return delay;
+                }
+            }
+        }
+        catch (JsonException)
+        {
+            // Not JSON, ignore
+        }
+
+        return null;
     }
 
     /// <summary>
