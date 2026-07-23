@@ -212,7 +212,7 @@ public class WebhookPayloadBuilderFactory
 /// <summary>
 /// HTTP webhook client for sending notifications to external services
 /// </summary>
-public class WebhookClient
+public class WebhookClient : IWebhookClient
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<WebhookClient> _logger;
@@ -220,8 +220,8 @@ public class WebhookClient
 
     public WebhookClient(HttpClient httpClient, ILogger<WebhookClient> logger, int maxRetries = 3)
     {
-        _httpClient = httpClient;
-        _logger = logger;
+        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _maxRetries = maxRetries;
     }
 
@@ -255,6 +255,62 @@ public class WebhookClient
         {
             result.IsSuccessful = false;
             result.ErrorMessage = ex.Message;
+            _logger.LogError(ex, "Webhook error: {Url}", webhookUrl);
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Sends a webhook payload to the specified URL (IWebhookClient interface implementation)
+    /// </summary>
+    public async Task<HttpResponse<string>> SendWebhookAsync(
+        string webhookUrl,
+        string payload,
+        Dictionary<string, string>? customHeaders = null,
+        CancellationToken cancellationToken = default)
+    {
+        var result = new HttpResponse<string>();
+        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
+        try
+        {
+            using var request = new HttpRequestMessage(HttpMethod.Post, webhookUrl)
+            {
+                Content = new StringContent(payload, System.Text.Encoding.UTF8, "application/json")
+            };
+
+            if (customHeaders != null)
+            {
+                foreach (var header in customHeaders)
+                {
+                    request.Headers.TryAddWithoutValidation(header.Key, header.Value);
+                }
+            }
+
+            var response = await _httpClient.SendAsync(request, cancellationToken);
+            var responseContent = await response.Content.ReadAsStringAsync(cancellationToken);
+
+            result.IsSuccessful = response.IsSuccessStatusCode;
+            result.StatusCode = (int)response.StatusCode;
+            result.Content = responseContent;
+            result.ElapsedTime = stopwatch.Elapsed;
+
+            if (!response.IsSuccessStatusCode)
+            {
+                result.ErrorMessage = responseContent;
+                _logger.LogWarning("Webhook failed: {Url} returned {Status}", webhookUrl, response.StatusCode);
+            }
+            else
+            {
+                _logger.LogDebug("Webhook sent successfully: {Url}", webhookUrl);
+            }
+        }
+        catch (Exception ex)
+        {
+            result.IsSuccessful = false;
+            result.ErrorMessage = ex.Message;
+            result.ElapsedTime = stopwatch.Elapsed;
             _logger.LogError(ex, "Webhook error: {Url}", webhookUrl);
         }
 
