@@ -5,6 +5,8 @@
 // =============================================================================
 
 using DotNetDeployNotify.Data;
+using DotNetDeployNotify.Integration;
+using DotNetDeployNotify.Notifications;
 using DotNetDeployNotify.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -75,6 +77,15 @@ public static class DependencyInjection
                 client.DefaultRequestHeaders.UserAgent.ParseAdd("DotNetDeployNotify/1.0");
                 client.DefaultRequestHeaders.Add("X-Client-Name", "dotnet-deploy-notify");
             });
+
+        // Register integration services
+        services.AddScoped<IWebhookClient, WebhookClientAdapter>();
+
+        // Register notification channels
+        services.AddScoped<INotificationChannel, SlackChannel>();
+        services.AddScoped<INotificationChannel, DiscordChannel>();
+        services.AddScoped<INotificationChannel, TelegramChannel>();
+        services.AddScoped<NotificationDispatcher>();
 
         return services;
     }

@@ -67,14 +67,23 @@ public class RetryableHttpClient
     private readonly ILogger<RetryableHttpClient> _logger;
     private readonly int _maxRetries;
     private readonly TimeSpan _retryDelay;
-    private readonly CircuitBreaker _circuitBreaker;
+    private readonly ICircuitBreakerRegistry _circuitBreakers;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="RetryableHttpClient"/> class
+    /// </summary>
+    /// <param name="client">The underlying HTTP client</param>
+    /// <param name="logger">Logger instance</param>
+    /// <param name="maxRetries">Maximum number of attempts per request</param>
+    /// <param name="retryDelay">Base delay between retries (doubled per attempt)</param>
+    /// <param name="circuitBreakers">Registry of per-endpoint circuit breakers; a default registry is created when omitted</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="client"/> or <paramref name="logger"/> is null</exception>
     public RetryableHttpClient(
         HttpClient client,
         ILogger<RetryableHttpClient> logger,
         int maxRetries = 3,
         TimeSpan? retryDelay = null,
-        CircuitBreaker? circuitBreaker = null)
+        ICircuitBreakerRegistry? circuitBreakers = null)
     {
         ArgumentNullException.ThrowIfNull(client);
         ArgumentNullException.ThrowIfNull(logger);
@@ -83,7 +92,7 @@ public class RetryableHttpClient
         _logger = logger;
         _maxRetries = maxRetries;
         _retryDelay = retryDelay ?? TimeSpan.FromMilliseconds(500);
-        _circuitBreaker = circuitBreaker ?? new CircuitBreaker(logger: logger);
+        _circuitBreakers = circuitBreakers ?? new CircuitBreakerRegistry();
     }
 
     /// <summary>
@@ -99,11 +108,12 @@ public class RetryableHttpClient
         ArgumentNullException.ThrowIfNull(content);
 
         var startTime = DateTime.UtcNow;
+        var circuitBreaker = _circuitBreakers.GetOrAdd(GetEndpointKey(url));
 
         for (int attempt = 1; attempt <= _maxRetries; attempt++)
         {
-            // Check circuit breaker before attempting
-            if (!_circuitBreaker.CanExecute())
+            // Check the endpoint's circuit breaker before attempting
+            if (!circuitBreaker.CanExecute())
             {
                 _logger.LogWarning("Circuit breaker is open, failing fast for request: {Url}", url);
                 throw new CircuitOpenException("Circuit breaker is open and prevents execution");
@@ -119,7 +129,7 @@ public class RetryableHttpClient
                 if (response.IsSuccessStatusCode)
                 {
                     _logger.LogDebug("POST succeeded: {Url} ({StatusCode})", url, response.StatusCode);
-                    _circuitBreaker.RecordSuccess();
+                    circuitBreaker.RecordSuccess();
                     return new HttpResponse<string>
                     {
                         IsSuccessful = true,
@@ -133,7 +143,7 @@ public class RetryableHttpClient
 
                 if (!IsRetryable((int)response.StatusCode) || attempt == _maxRetries)
                 {
-                    _circuitBreaker.RecordFailure();
+                    circuitBreaker.RecordFailure();
                     return new HttpResponse<string>
                     {
                         IsSuccessful = false,
@@ -154,7 +164,7 @@ public class RetryableHttpClient
                         _logger.LogInformation("Rate limited with Retry-After header/body, waiting {Delay}ms before retry", cappedDelay.TotalMilliseconds);
                         await Task.Delay(cappedDelay);
                         // Don't count 429 against circuit breaker failure count
-                        _circuitBreaker.RecordSuccess(); // Reset failure count since we're respecting the rate limit
+                        circuitBreaker.RecordSuccess(); // Reset failure count since we're respecting the rate limit
                         continue;
                     }
                 }
@@ -169,7 +179,7 @@ public class RetryableHttpClient
             catch (Exception ex)
             {
                 _logger.LogWarning(ex, "POST request exception (attempt {Attempt}): {Url}", attempt, url);
-                _circuitBreaker.RecordFailure();
+                circuitBreaker.RecordFailure();
 
                 if (attempt == _maxRetries)
                 {
@@ -252,6 +262,15 @@ public class RetryableHttpClient
     /// <summary>
     /// Determines if an HTTP status code should trigger a retry
     /// </summary>
+    /// <summary>
+    /// Derives a stable circuit breaker key from a request URL (scheme + host + port),
+    /// so each webhook endpoint gets its own independent breaker
+    /// </summary>
+    private static string GetEndpointKey(string url) =>
+        Uri.TryCreate(url, UriKind.Absolute, out var uri)
+            ? $"{uri.Scheme}://{uri.Authority}"
+            : url;
+
     private bool IsRetryable(int statusCode)
     {
         // Retry on server errors and specific client errors
@@ -311,15 +330,49 @@ public class HttpRequestBuilder
 /// </summary>
 public class CircuitBreaker
 {
-    public enum State { Closed, Open, HalfOpen }
+    /// <summary>
+    /// Represents the possible states of the circuit breaker
+    /// </summary>
+    public enum State
+    {
+        /// <summary>Requests flow normally; failures are being counted</summary>
+        Closed,
 
-    public State CurrentState { get; private set; } = State.Closed;
+        /// <summary>Requests are rejected until the timeout elapses</summary>
+        Open,
+
+        /// <summary>A single trial request is allowed to probe recovery</summary>
+        HalfOpen
+    }
+
+    private readonly object _sync = new();
+    private State _state = State.Closed;
     private int _failureCount;
     private DateTime _lastFailureTime;
     private readonly int _failureThreshold;
     private readonly TimeSpan _timeout;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// Gets the current state of the circuit breaker
+    /// </summary>
+    public State CurrentState
+    {
+        get
+        {
+            lock (_sync)
+            {
+                return _state;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CircuitBreaker"/> class
+    /// </summary>
+    /// <param name="failureThreshold">Number of consecutive failures that opens the circuit</param>
+    /// <param name="timeout">Time the circuit stays open before allowing a trial request</param>
+    /// <param name="logger">Optional logger for state transitions</param>
     public CircuitBreaker(int failureThreshold = 5, TimeSpan? timeout = null, ILogger? logger = null)
     {
         _failureThreshold = failureThreshold;
@@ -327,58 +380,86 @@ public class CircuitBreaker
         _logger = logger ?? new NullLogger();
     }
 
+    /// <summary>
+    /// Records a successful call, resetting the failure count and closing the circuit
+    /// </summary>
     public void RecordSuccess()
     {
-        _failureCount = 0;
-        if (CurrentState != State.Closed)
+        var recovered = false;
+        lock (_sync)
         {
-            CurrentState = State.Closed;
+            _failureCount = 0;
+            if (_state != State.Closed)
+            {
+                _state = State.Closed;
+                recovered = true;
+            }
+        }
+
+        if (recovered)
+        {
             _logger.LogInformation("Circuit breaker closed (recovered)");
         }
     }
 
+    /// <summary>
+    /// Records a failed call, opening the circuit once the failure threshold is reached
+    /// </summary>
     public void RecordFailure()
     {
-        _failureCount++;
-        _lastFailureTime = DateTime.UtcNow;
-
-        if (_failureCount >= _failureThreshold)
+        var opened = false;
+        int failures;
+        lock (_sync)
         {
-            CurrentState = State.Open;
-            _logger.LogWarning("Circuit breaker opened (failures: {Count})", _failureCount);
-        }
-    }
+            _failureCount++;
+            failures = _failureCount;
+            _lastFailureTime = DateTime.UtcNow;
 
-    public bool IsOpen()
-    {
-        if (CurrentState == State.Open && DateTime.UtcNow - _lastFailureTime > _timeout)
-        {
-            CurrentState = State.HalfOpen;
-            _logger.LogInformation("Circuit breaker half-open (attempting recovery)");
-            return false;
+            if (_failureCount >= _failureThreshold && _state != State.Open)
+            {
+                _state = State.Open;
+                opened = true;
+            }
         }
 
-        return CurrentState == State.Open;
+        if (opened)
+        {
+            _logger.LogWarning("Circuit breaker opened (failures: {Count})", failures);
+        }
     }
 
     /// <summary>
-    /// Checks if the circuit breaker allows execution and transitions from HalfOpen to Open if the attempt fails
+    /// Determines whether the circuit is currently open, transitioning to half-open once the timeout has elapsed
+    /// </summary>
+    /// <returns>True if the circuit is open and calls must be rejected, false otherwise</returns>
+    public bool IsOpen()
+    {
+        var halfOpened = false;
+        bool isOpen;
+        lock (_sync)
+        {
+            if (_state == State.Open && DateTime.UtcNow - _lastFailureTime > _timeout)
+            {
+                _state = State.HalfOpen;
+                halfOpened = true;
+            }
+
+            isOpen = _state == State.Open;
+        }
+
+        if (halfOpened)
+        {
+            _logger.LogInformation("Circuit breaker half-open (attempting recovery)");
+        }
+
+        return isOpen;
+    }
+
+    /// <summary>
+    /// Checks if the circuit breaker allows execution
     /// </summary>
     /// <returns>True if execution is allowed, false if circuit is open</returns>
-    public bool CanExecute()
-    {
-        if (IsOpen())
-        {
-            return false;
-        }
-
-        if (CurrentState == State.HalfOpen)
-        {
-            return true; // Allow one attempt in half-open state
-        }
-
-        return true;
-    }
+    public bool CanExecute() => !IsOpen();
 
     /// <summary>
     /// Null logger for when no logger is provided

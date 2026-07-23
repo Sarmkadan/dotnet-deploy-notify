@@ -133,6 +133,8 @@ public static class ServiceCollectionExtensions
 		ArgumentNullException.ThrowIfNull(services);
 
 		services.AddHttpClient();
+		services.AddSingleton<ICircuitBreakerRegistry>(sp =>
+			new CircuitBreakerRegistry(loggerFactory: sp.GetRequiredService<ILoggerFactory>()));
 		services.AddScoped<WebhookPayloadBuilderFactory>();
 		services.AddScoped<WebhookClient>();
 		services.AddScoped<RetryableHttpClient>();
