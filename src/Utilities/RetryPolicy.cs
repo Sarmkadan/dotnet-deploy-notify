@@ -152,14 +152,34 @@ public class CircuitBreakerWithBackoff
 {
     public enum CircuitState { Closed, Open, HalfOpen }
 
-    public CircuitState State { get; private set; } = CircuitState.Closed;
-
+    private readonly object _sync = new();
+    private CircuitState _state = CircuitState.Closed;
     private int _failureCount;
     private DateTime _lastFailureTime = DateTime.UtcNow;
     private readonly int _failureThreshold;
     private readonly TimeSpan _openTimeout;
     private readonly ILogger _logger;
 
+    /// <summary>
+    /// Gets the current state of the circuit breaker
+    /// </summary>
+    public CircuitState State
+    {
+        get
+        {
+            lock (_sync)
+            {
+                return _state;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="CircuitBreakerWithBackoff"/> class
+    /// </summary>
+    /// <param name="failureThreshold">Number of consecutive failures that opens the circuit</param>
+    /// <param name="openTimeout">Time the circuit stays open before allowing a trial request</param>
+    /// <param name="logger">Optional logger for state transitions</param>
     public CircuitBreakerWithBackoff(
         int failureThreshold = 5,
         TimeSpan? openTimeout = null,
@@ -170,19 +190,38 @@ public class CircuitBreakerWithBackoff
         _logger = logger ?? new NullLogger();
     }
 
+    /// <summary>
+    /// Executes the given operation through the circuit breaker, recording success or failure
+    /// and transitioning the breaker state under a lock so concurrent callers never race
+    /// </summary>
+    /// <param name="operation">The asynchronous operation to guard</param>
+    /// <returns>The result produced by <paramref name="operation"/></returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="operation"/> is null</exception>
+    /// <exception cref="InvalidOperationException">Thrown when the circuit is open and the timeout has not yet elapsed</exception>
     public async Task<T> ExecuteAsync<T>(Func<Task<T>> operation)
     {
-        if (State == CircuitState.Open)
+        ArgumentNullException.ThrowIfNull(operation);
+
+        var halfOpened = false;
+        lock (_sync)
         {
-            if (DateTime.UtcNow - _lastFailureTime > _openTimeout)
+            if (_state == CircuitState.Open)
             {
-                State = CircuitState.HalfOpen;
-                _logger.LogInformation("Circuit breaker state changed to HalfOpen");
+                if (DateTime.UtcNow - _lastFailureTime > _openTimeout)
+                {
+                    _state = CircuitState.HalfOpen;
+                    halfOpened = true;
+                }
+                else
+                {
+                    throw new InvalidOperationException("Circuit breaker is open");
+                }
             }
-            else
-            {
-                throw new InvalidOperationException("Circuit breaker is open");
-            }
+        }
+
+        if (halfOpened)
+        {
+            _logger.LogInformation("Circuit breaker state changed to HalfOpen");
         }
 
         try
@@ -200,23 +239,43 @@ public class CircuitBreakerWithBackoff
 
     private void OnSuccess()
     {
-        _failureCount = 0;
-        if (State != CircuitState.Closed)
+        var recovered = false;
+        lock (_sync)
         {
-            State = CircuitState.Closed;
+            _failureCount = 0;
+            if (_state != CircuitState.Closed)
+            {
+                _state = CircuitState.Closed;
+                recovered = true;
+            }
+        }
+
+        if (recovered)
+        {
             _logger.LogInformation("Circuit breaker state changed to Closed");
         }
     }
 
     private void OnFailure()
     {
-        _failureCount++;
-        _lastFailureTime = DateTime.UtcNow;
-
-        if (_failureCount >= _failureThreshold)
+        var opened = false;
+        int failures;
+        lock (_sync)
         {
-            State = CircuitState.Open;
-            _logger.LogWarning("Circuit breaker state changed to Open (failures: {Count})", _failureCount);
+            _failureCount++;
+            failures = _failureCount;
+            _lastFailureTime = DateTime.UtcNow;
+
+            if (_failureCount >= _failureThreshold && _state != CircuitState.Open)
+            {
+                _state = CircuitState.Open;
+                opened = true;
+            }
+        }
+
+        if (opened)
+        {
+            _logger.LogWarning("Circuit breaker state changed to Open (failures: {Count})", failures);
         }
     }
 
