@@ -7,6 +7,7 @@
 using DotNetDeployNotify.Data;
 using DotNetDeployNotify.Integration;
 using DotNetDeployNotify.Notifications;
+using DotNetDeployNotify.Persistence;
 using DotNetDeployNotify.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -15,6 +16,33 @@ using Microsoft.Extensions.Options;
 using DotNetDeployNotify.Configuration;
 
 namespace DotNetDeployNotify.Infrastructure;
+
+/// <summary>
+/// Selects and configures the storage backend used for deployment history when registering
+/// notification services via <see cref="DependencyInjection.AddNotificationServices"/>
+/// </summary>
+public sealed class NotificationServicesOptions
+{
+    /// <summary>
+    /// The JSON file path to persist deployment history to, or <see langword="null"/> to keep history
+    /// in memory only (the default)
+    /// </summary>
+    public string? HistoryFilePath { get; private set; }
+
+    /// <summary>
+    /// Selects the JSON-file-backed deployment history repository, so history survives process restarts
+    /// </summary>
+    /// <param name="path">Path of the JSON file used to store deployment history</param>
+    /// <returns>The same options instance, to allow chaining</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="path"/> is <see langword="null"/> or empty</exception>
+    public NotificationServicesOptions UseFileHistory(string path)
+    {
+        ArgumentException.ThrowIfNullOrEmpty(path);
+
+        HistoryFilePath = path;
+        return this;
+    }
+}
 
 /// <summary>
 /// Extension methods for registering services in dependency injection container
@@ -26,9 +54,20 @@ public static class DependencyInjection
     /// </summary>
     /// <param name="services">The service collection.</param>
     /// <param name="configuration">The application configuration.</param>
+    /// <param name="configureOptions">Optional callback to select the deployment history storage backend.</param>
     /// <returns>The service collection.</returns>
-    public static IServiceCollection AddNotificationServices(this IServiceCollection services, IConfiguration configuration)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="services"/> or <paramref name="configuration"/> is <see langword="null"/>.</exception>
+    public static IServiceCollection AddNotificationServices(
+        this IServiceCollection services,
+        IConfiguration configuration,
+        Action<NotificationServicesOptions>? configureOptions = null)
     {
+        ArgumentNullException.ThrowIfNull(services);
+        ArgumentNullException.ThrowIfNull(configuration);
+
+        var notificationServicesOptions = new NotificationServicesOptions();
+        configureOptions?.Invoke(notificationServicesOptions);
+
         // Core services
         services.AddScoped<IValidationService, ValidationService>();
         services.AddScoped<IPayloadBuilder, PayloadBuilder>();
@@ -41,7 +80,10 @@ public static class DependencyInjection
             .ValidateDataAnnotations()
             .ValidateOnStart();
 
-        // Deployment history tracking
+        // Deployment history tracking: file-backed when UseFileHistory(path) was configured, in-memory otherwise
+        services.AddSingleton<IDeploymentHistoryRepository>(_ => notificationServicesOptions.HistoryFilePath is { } historyFilePath
+            ? new JsonFileDeploymentHistoryRepository(historyFilePath)
+            : new InMemoryDeploymentHistoryRepository());
         services.AddSingleton<IDeploymentHistoryService, DeploymentHistoryService>();
 
         // Rollback notifications
