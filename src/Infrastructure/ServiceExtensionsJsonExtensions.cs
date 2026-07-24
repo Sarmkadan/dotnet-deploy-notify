@@ -6,6 +6,7 @@
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DotNetDeployNotify.Serialization;
 
 namespace DotNetDeployNotify.Infrastructure;
 
@@ -15,13 +16,11 @@ namespace DotNetDeployNotify.Infrastructure;
 public static class ServiceExtensionsJsonExtensions
 {
     /// <summary>
-    /// JsonSerializerOptions with camelCase naming policy for consistent serialization
+    /// JsonSerializerOptions with camelCase naming policy for consistent serialization.
+    /// Uses SecureJsonSerializerOptions base configuration.
     /// </summary>
-    private static readonly JsonSerializerOptions _jsonOptions = new JsonSerializerOptions
+    private static readonly JsonSerializerOptions _jsonOptions = new(SecureJsonSerializerOptions.InternalData)
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         PropertyNameCaseInsensitive = true
     };
 

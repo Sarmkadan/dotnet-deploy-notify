@@ -7,6 +7,7 @@
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DotNetDeployNotify.Serialization;
 
 namespace DotNetDeployNotify.Canary;
 
@@ -17,12 +18,10 @@ public static class CanaryDeploymentEngineExtensionsJsonExtensions
 {
     /// <summary>
     /// JsonSerializerOptions with camelCase naming policy for consistent serialization.
+    /// Uses SecureJsonSerializerOptions base configuration.
     /// </summary>
-    private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
+    private static readonly JsonSerializerOptions _jsonOptions = new(SecureJsonSerializerOptions.InternalData)
     {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         PropertyNameCaseInsensitive = true
     };
 

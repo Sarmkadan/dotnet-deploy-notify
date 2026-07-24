@@ -1,5 +1,8 @@
 #nullable enable
 
+using System.Text.Json;
+using DotNetDeployNotify.Serialization;
+
 namespace DotNetDeployNotify.Core.Models;
 
 /// <summary>
@@ -7,10 +10,13 @@ namespace DotNetDeployNotify.Core.Models;
 /// </summary>
 public static class WebhookPayloadJsonExtensions
 {
-    private static readonly System.Text.Json.JsonSerializerOptions _jsonOptions = new()
+        /// <summary>
+    /// JsonSerializerOptions for WebhookPayload serialization.
+    /// Uses SecureJsonSerializerOptions base configuration for safe deserialization.
+    /// </summary>
+    private static readonly JsonSerializerOptions _jsonOptions = new(SecureJsonSerializerOptions.UntrustedInput)
     {
-        PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase,
-        WriteIndented = false
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase
     };
 
     /// <summary>
