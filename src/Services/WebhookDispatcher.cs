@@ -2,12 +2,13 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =============================================================================
+// =====================================================================
 
 using System.Diagnostics;
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Exceptions;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Integration;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetDeployNotify.Services;
@@ -151,14 +152,10 @@ public class WebhookDispatcher : IWebhookDispatcher
         Dictionary<string, string> headers,
         int timeoutMs)
     {
-        var result = new NotificationResult
-        {
-            NotificationId = payload.EventId,
-            Status = DeliveryStatus.Pending
-        };
-
         try
         {
+            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+
             var content = new StringContent(
                 payload.ToJson(),
                 System.Text.Encoding.UTF8,
@@ -178,35 +175,46 @@ public class WebhookDispatcher : IWebhookDispatcher
 
             // Send the POST request
             var response = await _httpClient.PostAsync(webhookUrl, content, cts.Token);
+            var responseContent = await response.Content.ReadAsStringAsync();
 
-            result.HttpStatusCode = (int)response.StatusCode;
-            result.ResponseBody = await response.Content.ReadAsStringAsync();
-
-            if (response.IsSuccessStatusCode)
+            // Convert HttpResponse to NotificationResult using unified mapping
+            var httpResponse = new HttpResponse<string>
             {
-                result.MarkAsSuccessful((int)response.StatusCode, result.ResponseBody);
-            }
-            else
-            {
-                result.MarkAsFailed(
-                    $"HTTP {response.StatusCode}: {result.ResponseBody}",
-                    null,
-                    (int)response.StatusCode);
-            }
+                IsSuccessful = response.IsSuccessStatusCode,
+                StatusCode = (int)response.StatusCode,
+                Content = responseContent,
+                ErrorMessage = response.IsSuccessStatusCode ? null : responseContent,
+                ElapsedTime = stopwatch.Elapsed
+            };
 
-            return result;
+            return httpResponse.ToNotificationResult(payload.EventId, NotificationChannel.Webhook, string.Empty);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException ex)
         {
-            _logger.LogWarning("Webhook request to {Url} timed out after {TimeoutMs}ms", webhookUrl, timeoutMs);
-            result.MarkAsTimeout();
-            return result;
+            _logger.LogWarning(ex, "Webhook request to {Url} timed out after {TimeoutMs}ms", webhookUrl, timeoutMs);
+            var timeoutResult = new NotificationResult
+            {
+                NotificationId = payload.EventId,
+                Status = DeliveryStatus.Timeout,
+                ErrorMessage = "Webhook request timed out",
+                AttemptedAt = DateTime.UtcNow,
+                DurationMs = timeoutMs
+            };
+            return timeoutResult;
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Exception sending webhook to {Url}", webhookUrl);
-            result.MarkAsFailed(ex.Message, ex.GetType().Name);
-            return result;
+            var errorResult = new NotificationResult
+            {
+                NotificationId = payload.EventId,
+                Status = DeliveryStatus.Failed,
+                ErrorMessage = ex.Message,
+                ExceptionType = ex.GetType().Name,
+                AttemptedAt = DateTime.UtcNow,
+                DurationMs = 0
+            };
+            return errorResult;
         }
     }
 
