@@ -1,82 +1,85 @@
 #nullable enable
-
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-// =====================================================================
+// ===================================================================
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using DotNetDeployNotify.Serialization;
 
 namespace DotNetDeployNotify.Core.Models;
 
 /// <summary>
 /// Provides JSON serialization and deserialization extensions for <see cref="CustomTemplate"/>.
 /// </summary>
+/// <remarks>
+/// SECURITY: Uses SecureJsonSerializerOptions for safe deserialization of templates.
+/// </remarks>
 public static class CustomTemplateJsonExtensions
 {
-    /// <summary>
-    /// Shared JSON serialization options with camelCase naming policy.
-    /// </summary>
-    private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web)
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
-    };
+	/// <summary>
+	/// Shared JSON serialization options with camelCase naming policy and secure settings.
+	/// </summary>
+	private static readonly JsonSerializerOptions JsonOptions = new(SecureJsonSerializerOptions.UntrustedInput)
+	{
+		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+		WriteIndented = false,
+		DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+		Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) }
+	};
 
-    /// <summary>
-    /// Serializes the <see cref="CustomTemplate"/> to a JSON string.
-    /// </summary>
-    /// <param name="value">The template to serialize.</param>
-    /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
-    /// <returns>A JSON string representation of the template.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
-    public static string ToJson(this CustomTemplate value, bool indented = false)
-    {
-        ArgumentNullException.ThrowIfNull(value);
+	/// <summary>
+	/// Serializes the <see cref="CustomTemplate"/> to a JSON string.
+	/// </summary>
+	/// <param name="value">The template to serialize.</param>
+	/// <param name="indented">Whether to format the JSON with indentation for readability.</param>
+	/// <returns>A JSON string representation of the template.</returns>
+	/// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+	public static string ToJson(this CustomTemplate value, bool indented = false)
+	{
+		ArgumentNullException.ThrowIfNull(value);
 
-        var options = indented
-            ? new JsonSerializerOptions(JsonOptions) { WriteIndented = true }
-            : JsonOptions;
-        return JsonSerializer.Serialize(value, options);
-    }
+		var options = indented
+			? new JsonSerializerOptions(JsonOptions) { WriteIndented = true }
+			: JsonOptions;
+		return JsonSerializer.Serialize(value, options);
+	}
 
-    /// <summary>
-    /// Deserializes a JSON string to a <see cref="CustomTemplate"/> instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <returns>The deserialized template, or null if the JSON is empty or whitespace.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
-    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
-    public static CustomTemplate? FromJson(string json)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+	/// <summary>
+	/// Deserializes a JSON string to a <see cref="CustomTemplate"/> instance.
+	/// </summary>
+	/// <param name="json">The JSON string to deserialize.</param>
+	/// <returns>The deserialized template, or null if the JSON is empty or whitespace.</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+	/// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+	public static CustomTemplate? FromJson(string json)
+	{
+		ArgumentException.ThrowIfNullOrEmpty(json);
 
-        return JsonSerializer.Deserialize<CustomTemplate>(json, JsonOptions);
-    }
+		return JsonSerializer.Deserialize<CustomTemplate>(json, JsonOptions);
+	}
 
-    /// <summary>
-    /// Attempts to deserialize a JSON string to a <see cref="CustomTemplate"/> instance.
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized template if successful.</param>
-    /// <returns>True if deserialization succeeded; otherwise, false.</returns>
-    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
-    public static bool TryFromJson(string json, out CustomTemplate? value)
-    {
-        ArgumentException.ThrowIfNullOrEmpty(json);
+	/// <summary>
+	/// Attempts to deserialize a JSON string to a <see cref="CustomTemplate"/> instance.
+	/// </summary>
+	/// <param name="json">The JSON string to deserialize.</param>
+	/// <param name="value">Receives the deserialized template if successful.</param>
+	/// <returns>True if deserialization succeeded; otherwise, false.</returns>
+	/// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+	public static bool TryFromJson(string json, out CustomTemplate? value)
+	{
+		ArgumentException.ThrowIfNullOrEmpty(json);
 
-        try
-        {
-            value = JsonSerializer.Deserialize<CustomTemplate>(json, JsonOptions);
-            return true;
-        }
-        catch (JsonException)
-        {
-            value = null;
-            return false;
-        }
-    }
+		try
+		{
+			value = JsonSerializer.Deserialize<CustomTemplate>(json, JsonOptions);
+			return true;
+		}
+		catch (JsonException)
+		{
+			value = null;
+			return false;
+		}
+	}
 }

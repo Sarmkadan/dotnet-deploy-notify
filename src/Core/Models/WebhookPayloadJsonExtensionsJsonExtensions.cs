@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json;
+using DotNetDeployNotify.Serialization;
 
 namespace DotNetDeployNotify.Core.Models;
 
@@ -8,7 +9,7 @@ namespace DotNetDeployNotify.Core.Models;
 /// </summary>
 public static class WebhookPayloadJsonExtensionsJsonExtensions
 {
-	private static readonly JsonSerializerOptions _jsonSerializerOptions = new(JsonSerializerDefaults.Web)
+	private static readonly JsonSerializerOptions _jsonSerializerOptions = new(SecureJsonSerializerOptions.UntrustedInput)
 	{
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 		WriteIndented = false
