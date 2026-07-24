@@ -68,6 +68,9 @@ public sealed class ChannelConfiguration
     /// <summary>Whether to include emoji status indicators in notification messages. Defaults to true.</summary>
     public bool EnableEmojis { get; set; } = true;
 
+        /// <summary>Maximum degree of parallelism for sending to this channel (0 = unlimited, default = 4)</summary>
+        public int MaxDegreeOfParallelism { get; set; } = 4;
+
     /// <summary>When this configuration was created</summary>
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
