@@ -85,6 +85,7 @@ public static class DependencyInjection
         services.AddScoped<INotificationChannel, SlackChannel>();
         services.AddScoped<INotificationChannel, DiscordChannel>();
         services.AddScoped<INotificationChannel, TelegramChannel>();
+    services.AddScoped<INotificationChannel, TeamsChannel>();
         services.AddScoped<NotificationDispatcher>();
 
         return services;
