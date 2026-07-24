@@ -5,6 +5,7 @@
 // =============================================================================
 
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Utilities;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetDeployNotify.Services;
@@ -27,7 +28,7 @@ public interface IBatchNotificationService
     Task RemoveNotificationAsync(string batchId, string notificationId);
 
     /// <summary>Sends a batch of notifications</summary>
-    Task<List<NotificationResult>> SendBatchAsync(string batchId);
+    Task<BatchNotificationResult> SendBatchAsync(string batchId);
 
     /// <summary>Gets all pending batches</summary>
     Task<List<BatchNotification>> GetPendingBatchesAsync();
@@ -180,7 +181,7 @@ public class BatchNotificationService : IBatchNotificationService
     /// <summary>
     /// Sends all notifications in a batch
     /// </summary>
-    public async Task<List<NotificationResult>> SendBatchAsync(string batchId)
+    public async Task<BatchNotificationResult> SendBatchAsync(string batchId)
     {
         BatchNotification? batch;
         lock (_lockObject)
@@ -201,28 +202,47 @@ public class BatchNotificationService : IBatchNotificationService
         _logger.LogInformation("Sending batch {BatchId} with {NotificationCount} notifications",
             batchId, batch.GetNotificationCount());
 
-        var allResults = new List<NotificationResult>();
-
         try
         {
             batch.Status = BatchStatus.Processing;
 
-            // Send each notification
-            foreach (var notification in batch.Notifications)
-            {
-                var results = await _notificationService.SendNotificationAsync(notification.Id, batch.Channels);
-                allResults.AddRange(results);
+            // Send each notification with parallel dispatch and error isolation
+            var batchResult = await ParallelBatchDispatcher.SendBatchWithParallelismAsync(
+                batchId,
+                batch.Notifications,
+                async notification =>
+                {
+                    var results = await _notificationService.SendNotificationAsync(notification.Id, batch.Channels);
+                    batch.TotalDeliveryAttempts += batch.Channels.Count;
+                    batch.SuccessfulDeliveries += results.Count(r => r.IsSuccessful);
+                    batch.FailedDeliveries += results.Count(r => !r.IsSuccessful);
+                    return results;
+                },
+                _logger);
 
-                batch.TotalDeliveryAttempts += batch.Channels.Count;
-                batch.SuccessfulDeliveries += results.Count(r => r.IsSuccessful);
-                batch.FailedDeliveries += results.Count(r => !r.IsSuccessful);
+            // Update batch statistics from the results
+            batch.TotalDeliveryAttempts = batchResult.TotalDeliveryAttempts;
+            batch.SuccessfulDeliveries = batchResult.SuccessfulDeliveries;
+            batch.FailedDeliveries = batchResult.FailedDeliveries;
+
+            if (batchResult.IsSuccessful)
+            {
+                batch.MarkAsSent();
+                _logger.LogInformation(
+                    "Batch {BatchId} sent: {Summary}",
+                    batchId,
+                    batch.GetSummary());
+            }
+            else
+            {
+                batch.Status = BatchStatus.PartiallyCompleted;
+                _logger.LogWarning(
+                    "Batch {BatchId} partially completed: {Summary}",
+                    batchId,
+                    batch.GetSummary());
             }
 
-            batch.MarkAsSent();
-            _logger.LogInformation(
-                "Batch {BatchId} sent: {Summary}",
-                batchId,
-                batch.GetSummary());
+            return batchResult;
         }
         catch (Exception ex)
         {
@@ -230,8 +250,6 @@ public class BatchNotificationService : IBatchNotificationService
             batch.MarkAsFailed();
             throw;
         }
-
-        return allResults;
     }
 
     /// <summary>

@@ -8,6 +8,7 @@ using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Exceptions;
 using DotNetDeployNotify.Core.Models;
 using DotNetDeployNotify.Data;
+using DotNetDeployNotify.Utilities;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetDeployNotify.Services;
@@ -137,11 +138,15 @@ public class NotificationService : INotificationService
         var pendingNotifications = await _notificationRepository.GetPendingAsync();
         var allResults = new List<NotificationResult>();
 
-        foreach (var notification in pendingNotifications)
-        {
-            var results = await SendNotificationAsync(notification.Id);
-            allResults.AddRange(results);
-        }
+        // Use parallel dispatch for pending notifications
+        var parallelResults = await ParallelBatchDispatcher.SendBatchWithParallelismAsync(
+            "pending-notifications",
+            pendingNotifications,
+            async notification => await SendNotificationAsync(notification.Id),
+            _logger);
+
+        // Extract results from batch result
+        allResults.AddRange(parallelResults.PerNotificationResults);
 
         _logger.LogInformation("Sent {Count} notifications", allResults.Count);
         return allResults;
@@ -156,22 +161,26 @@ public class NotificationService : INotificationService
 
         try
         {
-            // Retrieve the notification
+            // Get the notification
             var notification = await _notificationRepository.GetByIdAsync(notificationId);
             if (notification is null)
             {
                 throw new NotificationException($"Notification {notificationId} not found");
             }
 
-            // Get channels to send to
+            // Use parallel dispatch with bounded concurrency and error isolation
+            var channelConfigs = new List<ChannelConfiguration>();
+
+            // Collect all valid configurations
             var channelsToSend = channels ?? notification.Channels;
-            if (!channelsToSend.Any())
+            if (channelsToSend is null || channelsToSend.Count == 0)
             {
                 _logger.LogWarning("No channels specified for notification {Id}", notificationId);
+                notification.MarkAsProcessed();
+                await _notificationRepository.UpdateAsync(notification);
                 return results;
             }
 
-            // Send to each channel
             foreach (var channel in channelsToSend)
             {
                 var configs = await _configRepository.GetByChannelAsync(channel);
@@ -193,6 +202,24 @@ public class NotificationService : INotificationService
                         continue;
                     }
 
+                    channelConfigs.Add(config);
+                }
+            }
+
+            if (!channelConfigs.Any())
+            {
+                _logger.LogWarning("No valid channel configurations for notification {Id}", notificationId);
+                notification.MarkAsProcessed();
+                await _notificationRepository.UpdateAsync(notification);
+                return results;
+            }
+
+            // Send to all channels in parallel with bounded concurrency
+            var parallelResults = await ParallelBatchDispatcher.SendToChannelsWithParallelismAsync(
+                notificationId,
+                channelConfigs,
+                async config =>
+                {
                     // Send the webhook
                     var result = await _dispatcher.SendToWebhookAsync(config, notification);
 
@@ -206,20 +233,23 @@ public class NotificationService : INotificationService
 
                     // Store the result
                     await _resultRepository.CreateAsync(result);
-                    results.Add(result);
 
                     notification.IncrementDeliveryAttempt();
-                }
-            }
+
+                    return result;
+                },
+                _logger);
+
+            results.AddRange(parallelResults);
 
             // Mark as processed
             notification.MarkAsProcessed();
             await _notificationRepository.UpdateAsync(notification);
 
             _logger.LogInformation(
-                "Sent notification {Id} to {Channels}: {SuccessCount} succeeded, {FailureCount} failed",
+                "Sent notification {Id} to {ChannelCount} channels: {SuccessCount} succeeded, {FailureCount} failed",
                 notificationId,
-                string.Join(", ", channelsToSend),
+                channelConfigs.Count,
                 results.Count(r => r.IsSuccessful),
                 results.Count(r => !r.IsSuccessful));
 
