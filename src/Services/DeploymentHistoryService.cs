@@ -4,9 +4,9 @@
 // CTO & Software Architect
 // =============================================================================
 
-using System.Collections.Concurrent;
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Persistence;
 using Microsoft.Extensions.Logging;
 
 namespace DotNetDeployNotify.Services;
@@ -42,36 +42,47 @@ public interface IDeploymentHistoryService
 }
 
 /// <summary>
-/// In-memory implementation of <see cref="IDeploymentHistoryService"/>
+/// Implementation of <see cref="IDeploymentHistoryService"/> backed by a pluggable
+/// <see cref="IDeploymentHistoryRepository"/>. Statistics and filtering are computed here; durability
+/// is delegated entirely to the repository, so the service behaves identically whether history is kept
+/// in memory or persisted to disk
 /// </summary>
 public sealed class DeploymentHistoryService : IDeploymentHistoryService
 {
-    private readonly ConcurrentBag<DeploymentHistoryEntry> _entries = new();
+    private readonly IDeploymentHistoryRepository _repository;
     private readonly ILogger<DeploymentHistoryService> _logger;
 
-    /// <summary>Initialises the service with its dependencies</summary>
+    /// <summary>Initialises the service with an in-memory, process-local repository</summary>
     public DeploymentHistoryService(ILogger<DeploymentHistoryService> logger)
+        : this(logger, new InMemoryDeploymentHistoryRepository())
     {
+    }
+
+    /// <summary>Initialises the service with its dependencies</summary>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="repository"/> is <see langword="null"/></exception>
+    public DeploymentHistoryService(ILogger<DeploymentHistoryService> logger, IDeploymentHistoryRepository repository)
+    {
+        ArgumentNullException.ThrowIfNull(repository);
+
         _logger = logger;
+        _repository = repository;
     }
 
     /// <summary>
     /// Stores a deployment history entry
     /// </summary>
-    public Task RecordDeploymentAsync(DeploymentHistoryEntry entry)
+    public async Task RecordDeploymentAsync(DeploymentHistoryEntry entry)
     {
         ArgumentNullException.ThrowIfNull(entry);
 
         if (string.IsNullOrWhiteSpace(entry.ProjectName))
             throw new ArgumentException("ProjectName is required", nameof(entry));
 
-        _entries.Add(entry);
+        await _repository.AddAsync(entry).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Recorded deployment: {Project} v{Version} [{Status}] on {Environment}",
             entry.ProjectName, entry.Version, entry.FinalStatus, entry.TargetEnvironment);
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -88,43 +99,41 @@ public sealed class DeploymentHistoryService : IDeploymentHistoryService
     /// <summary>
     /// Returns deployment history for a project ordered most-recent first
     /// </summary>
-    public Task<List<DeploymentHistoryEntry>> GetProjectHistoryAsync(string projectName, int limit = 50)
+    public async Task<List<DeploymentHistoryEntry>> GetProjectHistoryAsync(string projectName, int limit = 50)
     {
         if (string.IsNullOrWhiteSpace(projectName))
             throw new ArgumentException("Project name must not be empty", nameof(projectName));
 
-        var results = _entries
+        var entries = await _repository.GetAllAsync().ConfigureAwait(false);
+        var results = entries
             .Where(e => string.Equals(e.ProjectName, projectName, StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(e => e.DeployedAt)
             .Take(limit)
             .ToList();
 
         _logger.LogDebug("Retrieved {Count} history entries for {Project}", results.Count, projectName);
-        return Task.FromResult(results);
+        return results;
     }
 
     /// <summary>
     /// Returns the most recent deployments across all projects
     /// </summary>
-    public Task<List<DeploymentHistoryEntry>> GetRecentDeploymentsAsync(int limit = 20)
+    public async Task<List<DeploymentHistoryEntry>> GetRecentDeploymentsAsync(int limit = 20)
     {
-        var results = _entries
-            .OrderByDescending(e => e.DeployedAt)
-            .Take(limit)
-            .ToList();
-
-        return Task.FromResult(results);
+        var results = await _repository.GetRecentAsync(limit).ConfigureAwait(false);
+        return results.ToList();
     }
 
     /// <summary>
     /// Computes aggregated statistics for the given project
     /// </summary>
-    public Task<DeploymentStatistics> GetStatisticsAsync(string projectName)
+    public async Task<DeploymentStatistics> GetStatisticsAsync(string projectName)
     {
         if (string.IsNullOrWhiteSpace(projectName))
             throw new ArgumentException("Project name must not be empty", nameof(projectName));
 
-        var projectEntries = _entries
+        var entries = await _repository.GetAllAsync().ConfigureAwait(false);
+        var projectEntries = entries
             .Where(e => string.Equals(e.ProjectName, projectName, StringComparison.OrdinalIgnoreCase))
             .ToList();
 
@@ -165,29 +174,31 @@ public sealed class DeploymentHistoryService : IDeploymentHistoryService
             MostActiveEnvironment = mostActiveEnvironment
         };
 
-        return Task.FromResult(stats);
+        return stats;
     }
 
     /// <summary>
     /// Returns history entries for a specific environment
     /// </summary>
-    public Task<List<DeploymentHistoryEntry>> GetByEnvironmentAsync(Environment environment, int limit = 50)
+    public async Task<List<DeploymentHistoryEntry>> GetByEnvironmentAsync(Environment environment, int limit = 50)
     {
-        var results = _entries
+        var entries = await _repository.GetAllAsync().ConfigureAwait(false);
+        var results = entries
             .Where(e => e.TargetEnvironment == environment)
             .OrderByDescending(e => e.DeployedAt)
             .Take(limit)
             .ToList();
 
-        return Task.FromResult(results);
+        return results;
     }
 
     /// <summary>
     /// Returns the last successfully completed deployment for a project/environment pair
     /// </summary>
-    public Task<DeploymentHistoryEntry?> GetLastSuccessfulDeploymentAsync(string projectName, Environment environment)
+    public async Task<DeploymentHistoryEntry?> GetLastSuccessfulDeploymentAsync(string projectName, Environment environment)
     {
-        var result = _entries
+        var entries = await _repository.GetAllAsync().ConfigureAwait(false);
+        var result = entries
             .Where(e =>
                 string.Equals(e.ProjectName, projectName, StringComparison.OrdinalIgnoreCase) &&
                 e.TargetEnvironment == environment &&
@@ -195,15 +206,16 @@ public sealed class DeploymentHistoryService : IDeploymentHistoryService
             .OrderByDescending(e => e.DeployedAt)
             .FirstOrDefault();
 
-        return Task.FromResult(result);
+        return result;
     }
 
     /// <summary>
     /// Returns rollback entries for a project
     /// </summary>
-    public Task<List<DeploymentHistoryEntry>> GetRollbackEntriesAsync(string projectName, int limit = 50)
+    public async Task<List<DeploymentHistoryEntry>> GetRollbackEntriesAsync(string projectName, int limit = 50)
     {
-        var results = _entries
+        var entries = await _repository.GetAllAsync().ConfigureAwait(false);
+        var results = entries
             .Where(e =>
                 string.Equals(e.ProjectName, projectName, StringComparison.OrdinalIgnoreCase) &&
                 e.IsRollback)
@@ -211,6 +223,6 @@ public sealed class DeploymentHistoryService : IDeploymentHistoryService
             .Take(limit)
             .ToList();
 
-        return Task.FromResult(results);
+        return results;
     }
 }
