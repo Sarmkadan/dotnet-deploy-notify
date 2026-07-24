@@ -5,6 +5,7 @@
 // =====================================================================
 
 using System.Text.Json;
+using DotNetDeployNotify.Core.Models;
 
 namespace DotNetDeployNotify.Integration;
 
@@ -474,5 +475,141 @@ public class CircuitBreaker
         {
             public void Dispose() { }
         }
+    }
+}
+
+/// <summary>
+/// Extension methods for converting HttpResponse to NotificationResult for unified error handling
+/// </summary>
+public static class HttpResponseExtensions
+{
+    /// <summary>
+    /// Converts an HttpResponse to a NotificationResult with consistent error classification
+    /// </summary>
+    /// <param name="httpResponse">The HTTP response to convert</param>
+    /// <param name="notificationId">The notification ID for tracking</param>
+    /// <param name="channel">The notification channel</param>
+    /// <param name="configurationId">The configuration ID</param>
+    /// <returns>A NotificationResult with properly classified status</returns>
+    /// <exception cref="ArgumentNullException">Thrown when httpResponse is null</exception>
+    public static NotificationResult ToNotificationResult(
+        this HttpResponse<string> httpResponse,
+        string notificationId,
+        NotificationChannel channel,
+        string configurationId)
+    {
+        ArgumentNullException.ThrowIfNull(httpResponse);
+        ArgumentException.ThrowIfNullOrEmpty(notificationId);
+        ArgumentException.ThrowIfNullOrEmpty(configurationId);
+
+        var result = new NotificationResult
+        {
+            NotificationId = notificationId,
+            Channel = channel,
+            ConfigurationId = configurationId,
+            HttpStatusCode = httpResponse.StatusCode,
+            ResponseBody = httpResponse.Content,
+            AttemptedAt = DateTime.UtcNow,
+            DurationMs = (long)httpResponse.ElapsedTime.TotalMilliseconds
+        };
+
+        // Classify the status based on HTTP status code
+        var statusClassification = ClassifyHttpStatusCode(httpResponse.StatusCode);
+
+        switch (statusClassification)
+        {
+            case HttpStatusCodeClassification.Success:
+                result.MarkAsSuccessful(httpResponse.StatusCode, httpResponse.Content ?? string.Empty);
+                break;
+
+            case HttpStatusCodeClassification.RetryableFailure:
+                result.MarkAsFailed(
+                    $"HTTP {httpResponse.StatusCode}: {httpResponse.ErrorMessage ?? httpResponse.Content ?? "Unknown error"}",
+                    null,
+                    httpResponse.StatusCode);
+                result.MarkForRetry(GetRetryDelay(httpResponse.StatusCode));
+                break;
+
+            case HttpStatusCodeClassification.PermanentFailure:
+            default:
+                result.MarkAsFailed(
+                    $"HTTP {httpResponse.StatusCode}: {httpResponse.ErrorMessage ?? httpResponse.Content ?? "Unknown error"}",
+                    null,
+                    httpResponse.StatusCode);
+                break;
+        }
+
+        return result;
+    }
+
+    /// <summary>
+    /// Classifies HTTP status codes into success, retryable failure, or permanent failure categories
+    /// </summary>
+    /// <param name="statusCode">The HTTP status code to classify</param>
+    /// <returns>The classification of the status code</returns>
+    private static HttpStatusCodeClassification ClassifyHttpStatusCode(int statusCode)
+    {
+        // 2xx: Success - always successful
+        if (statusCode >= 200 && statusCode < 300)
+        {
+            return HttpStatusCodeClassification.Success;
+        }
+
+        // 4xx: Client errors - typically permanent failures, except specific retryable ones
+        if (statusCode >= 400 && statusCode < 500)
+        {
+            // Retryable client errors (rate limiting, timeouts)
+            if (statusCode == 408 || statusCode == 429)
+            {
+                return HttpStatusCodeClassification.RetryableFailure;
+            }
+
+            // All other 4xx errors are permanent failures
+            return HttpStatusCodeClassification.PermanentFailure;
+        }
+
+        // 5xx: Server errors - always retryable
+        if (statusCode >= 500 && statusCode < 600)
+        {
+            return HttpStatusCodeClassification.RetryableFailure;
+        }
+
+        // Unknown status codes default to permanent failure
+        return HttpStatusCodeClassification.PermanentFailure;
+    }
+
+    /// <summary>
+    /// Determines the retry delay based on HTTP status code
+    /// </summary>
+    /// <param name="statusCode">The HTTP status code</param>
+    /// <returns>DateTime for next retry attempt</returns>
+    private static DateTime GetRetryDelay(int statusCode)
+    {
+        // For 429 Too Many Requests, use exponential backoff based on Retry-After header
+        // For other retryable errors, use a base delay
+        var baseDelay = TimeSpan.FromSeconds(5);
+
+        // Exponential backoff for server errors
+        if (statusCode >= 500)
+        {
+            baseDelay = TimeSpan.FromSeconds(Math.Min(30, Math.Pow(2, 3))); // Cap at 30s
+        }
+
+        return DateTime.UtcNow.Add(baseDelay);
+    }
+
+    /// <summary>
+    /// Classification of HTTP status codes for retry logic
+    /// </summary>
+    private enum HttpStatusCodeClassification
+    {
+        /// <summary>Request was successful</summary>
+        Success,
+
+        /// <summary>Failure that may succeed on retry</summary>
+        RetryableFailure,
+
+        /// <summary>Failure that won't succeed on retry</summary>
+        PermanentFailure
     }
 }
