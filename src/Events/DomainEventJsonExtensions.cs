@@ -22,90 +22,6 @@ namespace DotNetDeployNotify.Events;
 public static class DomainEventJsonExtensions
 {
     /// <summary>
-    /// JsonSerializerOptions configured for DomainEvent serialization.
-    /// Uses SecureJsonSerializerOptions base configuration with controlled polymorphic deserialization.
-    /// </summary>
-    private static readonly JsonSerializerOptions _jsonSerializerOptions = new(SecureJsonSerializerOptions.InternalData)
-    {
-        TypeInfoResolver = new DomainEventTypeInfoResolver()
-    };
-
-    /// <summary>
-    /// Serializes a <see cref="DomainEvent"/> to a JSON string
-    /// </summary>
-    /// <param name="value">The domain event to serialize</param>
-    /// <param name="indented">Whether to format the JSON with indentation for readability</param>
-    /// <returns>A JSON string representation of the domain event</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
-    public static string ToJson(this DomainEvent value, bool indented = false)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var options = indented
-            ? new JsonSerializerOptions(_jsonSerializerOptions)
-            {
-                WriteIndented = true
-            }
-            : _jsonSerializerOptions;
-
-        return JsonSerializer.Serialize(value, options);
-    }
-
-    /// <summary>
-    /// Deserializes a JSON string to a <see cref="DomainEvent"/> instance
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize</param>
-    /// <returns>The deserialized domain event, or null if the JSON is empty or whitespace</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
-    /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized to a known <see cref="DomainEvent"/> type</exception>
-    public static DomainEvent? FromJson(string json)
-    {
-        ArgumentNullException.ThrowIfNull(json);
-
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return null;
-        }
-
-        // Use controlled polymorphic deserialization with DomainEventTypeInfoResolver
-        // This is safe because it only allows known DomainEvent subtypes
-        var options = new JsonSerializerOptions(_jsonSerializerOptions);
-
-        return JsonSerializer.Deserialize<DomainEvent>(json, options);
-    }
-
-    /// <summary>
-    /// Attempts to deserialize a JSON string to a <see cref="DomainEvent"/> instance
-    /// </summary>
-    /// <param name="json">The JSON string to deserialize</param>
-    /// <param name="value">Receives the deserialized domain event if successful</param>
-    /// <returns>True if deserialization succeeded; otherwise, false</returns>
-    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
-    public static bool TryFromJson(string json, out DomainEvent? value)
-    {
-        ArgumentNullException.ThrowIfNull(json);
-
-        value = null;
-
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return false;
-        }
-
-        try
-        {
-            var options = new JsonSerializerOptions(_jsonSerializerOptions);
-
-            value = JsonSerializer.Deserialize<DomainEvent>(json, options);
-            return value is not null;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
     /// Custom type info resolver that handles polymorphic deserialization of <see cref="DomainEvent"/> types
     /// </summary>
     /// <remarks>
@@ -130,5 +46,42 @@ public static class DomainEventJsonExtensions
 
             return jsonTypeInfo;
         }
+    }
+
+    /// <summary>
+    /// Serializes a <see cref="DomainEvent"/> to a JSON string
+    /// </summary>
+    /// <param name="value">The domain event to serialize</param>
+    /// <param name="indented">Whether to format the JSON with indentation for readability</param>
+    /// <returns>A JSON string representation of the domain event</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null</exception>
+    public static string ToJson(this DomainEvent value, bool indented = false)
+    {
+        ArgumentNullException.ThrowIfNull(value);
+
+        return JsonSerializationUtilities.Serialize(value, indented);
+    }
+
+    /// <summary>
+    /// Deserializes a JSON string to a <see cref="DomainEvent"/> instance
+    /// </summary>
+    /// <param name="json">The JSON string to deserialize</param>
+    /// <returns>The deserialized domain event, or null if the JSON is empty or whitespace</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
+    public static DomainEvent? FromJson(string json)
+    {
+        return JsonSerializationUtilities.SafeDeserialize<DomainEvent>(json, JsonSerializationUtilities.DefaultInternalOptions);
+    }
+
+    /// <summary>
+    /// Attempts to deserialize a JSON string to a <see cref="DomainEvent"/> instance
+    /// </summary>
+    /// <param name="json">The JSON string to deserialize</param>
+    /// <param name="value">Receives the deserialized domain event if successful</param>
+    /// <returns>True if deserialization succeeded; otherwise, false</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
+    public static bool TryFromJson(string json, out DomainEvent? value)
+    {
+        return JsonSerializationUtilities.TryDeserialize(json, JsonSerializationUtilities.DefaultInternalOptions, out value);
     }
 }

@@ -3,9 +3,9 @@
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
-//
+// ====================================================================
+
 // Provides JSON serialization extensions for NotificationResult objects
-// ============================================================================
 
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -21,18 +21,6 @@ namespace DotNetDeployNotify.Core.Models;
 /// </remarks>
 public static class NotificationResultJsonExtensions
 {
-    private static readonly JsonSerializerOptions _jsonOptions = new(SecureJsonSerializerOptions.InternalData)
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = false
-    };
-
-    private static readonly JsonSerializerOptions _jsonOptionsIndented = new(SecureJsonSerializerOptions.InternalData)
-    {
-        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        WriteIndented = true
-    };
-
     /// <summary>
     /// Converts a <see cref="NotificationResult"/> object to its JSON representation
     /// </summary>
@@ -44,7 +32,7 @@ public static class NotificationResultJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        return JsonSerializer.Serialize(value, indented ? _jsonOptionsIndented : _jsonOptions);
+        return JsonSerializationUtilities.Serialize(value, indented);
     }
 
     /// <summary>
@@ -52,15 +40,10 @@ public static class NotificationResultJsonExtensions
     /// </summary>
     /// <param name="json">JSON string to deserialize</param>
     /// <returns>Deserialized notification result, or null if JSON is empty or whitespace</returns>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is null or empty</exception>
-    /// <exception cref="JsonException">Thrown when JSON is invalid or cannot be deserialized</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
     public static NotificationResult? FromJson(string json)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
-
-        return string.IsNullOrWhiteSpace(json)
-            ? null
-            : JsonSerializer.Deserialize<NotificationResult>(json, _jsonOptions);
+        return JsonSerializationUtilities.SafeDeserialize<NotificationResult>(json, JsonSerializationUtilities.DefaultInternalOptions);
     }
 
     /// <summary>
@@ -69,20 +52,9 @@ public static class NotificationResultJsonExtensions
     /// <param name="json">JSON string to deserialize</param>
     /// <param name="value">Receives the deserialized notification result if successful</param>
     /// <returns>True if deserialization succeeded; false otherwise</returns>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="json"/> is null or empty</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
     public static bool TryFromJson(string json, out NotificationResult? value)
     {
-        ArgumentException.ThrowIfNullOrEmpty(json);
-
-        try
-        {
-            value = JsonSerializer.Deserialize<NotificationResult>(json, _jsonOptions);
-            return true;
-        }
-        catch (JsonException)
-        {
-            value = null;
-            return false;
-        }
+        return JsonSerializationUtilities.TryDeserialize(json, JsonSerializationUtilities.DefaultInternalOptions, out value);
     }
 }
