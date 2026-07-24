@@ -16,25 +16,12 @@ namespace DotNetDeployNotify.Infrastructure;
 public static class ServiceExtensionsJsonExtensions
 {
     /// <summary>
-    /// JsonSerializerOptions with camelCase naming policy for consistent serialization.
-    /// Uses SecureJsonSerializerOptions base configuration.
-    /// </summary>
-    private static readonly JsonSerializerOptions _jsonOptions = new(SecureJsonSerializerOptions.InternalData)
-    {
-        PropertyNameCaseInsensitive = true
-    };
-
-    /// <summary>
     /// Serializes ServiceExtensions type information to JSON string
     /// </summary>
     /// <param name="indented">Whether to format the JSON with indentation</param>
     /// <returns>JSON string representation of ServiceExtensions metadata</returns>
     public static string ToJson(bool indented = false)
     {
-        var options = new JsonSerializerOptions(_jsonOptions)
-        {
-            WriteIndented = indented
-        };
         var metadata = new ServiceExtensionsMetadata
         {
             Type = "ServiceExtensions",
@@ -54,7 +41,7 @@ public static class ServiceExtensionsJsonExtensions
                 "GetRetryDelay"
             ]
         };
-        return JsonSerializer.Serialize(metadata, options);
+        return JsonSerializationUtilities.Serialize(metadata, indented);
     }
 
     /// <summary>
@@ -65,16 +52,7 @@ public static class ServiceExtensionsJsonExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
     public static ServiceExtensionsMetadata? FromJson(string json)
     {
-        ArgumentNullException.ThrowIfNull(json);
-
-        try
-        {
-            return JsonSerializer.Deserialize<ServiceExtensionsMetadata>(json, _jsonOptions);
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
+        return JsonSerializationUtilities.SafeDeserialize<ServiceExtensionsMetadata>(json, JsonSerializationUtilities.DefaultInternalOptions);
     }
 
     /// <summary>
@@ -86,18 +64,7 @@ public static class ServiceExtensionsJsonExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
     public static bool TryFromJson(string json, out ServiceExtensionsMetadata? value)
     {
-        ArgumentNullException.ThrowIfNull(json);
-
-        try
-        {
-            value = JsonSerializer.Deserialize<ServiceExtensionsMetadata>(json, _jsonOptions);
-            return true;
-        }
-        catch (JsonException)
-        {
-            value = null;
-            return false;
-        }
+        return JsonSerializationUtilities.TryDeserialize(json, JsonSerializationUtilities.DefaultInternalOptions, out value);
     }
 
     /// <summary>

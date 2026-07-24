@@ -16,14 +16,6 @@ namespace DotNetDeployNotify.Infrastructure;
 /// </summary>
 public static class CanaryServiceExtensionsJsonExtensions
 {
-    /// <summary>
-    /// JsonSerializerOptions with camelCase naming policy for consistent serialization.
-    /// Uses SecureJsonSerializerOptions base configuration.
-    /// </summary>
-    private static readonly JsonSerializerOptions _jsonOptions = new(SecureJsonSerializerOptions.InternalData)
-    {
-        PropertyNameCaseInsensitive = true
-    };
 
     /// <summary>
     /// Serializes CanaryServiceExtensions metadata to JSON string
@@ -36,12 +28,7 @@ public static class CanaryServiceExtensionsJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(metadata);
 
-        var options = new JsonSerializerOptions(_jsonOptions)
-        {
-            WriteIndented = indented
-        };
-
-        return JsonSerializer.Serialize(metadata, options);
+        return JsonSerializationUtilities.Serialize(metadata, indented);
     }
 
     /// <summary>
@@ -52,16 +39,7 @@ public static class CanaryServiceExtensionsJsonExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
     public static CanaryServiceExtensionsMetadata? FromJson(string json)
     {
-        ArgumentNullException.ThrowIfNull(json);
-
-        try
-        {
-            return JsonSerializer.Deserialize<CanaryServiceExtensionsMetadata>(json, _jsonOptions);
-        }
-        catch (JsonException)
-        {
-            return null;
-        }
+        return JsonSerializationUtilities.SafeDeserialize<CanaryServiceExtensionsMetadata>(json, JsonSerializationUtilities.DefaultInternalOptions);
     }
 
     /// <summary>
@@ -73,18 +51,7 @@ public static class CanaryServiceExtensionsJsonExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is null</exception>
     public static bool TryFromJson(string json, out CanaryServiceExtensionsMetadata? value)
     {
-        ArgumentNullException.ThrowIfNull(json);
-
-        try
-        {
-            value = JsonSerializer.Deserialize<CanaryServiceExtensionsMetadata>(json, _jsonOptions);
-            return true;
-        }
-        catch (JsonException)
-        {
-            value = null;
-            return false;
-        }
+        return JsonSerializationUtilities.TryDeserialize(json, JsonSerializationUtilities.DefaultInternalOptions, out value);
     }
 
     /// <summary>
