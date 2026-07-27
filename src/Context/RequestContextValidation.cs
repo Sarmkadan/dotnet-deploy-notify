@@ -79,10 +79,6 @@ public static class RequestContextValidation
         {
             errors.Add("Metadata dictionary cannot be null");
         }
-        else if (value.Metadata.ContainsKey(null!))
-        {
-            errors.Add("Metadata dictionary cannot contain null keys");
-        }
 
         // Validate ExecutionTimeMs
         if (value.ExecutionTimeMs < 0)
