@@ -1,2 +1,2 @@
 
-This test class covers all the public members of `ResultValidation` class and includes happy path, edge cases, and error paths.
+This file includes 6 test methods that cover the happy path, edge cases, and error paths for the `Validate`, `IsValid`, and `EnsureValid` methods. The tests ensure that the methods behave as expected and throw the correct exceptions when necessary.
