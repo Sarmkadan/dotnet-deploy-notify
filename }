@@ -1,2 +1,2 @@
 
-This file contains 20 test methods covering the public members of `BatchNotificationExtensions`. Each test method is designed to test a specific scenario, including happy paths, edge cases, and error paths. The tests use the xUnit framework and are written in a concise and readable style.
+This test class covers all the public members of `ResultValidation` class and includes happy path, edge cases, and error paths.
