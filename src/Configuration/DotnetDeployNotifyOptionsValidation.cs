@@ -14,7 +14,7 @@ public static class DotnetDeployNotifyOptionsValidation
     /// Validates the provided <see cref="DotnetDeployNotifyOptions"/> instance.
     /// </summary>
     /// <param name="value">The configuration to validate.</param>
-    /// <returns>A list of human-readable validation problems; empty if valid.</returns>
+    /// <returns>A list of human‑readable validation problems; empty if valid.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static IReadOnlyList<string> Validate(this DotnetDeployNotifyOptions value)
     {
@@ -35,7 +35,7 @@ public static class DotnetDeployNotifyOptionsValidation
     /// Validates the provided <see cref="NotificationConfig"/> instance.
     /// </summary>
     /// <param name="value">The configuration to validate.</param>
-    /// <returns>A list of human-readable validation problems; empty if valid.</returns>
+    /// <returns>A list of human‑readable validation problems; empty if valid.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static IReadOnlyList<string> Validate(this NotificationConfig value)
     {
@@ -123,7 +123,7 @@ public static class DotnetDeployNotifyOptionsValidation
     /// Validates the provided <see cref="EnvironmentChannelConfig"/> instance.
     /// </summary>
     /// <param name="value">The configuration to validate.</param>
-    /// <returns>A list of human-readable validation problems; empty if valid.</returns>
+    /// <returns>A list of human‑readable validation problems; empty if valid.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static IReadOnlyList<string> Validate(this EnvironmentChannelConfig value)
     {
@@ -174,7 +174,7 @@ public static class DotnetDeployNotifyOptionsValidation
     /// Validates the provided <see cref="CanaryThresholds"/> instance.
     /// </summary>
     /// <param name="value">The configuration to validate.</param>
-    /// <returns>A list of human-readable validation problems; empty if valid.</returns>
+    /// <returns>A list of human‑readable validation problems; empty if valid.</returns>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
     public static IReadOnlyList<string> Validate(this CanaryThresholds value)
     {
@@ -189,22 +189,22 @@ public static class DotnetDeployNotifyOptionsValidation
 
         if (value.MaxP95LatencyMs < 0)
         {
-            problems.Add($"Canary.Thresholds.MaxP95LatencyMs must be non-negative, but was {value.MaxP95LatencyMs}.");
+            problems.Add($"Canary.Thresholds.MaxP95LatencyMs must be non‑negative, but was {value.MaxP95LatencyMs}.");
         }
 
         if (value.MaxP99LatencyMs < 0)
         {
-            problems.Add($"Canary.Thresholds.MaxP99LatencyMs must be non-negative, but was {value.MaxP99LatencyMs}.");
+            problems.Add($"Canary.Thresholds.MaxP99LatencyMs must be non‑negative, but was {value.MaxP99LatencyMs}.");
         }
 
         if (value.ErrorRateMultiplier < 0)
         {
-            problems.Add($"Canary.Thresholds.ErrorRateMultiplier must be non-negative, but was {value.ErrorRateMultiplier}.");
+            problems.Add($"Canary.Thresholds.ErrorRateMultiplier must be non‑negative, but was {value.ErrorRateMultiplier}.");
         }
 
         if (value.LatencyDegradationPercent < 0)
         {
-            problems.Add($"Canary.Thresholds.LatencyDegradationPercent must be non-negative, but was {value.LatencyDegradationPercent}.");
+            problems.Add($"Canary.Thresholds.LatencyDegradationPercent must be non‑negative, but was {value.LatencyDegradationPercent}.");
         }
 
         return problems.AsReadOnly();
