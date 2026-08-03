@@ -12,6 +12,9 @@ using Xunit;
 
 namespace DotNetDeployNotify.Tests.Canary;
 
+/// <summary>
+/// Type description: Evaluates the health of a Canary deployment based on its metrics.
+/// </summary>
 public class CanaryHealthEvaluatorTests
 {
     private readonly IOptions<CanaryOptions> _options;
