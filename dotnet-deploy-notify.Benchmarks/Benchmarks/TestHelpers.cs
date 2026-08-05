@@ -84,6 +84,8 @@ public static class HttpClientExtensions
 {
     public static void SetupFakeRequest(this HttpClient httpClient, HttpMessageHandler handler)
     {
+        ArgumentNullException.ThrowIfNull(httpClient);
+        ArgumentNullException.ThrowIfNull(handler);
         // This is a mock setup - in real benchmarking, we'd use HttpClient directly
         // The actual mock behavior is handled in the handler
     }
