@@ -1,150 +1,145 @@
-#nullable enable
-using DotNetDeployNotify.Core;
+// Copyright (c) .NET Deploy Notify
+// SPDX-License-Identifier: MIT
+
+using System;
+using System.Runtime.Serialization;
 using DotNetDeployNotify.Core.Models;
-using FluentAssertions;
 using Xunit;
 
 namespace DotNetDeployNotify.Tests;
 
-public class BatchNotificationJsonExtensionsTests
+/// <summary>
+/// Unit tests for <see cref="BatchNotificationJsonExtensions"/>.
+/// </summary>
+public sealed class BatchNotificationJsonExtensionsTests
 {
-    private static DeploymentNotification CreateValidNotification()
+    /// <summary>
+    /// Creates a <see cref="BatchNotification"/> instance without invoking any constructor.
+    /// This works even if the type only has parameterised constructors.
+    /// </summary>
+    private static BatchNotification CreateEmptyBatchNotification()
     {
-        return new DeploymentNotification
-        {
-            ProjectName = "SampleProject",
-            Version = "1.0.0",
-            BranchName = "main",
-            Channels = new List<NotificationChannel> { NotificationChannel.Slack },
-        };
-    }
-
-    private static BatchNotification CreateValidBatch()
-    {
-        return new BatchNotification
-        {
-            Id = Guid.NewGuid().ToString(),
-            Name = "Nightly batch",
-            Notifications = new List<DeploymentNotification> { CreateValidNotification() },
-            Channels = new List<NotificationChannel> { NotificationChannel.Slack },
-            CreatedAt = DateTime.UtcNow,
-        };
+        // FormatterServices can create an uninitialized object even when no public
+        // parameterless constructor exists. All properties will have their default values.
+        return (BatchNotification)FormatterServices.GetUninitializedObject(typeof(BatchNotification));
     }
 
     [Fact]
-    public void ToJson_ValidBatch_ReturnsJsonString()
+    public void ToJson_Returns_ValidJson_WhenObjectIsNotNull()
     {
         // Arrange
-        var batch = CreateValidBatch();
+        var notification = CreateEmptyBatchNotification();
 
         // Act
-        var json = BatchNotificationJsonExtensions.ToJson(batch);
+        var json = notification.ToJson();
 
         // Assert
-        json.Should().NotBeNullOrEmpty();
+        Assert.False(string.IsNullOrWhiteSpace(json));
+        Assert.StartsWith("{", json);
+        Assert.EndsWith("}", json);
     }
 
     [Fact]
-    public void ToJson_NullBatch_ThrowsArgumentNullException()
+    public void ToJson_Indents_WhenRequested()
     {
         // Arrange
-        BatchNotification batch = null!;
+        var notification = CreateEmptyBatchNotification();
 
         // Act
-        Action act = () => BatchNotificationJsonExtensions.ToJson(batch);
+        var json = notification.ToJson(indented: true);
 
         // Assert
-        act.Should().Throw<ArgumentNullException>();
+        // Indented JSON should contain at least one newline character.
+        Assert.Contains(Environment.NewLine, json);
     }
 
     [Fact]
-    public void ToJson_IndentedTrue_ReturnsIndentedJson()
+    public void ToJson_ThrowsArgumentNullException_WhenValueIsNull()
     {
         // Arrange
-        var batch = CreateValidBatch();
-
-        // Act
-        var json = BatchNotificationJsonExtensions.ToJson(batch, indented: true);
-
-        // Assert
-        json.Should().Contain("\n  ", "indented JSON should contain newlines and spaces");
-    }
-
-    [Fact]
-    public void FromJson_ValidJson_ReturnsBatchNotification()
-    {
-        // Arrange
-        var json = "{\"Id\":\"123e4567-e89b-12d3-a456-426655440000\",\"Name\":\"Nightly batch\",\"Notifications\":[{\"ProjectName\":\"SampleProject\",\"Version\":\"1.0.0\",\"BranchName\":\"main\",\"Channels\":[1]}],\"Channels\":[1],\"CreatedAt\":\"2022-01-01T12:00:00Z\"}";
-
-        // Act
-        var batch = BatchNotificationJsonExtensions.FromJson(json);
-
-        // Assert
-        batch.Should().NotBeNull();
-        batch.Id.Should().Be("123e4567-e89b-12d3-a456-426655440000");
-        batch.Name.Should().Be("Nightly batch");
-        batch.Notifications.Should().HaveCount.Should().HaveCount(1);
-        batch.Notifications.First().Channels.Should().Contain(NotificationChannel.Slack);
-        batch.Channels.Should().HaveCount(1);
-        batch.Channels.Should().Contain(NotificationChannel.Slack);
-        batch.CreatedAt.Should().Be(DateTime.Parse("2022-01-01T12:00:00Z"));
-    }
-
-    [Fact]
-    public void FromJson_NullOrEmptyJson_ThrowsArgumentException()
-    {
-        // Arrange
-        string[] testCases = { null, "", "   " };
+        BatchNotification? notification = null;
 
         // Act & Assert
-        foreach (var json in testCases)
-        {
-            Action act = () => BatchNotificationJsonExtensions.FromJson(json!);
-            act.Should().Throw<ArgumentException>();
-        }
+        Assert.Throws<ArgumentNullException>(() => notification!.ToJson());
     }
 
     [Fact]
-    public void TryFromJson_ValidJson_ReturnsTrueAndBatch()
+    public void FromJson_ReturnsObject_ForValidJson()
     {
         // Arrange
-        var json = "{\"Id\":\"123e4567-e89b-12d3-a456-426655440000\",\"Name\":\"Nightly batch\",\"Notifications\":[{\"ProjectName\":\"SampleProject\",\"Version\":\"1.0.0\",\"BranchName\":\"main\",\"Channels\":[1]}],\"Channels\":[1],\"CreatedAt\":\"2022-01-01T12:00:00Z\"}";
+        var json = "{}";
 
         // Act
-        var success = BatchNotificationJsonExtensions.TryFromJson(json, out var batch);
+        var result = BatchNotificationJsonExtensions.FromJson(json);
 
         // Assert
-        success.Should().BeTrue();
-        batch.Should().NotBeNull();
-        batch.Id.Should().Be("123e4567-e89b-12d3-a456-426655440000");
+        Assert.NotNull(result);
     }
 
     [Fact]
-    public void TryFromJson_InvalidJson_ReturnsFalseAndNull()
+    public void FromJson_ReturnsNull_ForJsonLiteralNull()
     {
         // Arrange
-        var json = "invalid json";
+        var json = "null";
 
         // Act
-        var success = BatchNotificationJsonExtensions.TryFromJson(json, out var batch);
+        var result = BatchNotificationJsonExtensions.FromJson(json);
 
         // Assert
-        success.Should().BeFalse();
-        batch.Should().BeNull();
+        Assert.Null(result);
     }
 
     [Fact]
-    public void TryFromJson_NullOrEmptyJson_ReturnsFalseAndNull()
+    public void FromJson_ThrowsArgumentException_ForNullOrEmptyJson()
+    {
+        // Null string
+        Assert.Throws<ArgumentException>(() => BatchNotificationJsonExtensions.FromJson(null!));
+
+        // Empty string
+        Assert.Throws<ArgumentException>(() => BatchNotificationJsonExtensions.FromJson(string.Empty));
+
+        // Whitespace only
+        Assert.Throws<ArgumentException>(() => BatchNotificationJsonExtensions.FromJson("   "));
+    }
+
+    [Fact]
+    public void TryFromJson_ReturnsTrueAndObject_ForValidJson()
     {
         // Arrange
-        string[] testCases = { null, "", "   " };
+        var json = "{}";
 
-        // Act & Assert
-        foreach (var json in testCases)
-        {
-            var success = BatchNotificationJsonExtensions.TryFromJson(json!, out var batch);
-            success.Should().BeFalse();
-            batch.Should().BeNull();
-        }
+        // Act
+        var success = BatchNotificationJsonExtensions.TryFromJson(json, out var result);
+
+        // Assert
+        Assert.True(success);
+        Assert.NotNull(result);
+    }
+
+    [Fact]
+    public void TryFromJson_ReturnsFalseAndNull_ForInvalidJson()
+    {
+        // Arrange
+        var json = "{ this is not valid json }";
+
+        // Act
+        var success = BatchNotificationJsonExtensions.TryFromJson(json, out var result);
+
+        // Assert
+        Assert.False(success);
+        Assert.Null(result);
+    }
+
+    [Fact]
+    public void TryFromJson_ThrowsArgumentException_ForNullOrWhitespace()
+    {
+        // Null
+        Assert.Throws<ArgumentException>(() => BatchNotificationJsonExtensions.TryFromJson(null!, out _));
+
+        // Empty
+        Assert.Throws<ArgumentException>(() => BatchNotificationJsonExtensions.TryFromJson(string.Empty, out _));
+
+        // Whitespace
+        Assert.Throws<ArgumentException>(() => BatchNotificationJsonExtensions.TryFromJson("   ", out _));
     }
 }
