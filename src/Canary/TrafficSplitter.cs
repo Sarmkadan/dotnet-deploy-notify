@@ -4,8 +4,10 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System;
 using DotNetDeployNotify.Configuration;
 using DotNetDeployNotify.Core.Models;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace DotNetDeployNotify.Canary;
@@ -29,59 +31,133 @@ public sealed class TrafficSplitter : ITrafficSplitter
     /// <inheritdoc />
     public TrafficSplit ComputeNextSplit(CanaryDeployment deployment)
     {
-        var activeStep = deployment.RolloutPlan
-            .FirstOrDefault(s => s.Status == RolloutStepStatus.InProgress);
+        _logger.LogInformation(
+            "ComputeNextSplit called for project {Project}",
+            deployment.ProjectName);
 
-        if (activeStep is null)
+        try
         {
+            var activeStep = deployment.RolloutPlan
+                .FirstOrDefault(s => s.Status == RolloutStepStatus.InProgress);
+
+            if (activeStep is null)
+            {
+                // Existing debug log retained
+                _logger.LogDebug(
+                    "No active rollout step for {Project} — returning current split {Split}",
+                    deployment.ProjectName,
+                    deployment.CurrentSplit);
+
+                // Additional warning for fallback path
+                _logger.LogWarning(
+                    "Fallback: no active rollout step for project {Project}. Using current split {Split}",
+                    deployment.ProjectName,
+                    deployment.CurrentSplit);
+
+                _logger.LogInformation(
+                    "ComputeNextSplit returning split {Split} for project {Project}",
+                    deployment.CurrentSplit,
+                    deployment.ProjectName);
+
+                return deployment.CurrentSplit;
+            }
+
+            var split = TrafficSplit.FromCanaryPercent(activeStep.CanaryPercent);
+
             _logger.LogDebug(
-                "No active rollout step for {Project} — returning current split {Split}",
+                "Computed split for {Project} step {Step}/{Total}: {Split}",
                 deployment.ProjectName,
-                deployment.CurrentSplit);
+                activeStep.StepNumber,
+                deployment.RolloutPlan.Count,
+                split);
 
-            return deployment.CurrentSplit;
+            _logger.LogInformation(
+                "ComputeNextSplit returning split {Split} for project {Project}",
+                split,
+                deployment.ProjectName);
+
+            return split;
         }
-
-        var split = TrafficSplit.FromCanaryPercent(activeStep.CanaryPercent);
-
-        _logger.LogDebug(
-            "Computed split for {Project} step {Step}/{Total}: {Split}",
-            deployment.ProjectName,
-            activeStep.StepNumber,
-            deployment.RolloutPlan.Count,
-            split);
-
-        return split;
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Error while computing next split for project {Project}",
+                deployment.ProjectName);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public bool ShouldRouteToCanary(TrafficSplit split)
     {
-        if (split.CanaryPercent <= 0) return false;
-        if (split.CanaryPercent >= 100) return true;
+        _logger.LogInformation(
+            "ShouldRouteToCanary called with split {CanaryPercent}",
+            split.CanaryPercent);
 
-        return Random.Shared.NextDouble() * 100 < split.CanaryPercent;
+        try
+        {
+            if (split.CanaryPercent <= 0) return false;
+            if (split.CanaryPercent >= 100) return true;
+
+            var decision = Random.Shared.NextDouble() * 100 < split.CanaryPercent;
+
+            _logger.LogInformation(
+                "ShouldRouteToCanary decision for split {CanaryPercent}: {Decision}",
+                split.CanaryPercent,
+                decision);
+
+            return decision;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Error while evaluating routing decision for split {CanaryPercent}",
+                split.CanaryPercent);
+            throw;
+        }
     }
 
     /// <inheritdoc />
     public List<CanaryRolloutStep> GenerateRolloutPlan(CanaryStrategy strategy)
     {
-        var plan = strategy switch
+        _logger.LogInformation(
+            "GenerateRolloutPlan called with strategy {Strategy}",
+            strategy);
+
+        try
         {
-            CanaryStrategy.Linear      => GenerateLinearPlan(),
-            CanaryStrategy.Exponential => GenerateExponentialPlan(),
-            CanaryStrategy.BlueGreen   => GenerateBlueGreenPlan(),
-            CanaryStrategy.Shadow      => GenerateShadowPlan(),
-            _                          => GenerateLinearPlan()
-        };
+            var plan = strategy switch
+            {
+                CanaryStrategy.Linear      => GenerateLinearPlan(),
+                CanaryStrategy.Exponential => GenerateExponentialPlan(),
+                CanaryStrategy.BlueGreen   => GenerateBlueGreenPlan(),
+                CanaryStrategy.Shadow      => GenerateShadowPlan(),
+                _                          => GenerateLinearPlan()
+            };
 
-        _logger.LogDebug(
-            "Generated {Strategy} rollout plan: {Steps} step(s), soak {Soak}",
-            strategy,
-            plan.Count,
-            _options.StepSoakDuration);
+            _logger.LogDebug(
+                "Generated {Strategy} rollout plan: {Steps} step(s), soak {Soak}",
+                strategy,
+                plan.Count,
+                _options.StepSoakDuration);
 
-        return plan;
+            _logger.LogInformation(
+                "GenerateRolloutPlan completed for strategy {Strategy} with {StepCount} steps",
+                strategy,
+                plan.Count);
+
+            return plan;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(
+                ex,
+                "Error while generating rollout plan for strategy {Strategy}",
+                strategy);
+            throw;
+        }
     }
 
     // -------------------------------------------------------------------------
