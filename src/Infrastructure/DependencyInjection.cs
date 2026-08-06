@@ -173,6 +173,7 @@ public static class DependencyInjection
     /// <returns>The logging builder.</returns>
     public static ILoggingBuilder AddDeployNotifyLogging(this ILoggingBuilder logging)
     {
+        ArgumentNullException.ThrowIfNull(logging);
         logging.ClearProviders();
         logging.AddConsole();
         logging.AddDebug();
