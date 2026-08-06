@@ -23,14 +23,17 @@ public sealed class TrafficSplitter : ITrafficSplitter
 
     /// <summary>Initialises the splitter with options and a logger</summary>
     public TrafficSplitter(IOptions<CanaryOptions> options, ILogger<TrafficSplitter> logger)
-    {
-        _options = options.Value;
-        _logger = logger;
-    }
+        {
+            if (options == null) throw new ArgumentNullException(nameof(options));
+            if (logger == null) throw new ArgumentNullException(nameof(logger));
+            _options = options.Value;
+            _logger = logger;
+        }
 
     /// <inheritdoc />
     public TrafficSplit ComputeNextSplit(CanaryDeployment deployment)
     {
+        if (deployment == null) throw new ArgumentNullException(nameof(deployment));
         _logger.LogInformation(
             "ComputeNextSplit called for project {Project}",
             deployment.ProjectName);
@@ -91,6 +94,7 @@ public sealed class TrafficSplitter : ITrafficSplitter
     /// <inheritdoc />
     public bool ShouldRouteToCanary(TrafficSplit split)
     {
+        if (split == null) throw new ArgumentNullException(nameof(split));
         _logger.LogInformation(
             "ShouldRouteToCanary called with split {CanaryPercent}",
             split.CanaryPercent);
