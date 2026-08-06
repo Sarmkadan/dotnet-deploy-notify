@@ -112,6 +112,9 @@ public class RequestLogger : IRequestLogger
     /// </summary>
     public void LogWebhookRequest(string webhookUrl, string payload, Dictionary<string, string> headers)
     {
+        ArgumentException.ThrowIfNullOrEmpty(webhookUrl);
+        ArgumentException.ThrowIfNullOrEmpty(payload);
+        ArgumentNullException.ThrowIfNull(headers);
         lock (_lockObject)
         {
             var entry = new RequestLogEntry
@@ -139,6 +142,8 @@ public class RequestLogger : IRequestLogger
     /// </summary>
     public void LogWebhookResponse(string webhookUrl, int statusCode, string responseBody, long durationMs)
     {
+        ArgumentException.ThrowIfNullOrEmpty(webhookUrl);
+        ArgumentException.ThrowIfNullOrEmpty(responseBody);
         lock (_lockObject)
         {
             var entry = _logs.FirstOrDefault(l => l.WebhookUrl == webhookUrl && l.ResponseStatusCode is null);
@@ -162,6 +167,8 @@ public class RequestLogger : IRequestLogger
     /// </summary>
     public void LogWebhookError(string webhookUrl, string errorMessage, Exception? exception = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(webhookUrl);
+        ArgumentException.ThrowIfNullOrEmpty(errorMessage);
         lock (_lockObject)
         {
             var entry = new RequestLogEntry
