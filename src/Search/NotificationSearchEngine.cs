@@ -60,6 +60,9 @@ public class NotificationSearchEngine
         IEnumerable<DeploymentNotification> notifications,
         SearchCriteria criteria)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
+        ArgumentNullException.ThrowIfNull(criteria);
+
         _logger.LogDebug("Executing notification search with {CriteriaCount} filters", 1);
 
         var query = notifications.AsEnumerable();
@@ -145,6 +148,9 @@ public class NotificationSearchEngine
         int limit = 100,
         int offset = 0)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
+        ArgumentException.ThrowIfNullOrEmpty(searchTerm);
+
         if (string.IsNullOrWhiteSpace(searchTerm))
             return new SearchResult<DeploymentNotification> { Items = new() };
 
@@ -183,6 +189,9 @@ public class NotificationSearchEngine
         IEnumerable<DeploymentNotification> notifications,
         string groupByField)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
+        ArgumentException.ThrowIfNullOrEmpty(groupByField);
+
         return groupByField.ToLowerInvariant() switch
         {
             "project" => notifications.GroupBy(n => n.ProjectName)
@@ -204,6 +213,8 @@ public class NotificationSearchEngine
     /// </summary>
     public NotificationStatistics GetStatistics(IEnumerable<DeploymentNotification> notifications)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
+
         var items = notifications.ToList();
 
         return new NotificationStatistics
