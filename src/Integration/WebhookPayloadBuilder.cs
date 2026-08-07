@@ -25,6 +25,7 @@ public class SlackWebhookPayloadBuilder : IWebhookPayloadBuilder
 {
     public string BuildPayload(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         var color = notification.Status switch
         {
             BuildStatus.Success => "good",
@@ -83,6 +84,7 @@ public class DiscordWebhookPayloadBuilder : IWebhookPayloadBuilder
 {
     public string BuildPayload(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         // Discord embed description is limited to 4096 characters
         const int MaxEmbedDescriptionLength = 4096;
 
