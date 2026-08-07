@@ -4,10 +4,19 @@ using Xunit;
 
 namespace DotNetDeployNotify.Tests;
 
+/// <summary>
+/// Contains unit tests for <see cref="ServiceExtensionsJsonExtensions"/>.
+/// </summary>
 public class ServiceExtensionsJsonExtensionsTests
 {
+    /// <summary>
+    /// Contains tests for the <see cref="ServiceExtensionsJsonExtensions.ToJson(bool)"/> method.
+    /// </summary>
     public class ToJson
     {
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.ToJson()"/> serializes metadata correctly.
+        /// </summary>
         [Fact]
         public void ToJson_ShouldSerializeMetadataWithCorrectProperties()
         {
@@ -31,6 +40,9 @@ public class ServiceExtensionsJsonExtensionsTests
             result.Should().Contain("GetRetryDelay");
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.ToJson(bool)"/> with <c>indented: true</c> formats the JSON with indentation.
+        /// </summary>
         [Fact]
         public void ToJson_WithIndentedTrue_ShouldFormatJsonWithIndentation()
         {
@@ -43,6 +55,9 @@ public class ServiceExtensionsJsonExtensionsTests
             result.Should().Contain("  "); // Should have indentation spaces
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.ToJson(bool)"/> with <c>indented: false</c> formats the JSON without indentation.
+        /// </summary>
         [Fact]
         public void ToJson_WithIndentedFalse_ShouldFormatJsonWithoutIndentation()
         {
@@ -55,8 +70,14 @@ public class ServiceExtensionsJsonExtensionsTests
         }
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="ServiceExtensionsJsonExtensions.FromJson(string)"/> method.
+    /// </summary>
     public class FromJson
     {
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.FromJson(string)"/> deserializes valid JSON correctly.
+        /// </summary>
         [Fact]
         public void FromJson_WithValidJson_ShouldDeserializeCorrectly()
         {
@@ -76,6 +97,9 @@ public class ServiceExtensionsJsonExtensionsTests
             result.Methods.Should().Contain("IsProduction");
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.FromJson(string)"/> throws <see cref="ArgumentNullException"/> when the input JSON is <c>null</c>.
+        /// </summary>
         [Fact]
         public void FromJson_WithNullJson_ShouldThrowArgumentNullException()
         {
@@ -89,6 +113,9 @@ public class ServiceExtensionsJsonExtensionsTests
             act.Should().Throw<ArgumentNullException>();
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.FromJson(string)"/> returns <c>null</c> when the input JSON is an empty string.
+        /// </summary>
         [Fact]
         public void FromJson_WithEmptyString_ShouldReturnNull()
         {
@@ -102,6 +129,9 @@ public class ServiceExtensionsJsonExtensionsTests
             result.Should().BeNull();
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.FromJson(string)"/> returns <c>null</c> when the input JSON is invalid.
+        /// </summary>
         [Fact]
         public void FromJson_WithInvalidJson_ShouldReturnNull()
         {
@@ -115,6 +145,9 @@ public class ServiceExtensionsJsonExtensionsTests
             result.Should().BeNull();
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.FromJson(string)"/> deserializes partial JSON correctly with <c>null</c> for missing fields.
+        /// </summary>
         [Fact]
         public void FromJson_WithPartialJson_ShouldDeserializeWithNulls()
         {
@@ -132,6 +165,9 @@ public class ServiceExtensionsJsonExtensionsTests
             result.Methods.Should().BeNull();
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.FromJson(string)"/> handles camelCase properties correctly.
+        /// </summary>
         [Fact]
         public void FromJson_WithCamelCaseProperties_ShouldDeserializeCorrectly()
         {
@@ -153,8 +189,14 @@ public class ServiceExtensionsJsonExtensionsTests
         }
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="ServiceExtensionsJsonExtensions.TryFromJson(string, out ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata?)"/> method.
+    /// </summary>
     public class TryFromJson
     {
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.TryFromJson(string, out ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata?)"/> returns <c>true</c> and deserializes correctly with valid JSON.
+        /// </summary>
         [Fact]
         public void TryFromJson_WithValidJson_ShouldReturnTrueAndDeserialize()
         {
@@ -170,6 +212,9 @@ public class ServiceExtensionsJsonExtensionsTests
             value!.Type.Should().Be("ServiceExtensions");
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.TryFromJson(string, out ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata?)"/> throws <see cref="ArgumentNullException"/> when the input JSON is <c>null</c>.
+        /// </summary>
         [Fact]
         public void TryFromJson_WithNullJson_ShouldThrowArgumentNullException()
         {
@@ -183,6 +228,9 @@ public class ServiceExtensionsJsonExtensionsTests
             act.Should().Throw<ArgumentNullException>();
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.TryFromJson(string, out ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata?)"/> returns <c>false</c> and <c>null</c> when the input JSON is an empty string.
+        /// </summary>
         [Fact]
         public void TryFromJson_WithEmptyString_ShouldReturnFalseAndNullValue()
         {
@@ -197,6 +245,9 @@ public class ServiceExtensionsJsonExtensionsTests
             value.Should().BeNull();
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.TryFromJson(string, out ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata?)"/> returns <c>false</c> and <c>null</c> when the input JSON is invalid.
+        /// </summary>
         [Fact]
         public void TryFromJson_WithInvalidJson_ShouldReturnFalseAndNullValue()
         {
@@ -211,6 +262,9 @@ public class ServiceExtensionsJsonExtensionsTests
             value.Should().BeNull();
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.TryFromJson(string, out ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata?)"/> returns <c>false</c> and <c>null</c> when the input JSON contains only whitespace.
+        /// </summary>
         [Fact]
         public void TryFromJson_WithWhitespaceOnly_ShouldReturnFalseAndNullValue()
         {
@@ -226,8 +280,14 @@ public class ServiceExtensionsJsonExtensionsTests
         }
     }
 
+    /// <summary>
+    /// Contains tests for the <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/> properties.
+    /// </summary>
     public class ServiceExtensionsMetadataProperties
     {
+        /// <summary>
+        /// Tests that the <c>Type</c> property of <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/> is a nullable string.
+        /// </summary>
         [Fact]
         public void TypeProperty_ShouldBeNullableString()
         {
@@ -246,6 +306,9 @@ public class ServiceExtensionsJsonExtensionsTests
             metadata.Type.Should().BeNull();
         }
 
+        /// <summary>
+        /// Tests that the <c>Namespace</c> property of <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/> is a nullable string.
+        /// </summary>
         [Fact]
         public void NamespaceProperty_ShouldBeNullableString()
         {
@@ -264,6 +327,9 @@ public class ServiceExtensionsJsonExtensionsTests
             metadata.Namespace.Should().BeNull();
         }
 
+        /// <summary>
+        /// Tests that the <c>Assembly</c> property of <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/> is a nullable string.
+        /// </summary>
         [Fact]
         public void AssemblyProperty_ShouldBeNullableString()
         {
@@ -282,6 +348,9 @@ public class ServiceExtensionsJsonExtensionsTests
             metadata.Assembly.Should().BeNull();
         }
 
+        /// <summary>
+        /// Tests that the <c>Methods</c> property of <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/> is a nullable string array.
+        /// </summary>
         [Fact]
         public void MethodsProperty_ShouldBeNullableStringArray()
         {
@@ -305,6 +374,9 @@ public class ServiceExtensionsJsonExtensionsTests
             metadata.Methods.Should().BeNull();
         }
 
+        /// <summary>
+        /// Tests that <see cref="ServiceExtensionsJsonExtensions.ServiceExtensionsMetadata"/> with an empty <c>Methods</c> array serializes and deserializes correctly.
+        /// </summary>
         [Fact]
         public void MethodsProperty_WithEmptyArray_ShouldSerializeAndDeserialize()
         {
