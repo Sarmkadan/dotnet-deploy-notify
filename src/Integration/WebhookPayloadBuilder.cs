@@ -149,6 +149,7 @@ public class TelegramWebhookPayloadBuilder : IWebhookPayloadBuilder
 {
     public string BuildPayload(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         var statusEmoji = notification.Status switch
         {
             BuildStatus.Success => "✅",
