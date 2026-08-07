@@ -103,9 +103,12 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
         if (string.IsNullOrWhiteSpace(template.Name))
             throw new ArgumentException("Template name must not be empty", nameof(template));
 
+        _logger.LogInformation("RegisterTemplate called for template {TemplateName}", template.Name);
+
         template.Touch();
         _registry[template.Name] = template;
         _logger.LogDebug("Template registered: {Name}", template.Name);
+        _logger.LogInformation("RegisterTemplate completed for template {TemplateName}", template.Name);
     }
 
     /// <summary>
@@ -113,7 +116,11 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
     /// </summary>
     public CustomTemplate? GetTemplate(string name)
     {
+        _logger.LogInformation("GetTemplate called for template {TemplateName}", name);
+
         _registry.TryGetValue(name, out var template);
+
+        _logger.LogInformation("GetTemplate for template {TemplateName} found: {TemplateFound}", name, template is not null);
         return template;
     }
 
@@ -122,7 +129,12 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
     /// </summary>
     public IReadOnlyList<CustomTemplate> ListTemplates()
     {
-        return _registry.Values.Where(t => t.IsActive).OrderBy(t => t.Name).ToList();
+        _logger.LogInformation("ListTemplates called");
+
+        var templates = _registry.Values.Where(t => t.IsActive).OrderBy(t => t.Name).ToList();
+
+        _logger.LogInformation("ListTemplates returning {TemplateCount} active templates", templates.Count);
+        return templates;
     }
 
     /// <summary>
@@ -130,12 +142,17 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
     /// </summary>
     public bool DeleteTemplate(string name)
     {
+        _logger.LogInformation("DeleteTemplate called for template {TemplateName}", name);
+
         if (_registry.TryGetValue(name, out var template))
         {
             template.IsActive = false;
             _logger.LogDebug("Template deleted: {Name}", name);
+            _logger.LogInformation("DeleteTemplate soft-deleted template {TemplateName}", name);
             return true;
         }
+
+        _logger.LogWarning("DeleteTemplate could not find template {TemplateName}; nothing was deleted", name);
         return false;
     }
 
@@ -144,13 +161,18 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
     /// </summary>
     public string Render(string templateName, DeploymentNotification notification, Dictionary<string, string>? customVariables = null)
     {
+        _logger.LogInformation("Render called for template {TemplateName}", templateName);
+
         if (!_registry.TryGetValue(templateName, out var template) || !template.IsActive)
         {
             _logger.LogWarning("Template not found: {Name}", templateName);
             throw new KeyNotFoundException($"Template '{templateName}' not found in registry");
         }
 
-        return RenderInline(template.Content, notification, customVariables);
+        var rendered = RenderInline(template.Content, notification, customVariables);
+
+        _logger.LogInformation("Render completed for template {TemplateName}", templateName);
+        return rendered;
     }
 
     /// <summary>
@@ -158,12 +180,19 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
     /// </summary>
     public string RenderInline(string templateContent, DeploymentNotification notification, Dictionary<string, string>? customVariables = null)
     {
+        _logger.LogInformation("RenderInline called with template length {TemplateLength}", templateContent?.Length ?? 0);
+
         if (string.IsNullOrWhiteSpace(templateContent))
+        {
+            _logger.LogWarning("RenderInline received empty template content; returning empty string");
             return string.Empty;
+        }
 
         // Resolve conditionals first so inner variables are substituted after
         var result = ResolveConditionals(templateContent, notification, customVariables);
         result = ResolveVariables(result, notification, customVariables);
+
+        _logger.LogInformation("RenderInline completed with rendered length {RenderedLength}", result.Length);
         return result;
     }
 
@@ -172,6 +201,8 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
     /// </summary>
     public (bool IsValid, List<string> Errors) ValidateTemplate(string templateContent)
     {
+        _logger.LogInformation("ValidateTemplate called with template length {TemplateLength}", templateContent?.Length ?? 0);
+
         var errors = new List<string>();
 
         if (string.IsNullOrWhiteSpace(templateContent))
@@ -197,6 +228,12 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
                 errors.Add($"Unknown filter '{filterName}' on variable '{varName}'");
         }
 
+        if (errors.Count > 0)
+        {
+            _logger.LogWarning("ValidateTemplate found {ErrorCount} validation error(s): {ValidationErrors}", errors.Count, string.Join("; ", errors));
+        }
+
+        _logger.LogInformation("ValidateTemplate completed with result {IsValid}", errors.Count == 0);
         return (errors.Count == 0, errors);
     }
 
@@ -205,6 +242,8 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
     /// </summary>
     public void LoadPresets()
     {
+        _logger.LogInformation("LoadPresets called");
+
         var presets = new[]
         {
             new CustomTemplate
@@ -305,11 +344,12 @@ public sealed class CustomTemplateEngine : ICustomTemplateEngine
             try { return getter(notification) ?? string.Empty; }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error resolving variable {Variable}", varName);
+                _logger.LogError(ex, "Error resolving variable {Variable}", varName);
                 return $"{{ERROR:{varName}}}";
             }
         }
 
+        _logger.LogWarning("Variable {Variable} is not a built-in variable and no custom value was provided; leaving placeholder unchanged", varName);
         return $"{{{{{varName}}}}}";
     }
 }
