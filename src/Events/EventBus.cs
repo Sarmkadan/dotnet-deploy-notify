@@ -79,11 +79,13 @@ public sealed class InMemoryEventBus : IEventBus
 
     public InMemoryEventBus(ILogger<InMemoryEventBus> logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
     }
 
     public void Subscribe<TEvent>(IEventHandler<TEvent> handler) where TEvent : DomainEvent
     {
+        ArgumentNullException.ThrowIfNull(handler);
         var eventType = typeof(TEvent);
 
         if (!_handlers.ContainsKey(eventType))
@@ -96,6 +98,7 @@ public sealed class InMemoryEventBus : IEventBus
 
     public async Task PublishAsync<TEvent>(TEvent @event) where TEvent : DomainEvent
     {
+        ArgumentNullException.ThrowIfNull(@event);
         var eventType = typeof(TEvent);
 
         if (!_handlers.TryGetValue(eventType, out var handlersForEvent))
@@ -116,6 +119,7 @@ public sealed class InMemoryEventBus : IEventBus
 
     public void Unsubscribe<TEvent>(IEventHandler<TEvent> handler) where TEvent : DomainEvent
     {
+        ArgumentNullException.ThrowIfNull(handler);
         var eventType = typeof(TEvent);
 
         if (_handlers.TryGetValue(eventType, out var handlersForEvent))
@@ -153,11 +157,13 @@ public sealed class NotificationCreatedEventHandler : IEventHandler<Notification
 
     public NotificationCreatedEventHandler(ILogger<NotificationCreatedEventHandler> logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
     }
 
     public Task HandleAsync(NotificationCreatedEvent @event)
     {
+        ArgumentNullException.ThrowIfNull(@event);
         _logger.LogInformation(
             "Notification created: {NotificationId} for {ProjectName} v{Version} to {ChannelCount} channels",
             @event.NotificationId, @event.ProjectName, @event.Version, @event.Channels.Count);
@@ -175,11 +181,13 @@ public sealed class ChannelDeliveryFailedEventHandler : IEventHandler<ChannelDel
 
     public ChannelDeliveryFailedEventHandler(ILogger<ChannelDeliveryFailedEventHandler> logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
     }
 
     public Task HandleAsync(ChannelDeliveryFailedEvent @event)
     {
+        ArgumentNullException.ThrowIfNull(@event);
         _logger.LogWarning(
             "Channel delivery failed: Notification {NotificationId} to {Channel} (attempt {Attempt}): {Error}",
             @event.NotificationId, @event.ChannelName, @event.AttemptNumber, @event.ErrorMessage);
@@ -208,17 +216,20 @@ public sealed class NotificationObservable
 
     public NotificationObservable(ILogger<NotificationObservable> logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
     }
 
     public void Attach(INotificationObserver observer)
     {
+        ArgumentNullException.ThrowIfNull(observer);
         _observers.Add(observer);
         _logger.LogDebug("Attached observer: {ObserverType}", observer.GetType().Name);
     }
 
     public void Detach(INotificationObserver observer)
     {
+        ArgumentNullException.ThrowIfNull(observer);
         _observers.Remove(observer);
         _logger.LogDebug("Detached observer: {ObserverType}", observer.GetType().Name);
     }
