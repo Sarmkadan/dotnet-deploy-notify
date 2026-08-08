@@ -34,6 +34,7 @@ public sealed class ExportService : IExportService
 
     public Task<string> ExportAsJsonAsync(List<DeploymentNotification> notifications)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
         try
         {
             var json = System.Text.Json.JsonSerializer.Serialize(
@@ -52,6 +53,7 @@ public sealed class ExportService : IExportService
 
     public Task<string> ExportAsCsvAsync(List<DeploymentNotification> notifications)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
         try
         {
             var csv = new StringBuilder();
@@ -80,6 +82,7 @@ public sealed class ExportService : IExportService
 
     public Task<byte[]> ExportAsZipAsync(List<DeploymentNotification> notifications)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
         // Note: This would require System.IO.Compression nuget package
         _logger.LogWarning("ZIP export not yet implemented");
         throw new NotImplementedException("ZIP export requires System.IO.Compression package");
@@ -87,6 +90,9 @@ public sealed class ExportService : IExportService
 
     public async Task SaveToFileAsync(List<DeploymentNotification> notifications, string filePath, string format)
     {
+        ArgumentNullException.ThrowIfNull(notifications);
+        ArgumentException.ThrowIfNullOrEmpty(filePath);
+        ArgumentException.ThrowIfNullOrEmpty(format);
         try
         {
             string content = format.ToLowerInvariant() switch
