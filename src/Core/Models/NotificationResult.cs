@@ -72,6 +72,7 @@ public sealed class NotificationResult
     /// </summary>
     public void MarkAsSuccessful(int statusCode, string responseBody)
     {
+        ArgumentException.ThrowIfNullOrEmpty(responseBody);
         Status = DeliveryStatus.Delivered;
         HttpStatusCode = statusCode;
         ResponseBody = responseBody;
@@ -80,9 +81,10 @@ public sealed class NotificationResult
 
     /// <summary>
     /// Marks the delivery as failed with error details
-    /// </summary>
+    /// </>
     public void MarkAsFailed(string errorMessage, string? exceptionType = null, int? statusCode = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(errorMessage);
         Status = DeliveryStatus.Failed;
         ErrorMessage = errorMessage;
         ExceptionType = exceptionType;
@@ -104,6 +106,7 @@ public sealed class NotificationResult
     /// </summary>
     public void MarkAsSkipped(string reason)
     {
+        ArgumentException.ThrowIfNullOrEmpty(reason);
         Status = DeliveryStatus.Skipped;
         ResponseBody = reason;
     }
@@ -139,6 +142,10 @@ public sealed class NotificationResult
     public static NotificationResult CreateFailure(string notificationId, NotificationChannel channel,
         string configId, string errorMessage, string exceptionType)
     {
+        ArgumentException.ThrowIfNullOrEmpty(notificationId);
+        ArgumentException.ThrowIfNullOrEmpty(configId);
+        ArgumentException.ThrowIfNullOrEmpty(errorMessage);
+        ArgumentException.ThrowIfNullOrEmpty(exceptionType);
         return new NotificationResult
         {
             NotificationId = notificationId,
@@ -156,6 +163,8 @@ public sealed class NotificationResult
     public static NotificationResult CreateSuccess(string notificationId, NotificationChannel channel,
         string configId, int statusCode, long durationMs)
     {
+        ArgumentException.ThrowIfNullOrEmpty(notificationId);
+        ArgumentException.ThrowIfNullOrEmpty(configId);
         return new NotificationResult
         {
             NotificationId = notificationId,
