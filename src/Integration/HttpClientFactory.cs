@@ -105,7 +105,7 @@ public class RetryableHttpClient
     /// <exception cref="CircuitOpenException">Thrown when the circuit breaker is open and prevents execution</exception>
     public async Task<HttpResponse<string>> PostWithRetryAsync(string url, HttpContent content)
     {
-        ArgumentNullException.ThrowIfNull(url);
+        ArgumentException.ThrowIfNullOrEmpty(url);
         ArgumentNullException.ThrowIfNull(content);
 
         var startTime = DateTime.UtcNow;
@@ -289,17 +289,22 @@ public class HttpRequestBuilder
 
     public HttpRequestBuilder(HttpMethod method, string url)
     {
+        ArgumentNullException.ThrowIfNull(method);
+        ArgumentException.ThrowIfNullOrEmpty(url);
         _request = new HttpRequestMessage(method, url);
     }
 
     public HttpRequestBuilder AddHeader(string name, string value)
     {
+        ArgumentException.ThrowIfNullOrEmpty(name);
+        ArgumentException.ThrowIfNullOrEmpty(value);
         _headers[name] = value;
         return this;
     }
 
     public HttpRequestBuilder AddJsonContent(string json)
     {
+        ArgumentException.ThrowIfNullOrEmpty(json);
         _request.Content = new StringContent(json, System.Text.Encoding.UTF8, "application/json");
         return this;
     }
@@ -376,9 +381,10 @@ public class CircuitBreaker
     /// <param name="logger">Optional logger for state transitions</param>
     public CircuitBreaker(int failureThreshold = 5, TimeSpan? timeout = null, ILogger? logger = null)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _failureThreshold = failureThreshold;
         _timeout = timeout ?? TimeSpan.FromMinutes(1);
-        _logger = logger ?? new NullLogger();
+        _logger = logger;
     }
 
     /// <summary>
