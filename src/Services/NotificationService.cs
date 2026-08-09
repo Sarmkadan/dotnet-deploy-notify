@@ -96,6 +96,7 @@ public class NotificationService : INotificationService
     /// </summary>
     public async Task<string> CreateNotificationAsync(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         try
         {
             // Validate the notification
@@ -157,6 +158,7 @@ public class NotificationService : INotificationService
     /// </summary>
     public async Task<List<NotificationResult>> SendNotificationAsync(string notificationId, List<NotificationChannel>? channels = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(notificationId);
         var results = new List<NotificationResult>();
 
         try
@@ -267,6 +269,7 @@ public class NotificationService : INotificationService
     /// </summary>
     public async Task<List<DeploymentNotification>> GetNotificationHistoryAsync(string projectName, int limit = 50)
     {
+        ArgumentException.ThrowIfNullOrEmpty(projectName);
         try
         {
             return await _notificationRepository.GetByProjectAsync(projectName, limit);
@@ -283,6 +286,7 @@ public class NotificationService : INotificationService
     /// </summary>
     public async Task<List<NotificationResult>> GetDeliveryResultsAsync(string notificationId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(notificationId);
         try
         {
             return await _resultRepository.GetByNotificationIdAsync(notificationId);
@@ -299,6 +303,7 @@ public class NotificationService : INotificationService
     /// </summary>
     public async Task<List<NotificationResult>> RetryFailedDeliveriesAsync(string notificationId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(notificationId);
         _logger.LogInformation("Retrying failed deliveries for notification {Id}", notificationId);
 
         var notification = await _notificationRepository.GetByIdAsync(notificationId);
