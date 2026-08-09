@@ -4,6 +4,7 @@
 // CTO & Software Architect
 // =============================================================================
 
+using System;
 using System.Collections.Concurrent;
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Exceptions;
@@ -57,6 +58,7 @@ public class RollbackService : IRollbackService
     /// </summary>
     public async Task<RollbackResult> InitiateRollbackAsync(RollbackRequest request, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(request);
         if (!request.IsValid())
             throw new NotificationValidationException(
                 $"Invalid rollback request for '{request.ProjectName}': missing required fields",
@@ -135,6 +137,7 @@ public class RollbackService : IRollbackService
     /// </summary>
     public Task<List<RollbackResult>> GetRollbackHistoryAsync(string projectName, int limit = 50, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(projectName);
         cancellationToken.ThrowIfCancellationRequested();
 
         var history = _rollbackStore.Values
@@ -152,6 +155,7 @@ public class RollbackService : IRollbackService
     /// </summary>
     public Task<RollbackResult?> GetRollbackStatusAsync(string rollbackId, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(rollbackId);
         cancellationToken.ThrowIfCancellationRequested();
         _rollbackStore.TryGetValue(rollbackId, out var result);
         return Task.FromResult(result);
@@ -162,6 +166,7 @@ public class RollbackService : IRollbackService
     /// </summary>
     public Task<bool> CancelRollbackAsync(string rollbackId, CancellationToken cancellationToken = default)
     {
+        ArgumentException.ThrowIfNullOrEmpty(rollbackId);
         cancellationToken.ThrowIfCancellationRequested();
 
         if (!_rollbackStore.TryGetValue(rollbackId, out var result))
