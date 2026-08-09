@@ -130,6 +130,7 @@ public sealed class BatchNotification
     /// </summary>
     public void AddNotification(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         Notifications.Add(notification);
     }
 
@@ -138,6 +139,7 @@ public sealed class BatchNotification
     /// </summary>
     public bool RemoveNotification(string notificationId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(notificationId);
         var notification = Notifications.FirstOrDefault(n => n.Id == notificationId);
         if (notification is not null)
         {
@@ -160,6 +162,8 @@ public sealed class BatchNotification
     /// </summary>
     public void SetMetadata(string key, object value)
     {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentNullException.ThrowIfNull(value);
         Metadata[key] = value;
     }
 
@@ -168,6 +172,7 @@ public sealed class BatchNotification
     /// </summary>
     public T? GetMetadata<T>(string key)
     {
+        ArgumentException.ThrowIfNullOrEmpty(key);
         if (Metadata.TryGetValue(key, out var value) && value is T typedValue)
             return typedValue;
         return default;
