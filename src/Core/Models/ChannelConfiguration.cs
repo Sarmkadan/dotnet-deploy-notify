@@ -94,6 +94,7 @@ public sealed class ChannelConfiguration
     /// </summary>
     public bool ShouldSendNotification(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         if (!IsEnabled)
             return false;
 
@@ -117,6 +118,7 @@ public sealed class ChannelConfiguration
     /// </summary>
     public string? GetSetting(string key)
     {
+        ArgumentException.ThrowIfNullOrEmpty(key);
         return Settings.TryGetValue(key, out var value) ? value : null;
     }
 
@@ -125,6 +127,8 @@ public sealed class ChannelConfiguration
     /// </summary>
     public void SetSetting(string key, string value)
     {
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentException.ThrowIfNullOrEmpty(value);
         Settings[key] = value;
     }
 
