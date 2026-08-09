@@ -90,6 +90,7 @@ public class AuditService : IAuditService
     /// </summary>
     public Task LogNotificationCreatedAsync(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         var entry = new AuditLogEntry
         {
             Operation = "Create",
@@ -113,6 +114,7 @@ public class AuditService : IAuditService
     /// </summary>
     public Task LogDeliveryAttemptAsync(NotificationResult result)
     {
+        ArgumentNullException.ThrowIfNull(result);
         var status = result.IsSuccessful ? "Success" : "Failure";
         var entry = new AuditLogEntry
         {
@@ -143,6 +145,8 @@ public class AuditService : IAuditService
         ChannelConfiguration? beforeState = null,
         ChannelConfiguration? afterState = null)
     {
+        ArgumentNullException.ThrowIfNull(configId);
+        ArgumentNullException.ThrowIfNull(action);
         var entry = new AuditLogEntry
         {
             Operation = action,
@@ -172,6 +176,9 @@ public class AuditService : IAuditService
     /// </summary>
     public Task LogValidationFailureAsync(string entityType, string entityId, List<string> errors)
     {
+        ArgumentNullException.ThrowIfNull(entityType);
+        ArgumentNullException.ThrowIfNull(entityId);
+        ArgumentNullException.ThrowIfNull(errors);
         var entry = new AuditLogEntry
         {
             Operation = "Validate",
@@ -209,6 +216,7 @@ public class AuditService : IAuditService
     /// </summary>
     public Task<List<AuditLogEntry>> GetNotificationAuditLogsAsync(string notificationId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(notificationId);
         lock (_lockObject)
         {
             var logs = _auditLogs
