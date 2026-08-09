@@ -35,7 +35,11 @@ public abstract class BaseChannelStrategy : IChannelStrategy
         Logger = logger;
     }
 
-    public virtual bool CanHandle(NotificationChannel channel) => channel == Channel;
+    public virtual bool CanHandle(NotificationChannel channel)
+    {
+        ArgumentNullException.ThrowIfNull(channel);
+        return channel == Channel;
+    }
 
     public abstract Task<bool> SendAsync(DeploymentNotification notification, ChannelConfiguration config, string payload);
 
@@ -71,6 +75,9 @@ public class SlackChannelStrategy : BaseChannelStrategy
         ChannelConfiguration config,
         string payload)
     {
+        ArgumentNullException.ThrowIfNull(notification);
+        ArgumentNullException.ThrowIfNull(config);
+        ArgumentException.ThrowIfNullOrEmpty(payload);
         Logger.LogDebug("Sending Slack notification for {ProjectName}", notification.ProjectName);
         return await SendPayloadAsync(config.WebhookUrl, payload);
     }
@@ -93,6 +100,9 @@ public class DiscordChannelStrategy : BaseChannelStrategy
         ChannelConfiguration config,
         string payload)
     {
+        ArgumentNullException.ThrowIfNull(notification);
+        ArgumentNullException.ThrowIfNull(config);
+        ArgumentException.ThrowIfNullOrEmpty(payload);
         Logger.LogDebug("Sending Discord notification for {ProjectName}", notification.ProjectName);
         return await SendPayloadAsync(config.WebhookUrl, payload);
     }
@@ -115,6 +125,9 @@ public class TelegramChannelStrategy : BaseChannelStrategy
         ChannelConfiguration config,
         string payload)
     {
+        ArgumentNullException.ThrowIfNull(notification);
+        ArgumentNullException.ThrowIfNull(config);
+        ArgumentException.ThrowIfNullOrEmpty(payload);
         Logger.LogDebug("Sending Telegram notification for {ProjectName}", notification.ProjectName);
         return await SendPayloadAsync(config.WebhookUrl, payload);
     }
