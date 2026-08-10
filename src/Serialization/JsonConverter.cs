@@ -17,6 +17,8 @@ public class BuildStatusConverter : JsonConverter<BuildStatus>
 {
     public override BuildStatus Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(typeToConvert);
+        ArgumentNullException.ThrowIfNull(options);
         var stringValue = reader.GetString();
         if (string.IsNullOrEmpty(stringValue))
             return BuildStatus.Started;
@@ -26,6 +28,8 @@ public class BuildStatusConverter : JsonConverter<BuildStatus>
 
     public override void Write(Utf8JsonWriter writer, BuildStatus value, JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(options);
         writer.WriteStringValue(value.ToString());
     }
 }
@@ -37,6 +41,8 @@ public class NotificationChannelConverter : JsonConverter<NotificationChannel>
 {
     public override NotificationChannel Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(typeToConvert);
+        ArgumentNullException.ThrowIfNull(options);
         var stringValue = reader.GetString();
         if (string.IsNullOrEmpty(stringValue))
             return NotificationChannel.Slack;
@@ -46,6 +52,8 @@ public class NotificationChannelConverter : JsonConverter<NotificationChannel>
 
     public override void Write(Utf8JsonWriter writer, NotificationChannel value, JsonSerializerOptions options)
     {
+        ArgumentNullException.ThrowIfNull(writer);
+        ArgumentNullException.ThrowIfNull(options);
         writer.WriteStringValue(value.ToString());
     }
 }
