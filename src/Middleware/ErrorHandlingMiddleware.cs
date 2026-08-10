@@ -17,12 +17,17 @@ public class NotificationException : Exception
     public NotificationException(string message, string errorCode = "NOTIFICATION_ERROR")
         : base(message)
     {
+        ArgumentException.ThrowIfNullOrEmpty(message);
+        ArgumentException.ThrowIfNullOrEmpty(errorCode);
         ErrorCode = errorCode;
     }
 
     public NotificationException(string message, string errorCode, Exception innerException)
         : base(message, innerException)
     {
+        ArgumentException.ThrowIfNullOrEmpty(message);
+        ArgumentException.ThrowIfNullOrEmpty(errorCode);
+        ArgumentNullException.ThrowIfNull(innerException);
         ErrorCode = errorCode;
     }
 }
@@ -34,6 +39,7 @@ public class WebhookException : NotificationException
     public WebhookException(string message, string webhookUrl)
         : base(message, "WEBHOOK_ERROR")
     {
+        if (webhookUrl == null) throw new ArgumentNullException(nameof(webhookUrl));
         WebhookUrl = webhookUrl;
     }
 }
@@ -41,7 +47,10 @@ public class WebhookException : NotificationException
 public class ConfigurationException : NotificationException
 {
     public ConfigurationException(string message)
-        : base(message, "CONFIG_ERROR") { }
+        : base(message, "CONFIG_ERROR")
+    {
+        if (message == null) throw new ArgumentNullException(nameof(message));
+    }
 }
 
 public class ValidationException : NotificationException
@@ -51,6 +60,7 @@ public class ValidationException : NotificationException
     public ValidationException(string message, List<string> errors)
         : base(message, "VALIDATION_ERROR")
     {
+        if (message == null) throw new ArgumentNullException(nameof(message));
         ValidationErrors = errors;
     }
 }
