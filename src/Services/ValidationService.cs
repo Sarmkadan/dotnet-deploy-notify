@@ -66,13 +66,8 @@ public class ValidationService : IValidationService
     /// </summary>
     public ValidationResult ValidateNotification(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         var errors = new List<string>();
-
-        if (notification is null)
-        {
-            errors.Add("Notification cannot be null");
-            return ValidationResult.Failure(errors.ToArray());
-        }
 
         if (string.IsNullOrWhiteSpace(notification.ProjectName))
             errors.Add("Project name is required");
@@ -105,13 +100,8 @@ public class ValidationService : IValidationService
     /// </summary>
     public ValidationResult ValidateChannelConfiguration(ChannelConfiguration config)
     {
+        ArgumentNullException.ThrowIfNull(config);
         var errors = new List<string>();
-
-        if (config is null)
-        {
-            errors.Add("Channel configuration cannot be null");
-            return ValidationResult.Failure(errors.ToArray());
-        }
 
         if (string.IsNullOrWhiteSpace(config.DisplayName))
             errors.Add("Display name is required");
@@ -195,9 +185,7 @@ public class ValidationService : IValidationService
     /// </summary>
     public bool IsValidUrl(string url)
     {
-        if (string.IsNullOrWhiteSpace(url))
-            return false;
-
+        ArgumentNullException.ThrowIfNull(url);
         return Uri.TryCreate(url, UriKind.Absolute, out var uri) &&
                (uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps);
     }
@@ -207,9 +195,7 @@ public class ValidationService : IValidationService
     /// </summary>
     public bool IsValidEmail(string email)
     {
-        if (string.IsNullOrWhiteSpace(email))
-            return false;
-
+        ArgumentNullException.ThrowIfNull(email);
         try
         {
             var addr = new System.Net.Mail.MailAddress(email);
