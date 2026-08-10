@@ -25,6 +25,9 @@ public class MetricsCollector
     /// </summary>
     public void RecordMetric(string name, double value)
     {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException("name is null or empty", nameof(name));
+
         lock (_lock)
         {
             if (_metrics.TryGetValue(name, out var existing))
@@ -42,9 +45,9 @@ public class MetricsCollector
                     LastUpdated = DateTime.UtcNow
                 };
             }
-
-            _logger.LogDebug("Recorded metric: {Name} = {Value}", name, value);
         }
+
+        _logger.LogDebug("Recorded metric: {Name} = {Value}", name, value);
     }
 
     /// <summary>
@@ -52,6 +55,9 @@ public class MetricsCollector
     /// </summary>
     public void IncrementCounter(string name, double amount = 1)
     {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException("name is null or empty", nameof(name));
+
         lock (_lock)
         {
             if (_metrics.TryGetValue(name, out var existing))
@@ -77,6 +83,9 @@ public class MetricsCollector
     /// </summary>
     public MetricValue? GetMetric(string name)
     {
+        if (string.IsNullOrEmpty(name))
+            throw new ArgumentException("name is null or empty", nameof(name));
+
         lock (_lock)
         {
             return _metrics.TryGetValue(name, out var value) ? value : null;
