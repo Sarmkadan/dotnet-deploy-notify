@@ -18,6 +18,7 @@ public class NotificationPipeline
 
     public NotificationPipeline(ILogger<NotificationPipeline> logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
     }
 
@@ -26,6 +27,7 @@ public class NotificationPipeline
     /// </summary>
     public NotificationPipeline Use(INotificationProcessor processor)
     {
+        ArgumentNullException.ThrowIfNull(processor);
         _processors.Add(processor);
         _logger.LogDebug("Added processor: {ProcessorType}", processor.GetType().Name);
         return this;
@@ -36,6 +38,7 @@ public class NotificationPipeline
     /// </summary>
     public async Task<PipelineResult> ExecuteAsync(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         var result = new PipelineResult { Notification = notification };
         var context = new PipelineContext { Notification = notification };
 
@@ -108,6 +111,7 @@ public class ValidationProcessor : INotificationProcessor
 
     public ValidationProcessor(ILogger<ValidationProcessor> logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
     }
 
@@ -185,6 +189,8 @@ public class FilterProcessor : INotificationProcessor
 
     public FilterProcessor(IChannelConfigRepository configRepository, ILogger<FilterProcessor> logger)
     {
+        ArgumentNullException.ThrowIfNull(configRepository);
+        ArgumentNullException.ThrowIfNull(logger);
         _configRepository = configRepository;
         _logger = logger;
     }
