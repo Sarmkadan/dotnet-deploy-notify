@@ -68,18 +68,21 @@ public sealed class ChannelConfigurationBuilder
 
     public ChannelConfigurationBuilder WithName(string displayName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(nameof(displayName));
         _config.DisplayName = displayName;
         return this;
     }
 
     public ChannelConfigurationBuilder WithWebhook(string url)
     {
+        ArgumentException.ThrowIfNullOrEmpty(nameof(url));
         _config.WebhookUrl = url;
         return this;
     }
 
     public ChannelConfigurationBuilder WithTargetId(string targetId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(nameof(targetId));
         _config.TargetId = targetId;
         return this;
     }
@@ -116,12 +119,14 @@ public sealed class ChannelConfigurationBuilder
 
     public ChannelConfigurationBuilder AllowEnvironments(params Environment[] environments)
     {
+        ArgumentNullException.ThrowIfNull(nameof(environments));
         _config.AllowedEnvironments = environments.ToList();
         return this;
     }
 
     public ChannelConfigurationBuilder AllowStatuses(params BuildStatus[] statuses)
     {
+        ArgumentNullException.ThrowIfNull(nameof(statuses));
         _config.AllowedStatuses = statuses.ToList();
         return this;
     }
