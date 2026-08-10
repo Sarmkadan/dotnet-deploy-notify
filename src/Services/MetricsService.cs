@@ -169,6 +169,7 @@ public class MetricsService : IMetricsService
     /// <summary>Initializes the metrics service</summary>
     public MetricsService(ILogger<MetricsService> logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
 
         // Initialize channel metrics
