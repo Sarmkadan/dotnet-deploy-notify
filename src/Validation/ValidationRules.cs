@@ -26,6 +26,7 @@ public class NotEmptyRule : ValidationRule<string>
 
     public NotEmptyRule(string fieldName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(fieldName);
         _fieldName = fieldName;
     }
 
@@ -44,6 +45,7 @@ public class LengthRule : ValidationRule<string>
 
     public LengthRule(string fieldName, int minLength = 0, int maxLength = int.MaxValue)
     {
+        ArgumentException.ThrowIfNullOrEmpty(fieldName);
         _fieldName = fieldName;
         _minLength = minLength;
         _maxLength = maxLength;
@@ -74,6 +76,7 @@ public class UrlRule : ValidationRule<string>
 
     public UrlRule(string fieldName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(fieldName);
         _fieldName = fieldName;
     }
 
@@ -99,6 +102,7 @@ public class EmailRule : ValidationRule<string>
 
     public EmailRule(string fieldName)
     {
+        ArgumentException.ThrowIfNullOrEmpty(fieldName);
         _fieldName = fieldName;
     }
 
@@ -124,6 +128,8 @@ public class PatternRule : ValidationRule<string>
 
     public PatternRule(string fieldName, string pattern)
     {
+        ArgumentException.ThrowIfNullOrEmpty(fieldName);
+        ArgumentException.ThrowIfNullOrEmpty(pattern);
         _fieldName = fieldName;
         _pattern = pattern;
         _regex = new Regex(pattern);
@@ -151,6 +157,7 @@ public class RangeRule : ValidationRule<int>
 
     public RangeRule(string fieldName, int min, int max)
     {
+        ArgumentException.ThrowIfNullOrEmpty(fieldName);
         _fieldName = fieldName;
         _min = min;
         _max = max;
@@ -170,12 +177,14 @@ public class CompositeValidator<T>
 
     public CompositeValidator<T> AddRule(ValidationRule<T> rule)
     {
+        ArgumentNullException.ThrowIfNull(rule);
         _rules.Add(rule);
         return this;
     }
 
     public CompositeValidator<T> AddRules(params ValidationRule<T>[] rules)
     {
+        ArgumentNullException.ThrowIfNull(rules);
         _rules.AddRange(rules);
         return this;
     }
