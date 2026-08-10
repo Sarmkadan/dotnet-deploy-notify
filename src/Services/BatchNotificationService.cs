@@ -91,6 +91,8 @@ public class BatchNotificationService : IBatchNotificationService
         INotificationService notificationService,
         ILogger<BatchNotificationService> logger)
     {
+        ArgumentNullException.ThrowIfNull(notificationService);
+        ArgumentNullException.ThrowIfNull(logger);
         _notificationService = notificationService;
         _logger = logger;
     }
@@ -100,6 +102,8 @@ public class BatchNotificationService : IBatchNotificationService
     /// </summary>
     public Task<string> CreateBatchAsync(BatchNotification batch)
     {
+        ArgumentNullException.ThrowIfNull(batch);
+
         if (!batch.IsValid())
         {
             throw new ArgumentException("Batch is not valid", nameof(batch));
@@ -122,6 +126,7 @@ public class BatchNotificationService : IBatchNotificationService
     /// </summary>
     public Task<BatchNotification?> GetBatchAsync(string batchId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(batchId);
         lock (_lockObject)
         {
             var batch = _batches.FirstOrDefault(b => b.Id == batchId);
@@ -134,6 +139,8 @@ public class BatchNotificationService : IBatchNotificationService
     /// </summary>
     public Task AddNotificationAsync(string batchId, DeploymentNotification notification)
     {
+        ArgumentException.ThrowIfNullOrEmpty(batchId);
+        ArgumentNullException.ThrowIfNull(notification);
         lock (_lockObject)
         {
             var batch = _batches.FirstOrDefault(b => b.Id == batchId);
@@ -157,6 +164,8 @@ public class BatchNotificationService : IBatchNotificationService
     /// </summary>
     public Task RemoveNotificationAsync(string batchId, string notificationId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(batchId);
+        ArgumentException.ThrowIfNullOrEmpty(notificationId);
         lock (_lockObject)
         {
             var batch = _batches.FirstOrDefault(b => b.Id == batchId);
@@ -183,6 +192,7 @@ public class BatchNotificationService : IBatchNotificationService
     /// </summary>
     public async Task<BatchNotificationResult> SendBatchAsync(string batchId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(batchId);
         BatchNotification? batch;
         lock (_lockObject)
         {
@@ -273,6 +283,7 @@ public class BatchNotificationService : IBatchNotificationService
     /// </summary>
     public Task CancelBatchAsync(string batchId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(batchId);
         lock (_lockObject)
         {
             var batch = _batches.FirstOrDefault(b => b.Id == batchId);
@@ -298,6 +309,7 @@ public class BatchNotificationService : IBatchNotificationService
     /// </summary>
     public Task<BatchStatistics> GetBatchStatisticsAsync(string batchId)
     {
+        ArgumentException.ThrowIfNullOrEmpty(batchId);
         lock (_lockObject)
         {
             var batch = _batches.FirstOrDefault(b => b.Id == batchId);
