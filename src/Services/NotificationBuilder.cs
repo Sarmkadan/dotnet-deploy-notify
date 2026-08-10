@@ -24,8 +24,10 @@ public class NotificationBuilder
         };
     }
 
-    public NotificationBuilder WithProject(string projectName, string version)
+    public NotificationBuilder WithProject(string? projectName, string? version)
     {
+        ArgumentException.ThrowIfNullOrEmpty(projectName);
+        ArgumentException.ThrowIfNullOrEmpty(version);
         _notification.ProjectName = projectName;
         _notification.Version = version;
         return this;
