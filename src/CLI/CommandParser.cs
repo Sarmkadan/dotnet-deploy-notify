@@ -18,6 +18,7 @@ public sealed class CommandParser
 
     public CommandParser(ILogger<CommandParser> logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
         RegisterBuiltInCommands();
     }
