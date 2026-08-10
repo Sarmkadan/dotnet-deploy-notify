@@ -69,7 +69,7 @@ public class TemplateService : ITemplateService
     /// <summary>
     /// Renders a template string by replacing variables with notification data
     /// </summary>
-    public string RenderTemplate(string template, DeploymentNotification notification)
+    public string RenderTemplate(string? template, DeploymentNotification? notification)
     {
         if (string.IsNullOrWhiteSpace(template))
             return string.Empty;
