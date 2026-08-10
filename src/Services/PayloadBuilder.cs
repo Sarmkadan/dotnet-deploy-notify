@@ -47,6 +47,8 @@ public class PayloadBuilder : IPayloadBuilder
     /// </summary>
     public WebhookPayload BuildPayload(DeploymentNotification notification, ChannelConfiguration config)
     {
+        ArgumentNullException.ThrowIfNull(notification);
+        ArgumentNullException.ThrowIfNull(config);
         var payload = new WebhookPayload
         {
             EventType = $"deployment.{notification.Status.ToString().ToLower()}",
@@ -75,6 +77,8 @@ public class PayloadBuilder : IPayloadBuilder
     /// </summary>
     public string BuildTelegramMessage(DeploymentNotification notification, ChannelConfiguration config)
     {
+        ArgumentNullException.ThrowIfNull(notification);
+        ArgumentNullException.ThrowIfNull(config);
         var emoji = StatusEmoji.Get(notification.Status, config.EnableEmojis);
         var titleEmoji = string.IsNullOrEmpty(emoji) ? "" : $"{emoji} ";
         var sb = new System.Text.StringBuilder();
@@ -224,6 +228,8 @@ public class PayloadBuilder : IPayloadBuilder
     /// </summary>
     public object BuildDiscordPayload(DeploymentNotification notification, ChannelConfiguration config)
     {
+        ArgumentNullException.ThrowIfNull(notification);
+        ArgumentNullException.ThrowIfNull(config);
         // Discord embed description is limited to 4096 characters
         const int MaxEmbedDescriptionLength = 4096;
 
