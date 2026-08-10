@@ -72,6 +72,8 @@ public class WebhookDispatcher : IWebhookDispatcher
         ChannelConfiguration config,
         DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(config);
+        ArgumentNullException.ThrowIfNull(notification);
         var stopwatch = Stopwatch.StartNew();
 
         try
@@ -152,6 +154,9 @@ public class WebhookDispatcher : IWebhookDispatcher
         Dictionary<string, string> headers,
         int timeoutMs)
     {
+        ArgumentException.ThrowIfNullOrEmpty(webhookUrl);
+        ArgumentNullException.ThrowIfNull(payload);
+        ArgumentNullException.ThrowIfNull(headers);
         try
         {
             var stopwatch = System.Diagnostics.Stopwatch.StartNew();
