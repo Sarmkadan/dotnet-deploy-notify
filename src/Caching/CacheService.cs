@@ -131,6 +131,7 @@ public sealed class MemoryCacheService : ICacheService
 
     public T? Get<T>(string key)
     {
+        ArgumentException.ThrowIfNullOrEmpty(key);
         lock (_cache)
         {
             if (_cache.TryGetValue(key, out var entry))
