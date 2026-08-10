@@ -118,6 +118,7 @@ public sealed class NotificationRepository : INotificationRepository
 
     public Task CreateAsync(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         lock (_lockObject)
         {
             _notifications.Add(notification);
@@ -128,6 +129,7 @@ public sealed class NotificationRepository : INotificationRepository
 
     public Task<DeploymentNotification?> GetByIdAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         lock (_lockObject)
         {
             return Task.FromResult(_notifications.FirstOrDefault(n => n.Id == id));
@@ -136,6 +138,7 @@ public sealed class NotificationRepository : INotificationRepository
 
     public Task<List<DeploymentNotification>> GetByProjectAsync(string projectName, int limit)
     {
+        ArgumentException.ThrowIfNullOrEmpty(projectName);
         lock (_lockObject)
         {
             var results = _notifications
@@ -161,6 +164,7 @@ public sealed class NotificationRepository : INotificationRepository
 
     public Task UpdateAsync(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         lock (_lockObject)
         {
             var existing = _notifications.FirstOrDefault(n => n.Id == notification.Id);
@@ -176,6 +180,7 @@ public sealed class NotificationRepository : INotificationRepository
 
     public Task DeleteAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         lock (_lockObject)
         {
             var notification = _notifications.FirstOrDefault(n => n.Id == id);
@@ -246,6 +251,7 @@ public sealed class ChannelConfigRepository : IChannelConfigRepository
 
     public Task CreateAsync(ChannelConfiguration config)
     {
+        ArgumentNullException.ThrowIfNull(config);
         lock (_lockObject)
         {
             _configurations.Add(config);
@@ -256,6 +262,7 @@ public sealed class ChannelConfigRepository : IChannelConfigRepository
 
     public Task<ChannelConfiguration?> GetByIdAsync(string id)
     {
+        ArgumentException.ThrowIfNullOrEmpty(id);
         lock (_lockObject)
         {
             return Task.FromResult(_configurations.FirstOrDefault(c => c.Id == id));
