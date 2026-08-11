@@ -7,8 +7,13 @@ namespace DotNetDeployNotify.Benchmarks.Benchmarks;
 /// </summary>
 public class TestHttpClient : HttpClient
 {
-    public TestHttpClient()
+    private readonly ILogger _logger;
+
+    public TestHttpClient(ILogger logger)
     {
+        _logger = logger;
+        _logger.LogInformation("TestHttpClient initialized");
+
         // Setup mock handler with different response scenarios
         var handler = new MockHttpMessageHandler();
         BaseAddress = new Uri("https://hooks.slack.com/services/test");
