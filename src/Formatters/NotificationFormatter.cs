@@ -41,6 +41,7 @@ public sealed class JsonNotificationFormatter : INotificationFormatter
 
     public string Format(DeploymentNotification notification)
     {
+        ArgumentNullException.ThrowIfNull(notification);
         try
         {
             return JsonSerializer.Serialize(notification, _options);
