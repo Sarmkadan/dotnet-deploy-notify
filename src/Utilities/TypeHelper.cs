@@ -16,6 +16,7 @@ public static class TypeHelper
     /// </summary>
     public static bool IsNumeric(this Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         return type == typeof(byte) || type == typeof(sbyte) ||
                type == typeof(short) || type == typeof(ushort) ||
                type == typeof(int) || type == typeof(uint) ||
@@ -34,6 +35,7 @@ public static class TypeHelper
     /// </summary>
     public static bool IsNullable(this Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         return Nullable.GetUnderlyingType(type) is not null;
     }
 
@@ -42,6 +44,7 @@ public static class TypeHelper
     /// </summary>
     public static Type GetUnderlyingType(this Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         return Nullable.GetUnderlyingType(type) ?? type;
     }
 
@@ -50,6 +53,7 @@ public static class TypeHelper
     /// </summary>
     public static bool ImplementsInterface<T>(this Type type) where T : class
     {
+        ArgumentNullException.ThrowIfNull(type);
         return typeof(T).IsAssignableFrom(type);
     }
 
@@ -63,6 +67,7 @@ public static class TypeHelper
     /// </summary>
     public static bool IsCollection(this Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         if (type == typeof(string))
             return false;
 
@@ -74,6 +79,7 @@ public static class TypeHelper
     /// </summary>
     public static Type[]? GetGenericArguments(this Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         return type.IsGenericType ? type.GetGenericArguments() : null;
     }
 
@@ -82,6 +88,7 @@ public static class TypeHelper
     /// </summary>
     public static bool IsGeneric(this Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         return type.IsGenericType;
     }
 
@@ -93,6 +100,9 @@ public static class TypeHelper
         string methodName,
         params Type[] parameterTypes)
     {
+        ArgumentNullException.ThrowIfNull(type);
+        ArgumentException.ThrowIfNullOrEmpty(methodName);
+        ArgumentNullException.ThrowIfNull(parameterTypes);
         return type.GetMethod(methodName, parameterTypes);
     }
 
@@ -101,6 +111,7 @@ public static class TypeHelper
     /// </summary>
     public static List<System.Reflection.PropertyInfo> GetAllProperties(this Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         return type.GetProperties().ToList();
     }
 
@@ -109,6 +120,7 @@ public static class TypeHelper
     /// </summary>
     public static List<System.Reflection.FieldInfo> GetAllFields(this Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         return type.GetFields().ToList();
     }
 
@@ -117,6 +129,7 @@ public static class TypeHelper
     /// </summary>
     public static List<System.Reflection.MethodInfo> GetAllMethods(this Type type)
     {
+        ArgumentNullException.ThrowIfNull(type);
         return type.GetMethods().ToList();
     }
 
