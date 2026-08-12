@@ -40,6 +40,8 @@ public class ChannelConfigurationException : NotificationException
         ChannelType = channel;
         ConfigurationId = configId;
     }
+
+    public override string ToString() => $"ChannelConfigurationException {{ ChannelType = {ChannelType}, ConfigurationId = {ConfigurationId} }}";
 }
 
 /// <summary>
@@ -64,6 +66,8 @@ public class WebhookDeliveryException : NotificationException
         Attempts = attempts;
         LastStatusCode = lastStatusCode;
     }
+
+    public override string ToString() => $"WebhookDeliveryException {{ Channel = {Channel}, Attempts = {Attempts}, LastStatusCode = {LastStatusCode} }}";
 }
 
 /// <summary>
@@ -83,6 +87,8 @@ public class NotificationValidationException : NotificationException
 
     /// <summary>Initializes a new instance with a single error</summary>
     public NotificationValidationException(string message) : base(message) { }
+
+    public override string ToString() => $"NotificationValidationException {{ ValidationErrors = {string.Join(", ", ValidationErrors)} }}";
 }
 
 /// <summary>
