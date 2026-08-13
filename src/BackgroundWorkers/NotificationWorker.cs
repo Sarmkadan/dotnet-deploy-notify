@@ -122,6 +122,8 @@ public class NotificationProcessingWorker : BackgroundWorker
 
         _logger.LogInformation("Notification processing worker stopped");
     }
+
+    public override string ToString() => $"NotificationProcessingWorker {{ Name = {nameof(NotificationProcessingWorker)}, Interval = {_interval}, LastRun = {StartTime} }}";
 }
 
 /// <summary>
