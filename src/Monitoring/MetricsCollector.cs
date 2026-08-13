@@ -25,6 +25,7 @@ public class MetricsCollector
     /// </summary>
     public void RecordMetric(string name, double value)
     {
+        _logger.LogInformation("Recording metric {Name} with value {Value}", name, value);
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("name is null or empty", nameof(name));
 
@@ -55,6 +56,7 @@ public class MetricsCollector
     /// </summary>
     public void IncrementCounter(string name, double amount = 1)
     {
+        _logger.LogInformation("Incrementing counter {Name} by {Amount}", name, amount);
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("name is null or empty", nameof(name));
 
@@ -83,6 +85,7 @@ public class MetricsCollector
     /// </summary>
     public MetricValue? GetMetric(string name)
     {
+        _logger.LogInformation("Getting metric {Name}", name);
         if (string.IsNullOrEmpty(name))
             throw new ArgumentException("name is null or empty", nameof(name));
 
@@ -97,6 +100,7 @@ public class MetricsCollector
     /// </summary>
     public List<MetricValue> GetAllMetrics()
     {
+        _logger.LogInformation("Getting all metrics");
         lock (_lock)
         {
             return _metrics.Values.ToList();
@@ -108,9 +112,13 @@ public class MetricsCollector
     /// </summary>
     public MetricStatistics? GetStatistics(string name)
     {
+        _logger.LogInformation("Getting statistics for metric {Name}", name);
         var metric = GetMetric(name);
         if (metric is null || metric.Values.Count == 0)
+        {
+            _logger.LogWarning("No metric found or no values for {Name}", name);
             return null;
+        }
 
         var values = metric.Values.OrderBy(v => v).ToList();
 
@@ -135,6 +143,7 @@ public class MetricsCollector
     /// </summary>
     public void Clear()
     {
+        _logger.LogInformation("Clearing all metrics");
         lock (_lock)
         {
             _metrics.Clear();
@@ -147,11 +156,16 @@ public class MetricsCollector
     /// </summary>
     public void ResetMetric(string name)
     {
+        _logger.LogInformation("Resetting metric {Name}", name);
         lock (_lock)
         {
             if (_metrics.Remove(name))
             {
                 _logger.LogDebug("Reset metric: {Name}", name);
+            }
+            else
+            {
+                _logger.LogWarning("Metric {Name} not found for reset", name);
             }
         }
     }
@@ -213,6 +227,7 @@ public class PerformanceMonitor
     /// </summary>
     public async Task<T> MeasureAsync<T>(string operationName, Func<Task<T>> operation)
     {
+        _logger.LogInformation("Starting measurement for operation {Operation}", operationName);
         var startTime = DateTime.UtcNow;
 
         try
@@ -223,7 +238,7 @@ public class PerformanceMonitor
             _collector.RecordMetric($"{operationName}_duration_ms", duration);
             _collector.IncrementCounter($"{operationName}_success", 1);
 
-            _logger.LogDebug("Operation {Operation} completed in {Duration}ms",
+            _logger.LogInformation("Operation {Operation} completed in {Duration}ms",
                 operationName, duration);
 
             return result;
@@ -241,6 +256,7 @@ public class PerformanceMonitor
     /// </summary>
     public T Measure<T>(string operationName, Func<T> operation)
     {
+        _logger.LogInformation("Starting synchronous measurement for operation {Operation}", operationName);
         var startTime = DateTime.UtcNow;
 
         try
@@ -250,12 +266,14 @@ public class PerformanceMonitor
 
             _collector.RecordMetric($"{operationName}_duration_ms", duration);
             _collector.IncrementCounter($"{operationName}_success", 1);
+            _logger.LogInformation("Synchronous operation {Operation} completed in {Duration}ms", operationName, duration);
 
             return result;
         }
-        catch (Exception)
+        catch (Exception ex)
         {
             _collector.IncrementCounter($"{operationName}_error", 1);
+            _logger.LogError(ex, "Synchronous operation {Operation} failed", operationName);
             throw;
         }
     }
@@ -265,12 +283,16 @@ public class PerformanceMonitor
     /// </summary>
     public PerformanceReport? GetReport(string operationName)
     {
+        _logger.LogInformation("Getting performance report for operation {Operation}", operationName);
         var durationMetric = _collector.GetMetric($"{operationName}_duration_ms");
         var successCount = _collector.GetMetric($"{operationName}_success")?.Count ?? 0;
         var errorCount = _collector.GetMetric($"{operationName}_error")?.Count ?? 0;
 
         if (durationMetric is null)
+        {
+            _logger.LogWarning("No duration metric found for operation {Operation}", operationName);
             return null;
+        }
 
         var stats = _collector.GetStatistics($"{operationName}_duration_ms");
 
