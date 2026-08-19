@@ -66,6 +66,7 @@ public class NotificationSearchEngine
         _logger.LogDebug("Executing notification search with {CriteriaCount} filters", 1);
 
         var query = notifications.AsEnumerable();
+        _logger.LogInformation("Executing notification search with {CriteriaCount} filters", 1);
 
         // Apply filters
         if (!string.IsNullOrWhiteSpace(criteria.ProjectName))
