@@ -36,6 +36,7 @@ public class IntegrationTests
         var mockDispatcher = Substitute.For<IWebhookDispatcher>();
         var mockValidationService = Substitute.For<IValidationService>();
         var mockLogger = Substitute.For<ILogger<NotificationService>>();
+        mockLogger.LogInformation("Starting test {TestName}", "NotificationService_CreateAndSendNotification_EndToEndWorkflow");
 
         var notificationService = new NotificationService(
             mockNotificationRepository,
@@ -105,6 +106,7 @@ public class IntegrationTests
         var mockDispatcher = Substitute.For<IWebhookDispatcher>();
         var mockValidationService = Substitute.For<IValidationService>();
         var mockLogger = Substitute.For<ILogger<NotificationService>>();
+        mockLogger.LogInformation("Starting test {TestName}", "NotificationService_CreateAndSendNotification_EndToEndWorkflow");
 
         var notificationService = new NotificationService(
             mockNotificationRepository,
@@ -177,6 +179,7 @@ public class IntegrationTests
         var mockDispatcher = Substitute.For<IWebhookDispatcher>();
         var mockValidationService = Substitute.For<IValidationService>();
         var mockLogger = Substitute.For<ILogger<NotificationService>>();
+        mockLogger.LogInformation("Starting test {TestName}", "NotificationService_CreateAndSendNotification_EndToEndWorkflow");
 
         var notificationService = new NotificationService(
             mockNotificationRepository,
@@ -210,6 +213,7 @@ public class IntegrationTests
         var mockDispatcher = Substitute.For<IWebhookDispatcher>();
         var mockValidationService = Substitute.For<IValidationService>();
         var mockLogger = Substitute.For<ILogger<NotificationService>>();
+        mockLogger.LogInformation("Starting test {TestName}", "NotificationService_CreateAndSendNotification_EndToEndWorkflow");
 
         var notificationService = new NotificationService(
             mockNotificationRepository,
@@ -337,6 +341,7 @@ public class IntegrationTests
         var mockDispatcher = Substitute.For<IWebhookDispatcher>();
         var mockValidationService = Substitute.For<IValidationService>();
         var mockLogger = Substitute.For<ILogger<NotificationService>>();
+        mockLogger.LogInformation("Starting test {TestName}", "NotificationService_CreateAndSendNotification_EndToEndWorkflow");
 
         var notificationService = new NotificationService(
             mockNotificationRepository,
@@ -422,6 +427,7 @@ public class IntegrationTests
         var mockDispatcher = Substitute.For<IWebhookDispatcher>();
         var mockValidationService = Substitute.For<IValidationService>();
         var mockLogger = Substitute.For<ILogger<NotificationService>>();
+        mockLogger.LogInformation("Starting test {TestName}", "NotificationService_CreateAndSendNotification_EndToEndWorkflow");
 
         var notificationService = new NotificationService(
             mockNotificationRepository,
@@ -489,6 +495,7 @@ public class IntegrationTests
         var mockDispatcher = Substitute.For<IWebhookDispatcher>();
         var mockValidationService = Substitute.For<IValidationService>();
         var mockLogger = Substitute.For<ILogger<NotificationService>>();
+        mockLogger.LogInformation("Starting test {TestName}", "NotificationService_CreateAndSendNotification_EndToEndWorkflow");
 
         var notificationService = new NotificationService(
             mockNotificationRepository,
