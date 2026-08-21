@@ -47,8 +47,12 @@ public class NotificationServiceTests
         _validationServiceMock.Setup(v => v.ValidateNotification(notification))
             .Returns(new ValidationResult { IsValid = true });
 
+        _loggerMock.Object.LogInformation("CreateNotificationAsync_ShouldReturnId_WhenValid called with {NotificationId}", notification.Id);
+
         // Act
         var result = await _service.CreateNotificationAsync(notification);
+
+        _loggerMock.Object.LogInformation("CreateNotificationAsync_ShouldReturnId_WhenValid completed with {Result}", result);
 
         // Assert
         result.Should().Be("test-id");
