@@ -26,6 +26,7 @@ public class PayloadBuilderTests
     [Fact]
     public void BuildPayload_WithSlackChannel_IncludesSlackFormat()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildPayload_WithSlackChannel_IncludesSlackFormat));
         // Arrange
         var notification = CreateTestNotification();
         var config = CreateSlackChannelConfig();
@@ -38,11 +39,13 @@ public class PayloadBuilderTests
         payload.Data.Should().NotBeNull();
         payload.Data.CustomProperties.Should().ContainKey("slack_format");
         payload.EventType.Should().Be("deployment.success");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildPayload_WithSlackChannel_IncludesSlackFormat));
     }
 
     [Fact]
     public void BuildPayload_WithDiscordChannel_IncludesDiscordFormat()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildPayload_WithDiscordChannel_IncludesDiscordFormat));
         // Arrange
         var notification = CreateTestNotification();
         var config = CreateDiscordChannelConfig();
@@ -54,11 +57,13 @@ public class PayloadBuilderTests
         payload.Should().NotBeNull();
         payload.Data.CustomProperties.Should().ContainKey("discord_format");
         payload.EventType.Should().Be("deployment.success");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildPayload_WithDiscordChannel_IncludesDiscordFormat));
     }
 
     [Fact]
     public void BuildPayload_WithTelegramChannel_IncludesTelegramText()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildPayload_WithTelegramChannel_IncludesTelegramText));
         // Arrange
         var notification = CreateTestNotification();
         var config = CreateTelegramChannelConfig();
@@ -70,11 +75,13 @@ public class PayloadBuilderTests
         payload.Should().NotBeNull();
         payload.Data.CustomProperties.Should().ContainKey("telegram_text");
         payload.EventType.Should().Be("deployment.success");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildPayload_WithTelegramChannel_IncludesTelegramText));
     }
 
     [Fact]
     public void BuildPayload_WithFailedStatus_SetCorrectEventType()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildPayload_WithFailedStatus_SetCorrectEventType));
         // Arrange
         var notification = new DeploymentNotification
         {
@@ -92,11 +99,13 @@ public class PayloadBuilderTests
 
         // Assert
         payload.EventType.Should().Be("deployment.failed");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildPayload_WithFailedStatus_SetCorrectEventType));
     }
 
     [Fact]
     public void BuildPayload_WithDeploymentSuccess_SetCorrectEventType()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildPayload_WithDeploymentSuccess_SetCorrectEventType));
         // Arrange
         var notification = new DeploymentNotification
         {
@@ -114,6 +123,7 @@ public class PayloadBuilderTests
 
         // Assert
         payload.EventType.Should().Be("deployment.deploymentsuccess");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildPayload_WithDeploymentSuccess_SetCorrectEventType));
     }
 
     #endregion
@@ -123,6 +133,7 @@ public class PayloadBuilderTests
     [Fact]
     public void BuildTelegramMessage_WithValidNotification_ContainsProjectNameAndVersion()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildTelegramMessage_WithValidNotification_ContainsProjectNameAndVersion));
         // Arrange
         var notification = new DeploymentNotification
         {
@@ -143,11 +154,13 @@ public class PayloadBuilderTests
         message.Should().Contain("2.1.0");
         message.Should().Contain("main");
         message.Should().Contain("Deployed to production");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildTelegramMessage_WithValidNotification_ContainsProjectNameAndVersion));
     }
 
     [Fact]
     public void BuildTelegramMessage_WithCommitDetailsEnabled_IncludesCommitInfo()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildTelegramMessage_WithCommitDetailsEnabled_IncludesCommitInfo));
         // Arrange
         var notification = new DeploymentNotification
         {
@@ -168,11 +181,13 @@ public class PayloadBuilderTests
         // Assert
         message.Should().Contain("abc1234");
         message.Should().Contain("John Doe");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildTelegramMessage_WithCommitDetailsEnabled_IncludesCommitInfo));
     }
 
     [Fact]
     public void BuildTelegramMessage_WithCommitDetailsDisabled_ExcludesCommitInfo()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildTelegramMessage_WithCommitDetailsDisabled_ExcludesCommitInfo));
         // Arrange
         var notification = new DeploymentNotification
         {
@@ -193,11 +208,13 @@ public class PayloadBuilderTests
         // Assert
         message.Should().NotContain("abc1234");
         message.Should().NotContain("John Doe");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildTelegramMessage_WithCommitDetailsDisabled_ExcludesCommitInfo));
     }
 
     [Fact]
     public void BuildTelegramMessage_WithDuration_IncludesDurationInfo()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildTelegramMessage_WithDuration_IncludesDurationInfo));
         // Arrange
         var notification = new DeploymentNotification
         {
@@ -216,11 +233,13 @@ public class PayloadBuilderTests
         // Assert
         message.Should().Contain("300");
         message.Should().Contain("Duration");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildTelegramMessage_WithDuration_IncludesDurationInfo));
     }
 
     [Fact]
     public void BuildTelegramMessage_WithBuildUrlEnabled_IncludesBuildUrl()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildTelegramMessage_WithBuildUrlEnabled_IncludesBuildUrl));
         // Arrange
         var notification = new DeploymentNotification
         {
@@ -239,11 +258,13 @@ public class PayloadBuilderTests
 
         // Assert
         message.Should().Contain("https://ci.example.com/build/123");
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildTelegramMessage_WithBuildUrlEnabled_IncludesBuildUrl));
     }
 
     [Fact]
     public void BuildTelegramMessage_WithEmojisEnabled_IncludesStatusEmoji()
     {
+        _mockLogger.LogInformation("Starting {TestMethod}", nameof(BuildTelegramMessage_WithEmojisEnabled_IncludesStatusEmoji));
         // Arrange
         var notification = new DeploymentNotification
         {
@@ -261,6 +282,7 @@ public class PayloadBuilderTests
 
         // Assert - Success should have an emoji
         message.Length.Should().BeGreaterThan("MyApp".Length);
+        _mockLogger.LogInformation("Completed {TestMethod}", nameof(BuildTelegramMessage_WithEmojisEnabled_IncludesStatusEmoji));
     }
 
     #endregion
