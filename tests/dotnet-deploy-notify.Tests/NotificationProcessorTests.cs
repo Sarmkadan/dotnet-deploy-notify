@@ -62,8 +62,13 @@ public class NotificationProcessorTests
 		};
 		_mockNotificationService.SendPendingNotificationsAsync().Returns(notificationResults);
 
+		_mockLogger.LogInformation("ProcessBatchAsync called with {BatchSize}", 50);
+
 		// Act
 		var result = await _processor.ProcessBatchAsync(50);
+
+		_mockLogger.LogInformation("ProcessBatchAsync completed with {TotalProcessed} processed, {SuccessCount} succeeded, {FailureCount} failed, {SkippedCount} skipped",
+			result.TotalProcessed, result.SuccessCount, result.FailureCount, result.SkippedCount);
 
 		// Assert
 		result.TotalProcessed.Should().Be(3);
@@ -89,8 +94,13 @@ public class NotificationProcessorTests
 		};
 		_mockNotificationService.SendPendingNotificationsAsync().Returns(notificationResults);
 
+		_mockLogger.LogInformation("ProcessBatchAsync called with {BatchSize}", 50);
+
 		// Act
 		var result = await _processor.ProcessBatchAsync(50);
+
+		_mockLogger.LogInformation("ProcessBatchAsync completed with {TotalProcessed} processed, {SuccessCount} succeeded, {FailureCount} failed, {SkippedCount} skipped",
+			result.TotalProcessed, result.SuccessCount, result.FailureCount, result.SkippedCount);
 
 		// Assert
 		result.TotalProcessed.Should().Be(4);
@@ -109,8 +119,13 @@ public class NotificationProcessorTests
 		// Arrange
 		_mockNotificationService.SendPendingNotificationsAsync().Returns(new List<NotificationResult>());
 
+		_mockLogger.LogInformation("ProcessBatchAsync called with {BatchSize}", 50);
+
 		// Act
 		var result = await _processor.ProcessBatchAsync(50);
+
+		_mockLogger.LogInformation("ProcessBatchAsync completed with {TotalProcessed} processed, {SuccessCount} succeeded, {FailureCount} failed, {SkippedCount} skipped",
+			result.TotalProcessed, result.SuccessCount, result.FailureCount, result.SkippedCount);
 
 		// Assert
 		result.TotalProcessed.Should().Be(0);
@@ -127,8 +142,12 @@ public class NotificationProcessorTests
 		var notificationResults = new List<NotificationResult> { CreateSuccessfulResult() };
 		_mockNotificationService.SendPendingNotificationsAsync().Returns(Task.FromResult(notificationResults));
 
+		_mockLogger.LogInformation("ProcessBatchAsync called with {BatchSize}", 50);
+
 		// Act
 		var result = await _processor.ProcessBatchAsync(50);
+
+		_mockLogger.LogInformation("ProcessBatchAsync completed in {DurationMs}ms", result.DurationMs);
 
 		// Assert
 		result.DurationMs.Should().BeGreaterThanOrEqualTo(0);
@@ -145,8 +164,12 @@ public class NotificationProcessorTests
 		_mockNotificationService.SendPendingNotificationsAsync()
 			.Throws(new InvalidOperationException("Test error"));
 
+		_mockLogger.LogInformation("ProcessBatchAsync called with {BatchSize}", 50);
+
 		// Act
 		var result = await _processor.ProcessBatchAsync(50);
+
+		_mockLogger.LogWarning("ProcessBatchAsync degraded: {ErrorCount} errors returned", result.Errors.Count);
 
 		// Assert
 		result.Errors.Should().NotBeEmpty();
@@ -169,8 +192,12 @@ public class NotificationProcessorTests
 		};
 		_mockNotificationService.SendPendingNotificationsAsync().Returns(notificationResults);
 
+		_mockLogger.LogInformation("ProcessBatchAsync called with {BatchSize}", 50);
+
 		// Act
 		var result = await _processor.ProcessBatchAsync(50);
+
+		_mockLogger.LogInformation("ProcessBatchAsync completed with {SuccessRate}% success rate", result.SuccessRate);
 
 		// Assert
 		result.SuccessRate.Should().Be(75.0);
@@ -202,8 +229,12 @@ public class NotificationProcessorTests
 		_mockNotificationService.RetryFailedDeliveriesAsync(Arg.Any<string>())
 			.Returns(retryResults);
 
+		_mockLogger.LogInformation("ProcessFailedAsync called with {MaxRetries} max retries", 3);
+
 		// Act
 		var result = await _processor.ProcessFailedAsync(3);
+
+		_mockLogger.LogInformation("ProcessFailedAsync completed with {TotalProcessed} processed, {SuccessCount} succeeded", result.TotalProcessed, result.SuccessCount);
 
 		// Assert
 		result.TotalProcessed.Should().Be(4); // 2 failed results * 2 retry results
@@ -228,8 +259,12 @@ public class NotificationProcessorTests
 		_mockNotificationService.RetryFailedDeliveriesAsync(Arg.Any<string>())
 			.Returns(retryResults);
 
+		_mockLogger.LogInformation("ProcessFailedAsync called with {MaxRetries} max retries", 3);
+
 		// Act
 		var result = await _processor.ProcessFailedAsync(3);
+
+		_mockLogger.LogWarning("ProcessFailedAsync skipped {SkippedCount} notifications exceeding max retries", result.SkippedCount);
 
 		// Assert
 		result.SkippedCount.Should().Be(1); // First one exceeded max retries
@@ -244,8 +279,12 @@ public class NotificationProcessorTests
 		// Arrange
 		_mockResultRepository.GetAllAsync(0, 1000).Returns(new List<NotificationResult>());
 
+		_mockLogger.LogInformation("ProcessFailedAsync called with {MaxRetries} max retries", 3);
+
 		// Act
 		var result = await _processor.ProcessFailedAsync(3);
+
+		_mockLogger.LogInformation("ProcessFailedAsync completed with {TotalProcessed} processed, {SuccessCount} succeeded", result.TotalProcessed, result.SuccessCount);
 
 		// Assert
 		result.TotalProcessed.Should().Be(0);
@@ -272,8 +311,12 @@ public class NotificationProcessorTests
 		_mockNotificationService.RetryFailedDeliveriesAsync("2")
 			.Returns(new List<NotificationResult> { CreateSuccessfulResult() });
 
+		_mockLogger.LogInformation("ProcessFailedAsync called with {MaxRetries} max retries", 3);
+
 		// Act
 		var result = await _processor.ProcessFailedAsync(3);
+
+		_mockLogger.LogWarning("ProcessFailedAsync degraded: {FailureCount} failures during retry", result.FailureCount);
 
 		// Assert
 		result.FailureCount.Should().BeGreaterThan(0);
@@ -293,8 +336,12 @@ public class NotificationProcessorTests
 		var notificationResults = new List<NotificationResult> { CreateSuccessfulResult() };
 		_mockNotificationService.SendPendingNotificationsAsync().Returns(notificationResults);
 
+		_mockLogger.LogInformation("ProcessByPriorityAsync called");
+
 		// Act
 		var result = await _processor.ProcessByPriorityAsync();
+
+		_mockLogger.LogInformation("ProcessByPriorityAsync completed with {TotalProcessed} processed", result.TotalProcessed);
 
 		// Assert
 		result.TotalProcessed.Should().BeGreaterThanOrEqualTo(0);
@@ -314,8 +361,12 @@ public class NotificationProcessorTests
 		};
 		_mockNotificationService.SendPendingNotificationsAsync().Returns(notificationResults);
 
+		_mockLogger.LogInformation("ProcessByPriorityAsync called");
+
 		// Act
 		var result = await _processor.ProcessByPriorityAsync();
+
+		_mockLogger.LogInformation("ProcessByPriorityAsync completed with {TotalProcessed} processed", result.TotalProcessed);
 
 		// Assert
 		result.Should().NotBeNull();
@@ -331,8 +382,12 @@ public class NotificationProcessorTests
 		_mockNotificationService.SendPendingNotificationsAsync()
 			.Throws(new InvalidOperationException("Processing error"));
 
+		_mockLogger.LogInformation("ProcessByPriorityAsync called");
+
 		// Act
 		var result = await _processor.ProcessByPriorityAsync();
+
+		_mockLogger.LogWarning("ProcessByPriorityAsync degraded: {ErrorCount} errors returned", result.Errors.Count);
 
 		// Assert
 		result.Errors.Should().NotBeEmpty();
@@ -373,8 +428,12 @@ public class NotificationProcessorTests
 		_mockResultRepository.GetAllAsync(0, 10000).Returns(results);
 		_mockConfigRepository.GetEnabledAsync().Returns(configs);
 
+		_mockLogger.LogInformation("GetStatisticsAsync called");
+
 		// Act
 		var stats = await _processor.GetStatisticsAsync();
+
+		_mockLogger.LogInformation("GetStatisticsAsync completed with {TotalNotifications} total notifications, {PendingCount} pending", stats.TotalNotifications, stats.PendingCount);
 
 		// Assert
 		stats.PendingCount.Should().Be(1);
@@ -405,8 +464,12 @@ public class NotificationProcessorTests
 		_mockResultRepository.GetAllAsync(0, 10000).Returns(results);
 		_mockConfigRepository.GetEnabledAsync().Returns(new List<ChannelConfiguration>());
 
+		_mockLogger.LogInformation("GetStatisticsAsync called");
+
 		// Act
 		var stats = await _processor.GetStatisticsAsync();
+
+		_mockLogger.LogInformation("GetStatisticsAsync completed with {AverageDeliveryTimeMs}ms average delivery time", stats.AverageDeliveryTimeMs);
 
 		// Assert
 		stats.AverageDeliveryTimeMs.Should().Be(200); // (100 + 200 + 300) / 3
@@ -424,8 +487,12 @@ public class NotificationProcessorTests
 		_mockResultRepository.GetAllAsync(0, 10000).Returns(new List<NotificationResult>());
 		_mockConfigRepository.GetEnabledAsync().Returns(new List<ChannelConfiguration>());
 
+		_mockLogger.LogInformation("GetStatisticsAsync called");
+
 		// Act
 		var stats = await _processor.GetStatisticsAsync();
+
+		_mockLogger.LogInformation("GetStatisticsAsync completed with {TotalNotifications} total notifications", stats.TotalNotifications);
 
 		// Assert
 		stats.TotalNotifications.Should().Be(0);
@@ -443,8 +510,12 @@ public class NotificationProcessorTests
 		_mockNotificationRepository.GetPendingAsync()
 			.Throws(new InvalidOperationException("Database error"));
 
+		_mockLogger.LogInformation("GetStatisticsAsync called");
+
 		// Act
 		var stats = await _processor.GetStatisticsAsync();
+
+		_mockLogger.LogWarning("GetStatisticsAsync degraded: {TotalNotifications} total notifications returned", stats.TotalNotifications);
 
 		// Assert
 		stats.TotalNotifications.Should().Be(0);
