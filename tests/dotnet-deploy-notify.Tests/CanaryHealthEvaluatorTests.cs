@@ -41,7 +41,7 @@ public class CanaryHealthEvaluatorTests
     [Fact]
     public async Task EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
         var deployment = new CanaryDeployment
         {
             ProjectName = "test-project",
@@ -96,12 +96,13 @@ public class CanaryHealthEvaluatorTests
         result.Reason.Should().Be("All metrics within acceptable thresholds");
         result.Violations.Should().BeEmpty();
         result.ShouldAutoRollback.Should().BeFalse();
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
     }
 
     [Fact]
     public async Task EvaluateAsync_ErrorRateAboveAbsoluteThreshold_ShouldBeUnhealthy()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_ErrorRateAboveAbsoluteThreshold_ShouldBeUnhealthy));
         var deployment = new CanaryDeployment
         {
             ProjectName = "test-project",
@@ -139,18 +140,24 @@ public class CanaryHealthEvaluatorTests
 
         // Act
         var result = await evaluator.EvaluateAsync(deployment);
+        
+        if (!result.IsHealthy)
+        {
+            _logger.LogWarning("Evaluation for {Deployment} resulted in unhealthy status: {Reason}", deployment.ProjectName, result.Reason);
+        }
 
         // Assert
         result.IsHealthy.Should().BeFalse();
         result.Violations.Should().ContainSingle()
             .Which.Should().Contain("Error rate 1.50% exceeds absolute threshold of 1.00%");
         result.ShouldAutoRollback.Should().BeTrue();
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_ErrorRateAboveAbsoluteThreshold_ShouldBeUnhealthy));
     }
 
     [Fact]
     public async Task EvaluateAsync_P95LatencyAboveThreshold_ShouldBeUnhealthy()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_P95LatencyAboveThreshold_ShouldBeUnhealthy));
         var deployment = new CanaryDeployment
         {
             ProjectName = "test-project",
@@ -187,18 +194,24 @@ public class CanaryHealthEvaluatorTests
 
         // Act
         var result = await evaluator.EvaluateAsync(deployment);
+        
+        if (!result.IsHealthy)
+        {
+            _logger.LogWarning("Evaluation for {Deployment} resulted in unhealthy status: {Reason}", deployment.ProjectName, result.Reason);
+        }
 
         // Assert
         result.IsHealthy.Should().BeFalse();
         result.Violations.Should().ContainSingle()
             .Which.Should().Contain("P95 latency 1500ms exceeds threshold of 1000ms");
         result.ShouldAutoRollback.Should().BeTrue();
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_P95LatencyAboveThreshold_ShouldBeUnhealthy));
     }
 
     [Fact]
     public async Task EvaluateAsync_P99LatencyAboveThreshold_ShouldBeUnhealthy()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_P99LatencyAboveThreshold_ShouldBeUnhealthy));
         var deployment = new CanaryDeployment
         {
             ProjectName = "test-project",
@@ -235,18 +248,26 @@ public class CanaryHealthEvaluatorTests
 
         // Act
         var result = await evaluator.EvaluateAsync(deployment);
+        
+        if (!result.IsHealthy)
+        {
+            _logger.LogWarning("Evaluation for {Deployment} resulted in unhealthy status: {Reason}", deployment.ProjectName, result.Reason);
+        }
 
         // Assert
         result.IsHealthy.Should().BeFalse();
         result.Violations.Should().ContainSingle()
             .Which.Should().Contain("P99 latency 2500ms exceeds threshold of 2000ms");
         result.ShouldAutoRollback.Should().BeTrue();
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_P99LatencyAboveThreshold_ShouldBeUnhealthy));
     }
 
     [Fact]
     public async Task EvaluateAsync_ErrorRateMultiplierExceeded_ShouldBeUnhealthy()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Processing {ItemId}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
         var deployment = new CanaryDeployment
         {
             ProjectName = "test-project",
@@ -296,7 +317,9 @@ public class CanaryHealthEvaluatorTests
     [Fact]
     public async Task EvaluateAsync_LatencyDegradationExceeded_ShouldBeUnhealthy()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Processing {ItemId}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
         var deployment = new CanaryDeployment
         {
             ProjectName = "test-project",
@@ -345,7 +368,9 @@ public class CanaryHealthEvaluatorTests
     [Fact]
     public async Task EvaluateAsync_BoundaryValues_ExactlyAtThreshold_ShouldBeHealthy()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Processing {ItemId}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
         var deployment = new CanaryDeployment
         {
             ProjectName = "test-project",
@@ -394,7 +419,9 @@ public class CanaryHealthEvaluatorTests
     [Fact]
     public async Task EvaluateAsync_EmptyMetrics_ShouldBeHealthy()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Processing {ItemId}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
         var deployment = new CanaryDeployment
         {
             ProjectName = "test-project",
@@ -436,7 +463,9 @@ public class CanaryHealthEvaluatorTests
     [Fact]
     public async Task EvaluateAsync_MultipleViolations_ShouldReportAll()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Processing {ItemId}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
         var deployment = new CanaryDeployment
         {
             ProjectName = "test-project",
@@ -493,7 +522,9 @@ public class CanaryHealthEvaluatorTests
     [Fact]
     public async Task CollectMetricsAsync_ShouldReturnZeroBaseline()
     {
-        // Arrange
+        _logger.LogInformation("Starting test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Processing {ItemId}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
+        _logger.LogInformation("Finished test {TestName}", nameof(EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy));
         var evaluator = new CanaryHealthEvaluator(_options, _logger);
         var version = "v1.0.0";
         var environment = Environment.Production;
