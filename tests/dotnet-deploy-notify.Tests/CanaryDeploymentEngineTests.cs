@@ -111,6 +111,8 @@ public class CanaryDeploymentEngineTests
             NotificationChannels = CreateChannels()
         };
 
+        _logger.LogInformation("Starting {MethodName} for project {ProjectName}", nameof(StartCanaryAsync_CreatesDeployment_WithInitialStep), request.ProjectName);
+
         // Act
         var deployment = await engine.StartCanaryAsync(request);
 
@@ -125,6 +127,8 @@ public class CanaryDeploymentEngineTests
         deployment.ActiveStep.Should().NotBeNull();
         deployment.ActiveStep!.StepNumber.Should().Be(1);
         deployment.ActiveStep.Status.Should().Be(RolloutStepStatus.InProgress);
+
+        _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(StartCanaryAsync_CreatesDeployment_WithInitialStep), request.ProjectName);
     }
 
     [Fact]
@@ -141,6 +145,8 @@ public class CanaryDeploymentEngineTests
             Strategy = CanaryStrategy.Linear,
             NotificationChannels = CreateChannels()
         };
+
+        _logger.LogInformation("Starting {MethodName} for project {ProjectName}", nameof(AdvanceRolloutAsync_ProgressesThroughSteps_WhenEvaluationsAreHealthy), request.ProjectName);
 
         var deployment = await engine.StartCanaryAsync(request);
         var deploymentId = deployment.Id;
@@ -184,6 +190,8 @@ public class CanaryDeploymentEngineTests
         // Verify step 2 is completed
         var step2 = deploymentAfterStep2.RolloutPlan.First(s => s.StepNumber == 2);
         step2.Status.Should().Be(RolloutStepStatus.Completed);
+
+        _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(AdvanceRolloutAsync_ProgressesThroughSteps_WhenEvaluationsAreHealthy), request.ProjectName);
     }
 
     [Fact]
@@ -200,6 +208,8 @@ public class CanaryDeploymentEngineTests
             Strategy = CanaryStrategy.Linear,
             NotificationChannels = CreateChannels()
         };
+
+        _logger.LogInformation("Starting {MethodName} for project {ProjectName}", nameof(EvaluateHealthAsync_TriggersAbort_WhenEvaluationIsUnhealthy), request.ProjectName);
 
         var deployment = await engine.StartCanaryAsync(request);
         var deploymentId = deployment.Id;
@@ -225,11 +235,19 @@ public class CanaryDeploymentEngineTests
         result.Violations.Should().ContainSingle()
             .Which.Should().Contain("Error rate 2.00% exceeds absolute threshold of 1.00%");
 
+        // Log the degraded path
+        if (!result.IsHealthy)
+        {
+            _logger.LogWarning("Evaluation is unhealthy for deployment {DeploymentId}. Reason: {Reason}", deploymentId, result.Reason);
+        }
+
         // Verify deployment was aborted
         var abortedDeployment = await engine.GetDeploymentAsync(deploymentId);
         abortedDeployment.Status.Should().Be(CanaryStatus.Aborted);
         abortedDeployment.AbortReason.Should().Be("Automatic rollback: Error rate 2.00% exceeds absolute threshold of 1.00%");
         abortedDeployment.CurrentSplit.Should().Be(TrafficSplit.Initial); // Traffic returned to stable
+
+        _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(EvaluateHealthAsync_TriggersAbort_WhenEvaluationIsUnhealthy), request.ProjectName);
     }
 
     [Fact]
@@ -247,6 +265,8 @@ public class CanaryDeploymentEngineTests
             NotificationChannels = CreateChannels()
         };
 
+        _logger.LogInformation("Starting {MethodName} for project {ProjectName}", nameof(AdvanceRolloutAsync_WithCancellationToken_CompletesSuccessfully), request.ProjectName);
+
         var deployment = await engine.StartCanaryAsync(request);
         var deploymentId = deployment.Id;
 
@@ -263,6 +283,8 @@ public class CanaryDeploymentEngineTests
         deploymentAfterAttempt.ActiveStep.Should().NotBeNull();
         deploymentAfterAttempt.ActiveStep!.StepNumber.Should().Be(2);
         deploymentAfterAttempt.ActiveStep.Status.Should().Be(RolloutStepStatus.InProgress);
+
+        _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(AdvanceRolloutAsync_WithCancellationToken_CompletesSuccessfully), request.ProjectName);
     }
 
     [Fact]
@@ -279,6 +301,8 @@ public class CanaryDeploymentEngineTests
             Strategy = CanaryStrategy.Linear,
             NotificationChannels = CreateChannels()
         };
+
+        _logger.LogInformation("Starting {MethodName} for project {ProjectName}", nameof(PromoteAsync_SkipsRemainingSteps_WhenCalled), request.ProjectName);
 
         var deployment = await engine.StartCanaryAsync(request);
         var deploymentId = deployment.Id;
@@ -305,5 +329,7 @@ public class CanaryDeploymentEngineTests
         var step2 = promotedDeployment.RolloutPlan.First(s => s.StepNumber == 2);
         step2.Status.Should().Be(RolloutStepStatus.Completed);
         step2.CompletedAt.Should().NotBeNull();
+
+        _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(PromoteAsync_SkipsRemainingSteps_WhenCalled), request.ProjectName);
     }
 }
