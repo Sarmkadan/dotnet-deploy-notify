@@ -14,6 +14,8 @@ public sealed class DotnetDeployNotifyOptions
     public NotificationConfig Notification { get; set; } = new();
 
     public CanaryOptions Canary { get; set; } = new();
+
+    public override string ToString() => $"DotnetDeployNotifyOptions {{ Notification = {Notification}, Canary = {Canary}, MaxRetries = {Notification.MaxRetries}, WebhookTimeoutMs = {Notification.WebhookTimeoutMs}, RetryDelayMs = {Notification.RetryDelayMs}, AutoProcessNotifications = {Notification.AutoProcessNotifications} }}";
 }
 
 public sealed class NotificationConfig
