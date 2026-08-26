@@ -70,6 +70,11 @@ public sealed class CanaryOptions
     /// Defaults to <see cref="NotificationPriority.High"/>.
     /// </summary>
     public NotificationPriority AlertPriority { get; set; } = NotificationPriority.High;
+
+    public override string ToString()
+    {
+        return $"CanaryOptions {{ Enabled = {Enabled}, AutoRollbackOnFailure = {AutoRollbackOnFailure}, AutoAdvanceOnSuccess = {AutoAdvanceOnSuccess}, LinearStepCount = {LinearStepCount}, StepSoakDuration = {StepSoakDuration}, MaxDeploymentDuration = {MaxDeploymentDuration} }}";
+    }
 }
 
 /// <summary>
