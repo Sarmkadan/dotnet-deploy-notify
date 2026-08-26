@@ -16,6 +16,11 @@ public class RetryPolicy
     public double BackoffMultiplier { get; set; } = 2.0;
     public TimeSpan MaxDelay { get; set; } = TimeSpan.FromSeconds(30);
     public Func<Exception, bool>? ShouldRetry { get; set; }
+
+    public override string ToString()
+    {
+        return $"RetryPolicy {{ MaxAttempts = {MaxAttempts}, InitialDelay = {InitialDelay}, BackoffMultiplier = {BackoffMultiplier}, MaxDelay = {MaxDelay}, ShouldRetry = {(ShouldRetry != null ? "assigned" : "null")} }}";
+    }
 }
 
 /// <summary>
