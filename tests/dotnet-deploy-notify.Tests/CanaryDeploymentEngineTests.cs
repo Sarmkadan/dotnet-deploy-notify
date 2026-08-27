@@ -13,13 +13,36 @@ using Xunit;
 
 namespace DotNetDeployNotify.Tests.Canary;
 
+/// <summary>
+/// Contains unit tests for the CanaryDeploymentEngine class.
+/// Tests cover deployment initialization, rollout progression, health evaluation,
+/// cancellation handling, and manual promotion scenarios.
+/// </summary>
 public class CanaryDeploymentEngineTests
 {
+    /// <summary>
+    /// Mocked options for canary configuration.
+    /// </summary>
     private readonly IOptions<CanaryOptions> _options;
+    /// <summary>
+    /// Mocked logger for the canary deployment engine.
+    /// </summary>
     private readonly ILogger<CanaryDeploymentEngine> _logger;
+    /// <summary>
+    /// Mocked notification service for sending deployment notifications.
+    /// </summary>
     private readonly INotificationService _notificationService;
+    /// <summary>
+    /// Mocked rollback service for handling deployment rollbacks.
+    /// </summary>
     private readonly IRollbackService _rollbackService;
+    /// <summary>
+    /// Mocked traffic splitter for generating rollout plans.
+    /// </summary>
     private readonly ITrafficSplitter _trafficSplitter;
+    /// <summary>
+    /// Mocked health evaluator for assessing canary deployment health.
+    /// </summary>
     private readonly ICanaryHealthEvaluator _healthEvaluator;
 
     public CanaryDeploymentEngineTests()
@@ -63,6 +86,11 @@ public class CanaryDeploymentEngineTests
             .Returns(Task.FromResult(new List<NotificationResult>()));
     }
 
+    /// <summary>
+    /// Creates a new instance of the CanaryDeploymentEngine for testing.
+    /// </summary>
+    /// <param name="autoAdvanceOnSuccess">Whether the engine should automatically advance to the next step on success.</param>
+    /// <returns>A configured CanaryDeploymentEngine instance with mocked dependencies.</returns>
     private CanaryDeploymentEngine CreateEngine(bool autoAdvanceOnSuccess = true)
     {
         var options = Options.Create(new CanaryOptions
@@ -91,11 +119,18 @@ public class CanaryDeploymentEngineTests
             _logger);
     }
 
+    /// <summary>
+    /// Creates a list of notification channels for testing.
+    /// </summary>
+    /// <returns>A list containing the Slack notification channel.</returns>
     private static List<NotificationChannel> CreateChannels()
     {
         return new List<NotificationChannel> { NotificationChannel.Slack };
     }
 
+    /// <summary>
+    /// Tests that starting a canary async creates a deployment with the initial step.
+    /// </summary>
     [Fact]
     public async Task StartCanaryAsync_CreatesDeployment_WithInitialStep()
     {
@@ -131,6 +166,9 @@ public class CanaryDeploymentEngineTests
         _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(StartCanaryAsync_CreatesDeployment_WithInitialStep), request.ProjectName);
     }
 
+    /// <summary>
+    /// Tests that advancing the rollout progresses through steps when evaluations are healthy.
+    /// </summary>
     [Fact]
     public async Task AdvanceRolloutAsync_ProgressesThroughSteps_WhenEvaluationsAreHealthy()
     {
@@ -194,6 +232,9 @@ public class CanaryDeploymentEngineTests
         _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(AdvanceRolloutAsync_ProgressesThroughSteps_WhenEvaluationsAreHealthy), request.ProjectName);
     }
 
+    /// <summary>
+    /// Tests that evaluating health triggers an abort when the evaluation is unhealthy.
+    /// </summary>
     [Fact]
     public async Task EvaluateHealthAsync_TriggersAbort_WhenEvaluationIsUnhealthy()
     {
@@ -250,43 +291,49 @@ public class CanaryDeploymentEngineTests
         _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(EvaluateHealthAsync_TriggersAbort_WhenEvaluationIsUnhealthy), request.ProjectName);
     }
 
-    [Fact]
-    public async Task AdvanceRolloutAsync_WithCancellationToken_CompletesSuccessfully()
+    /// <summary>
+/// Tests that advancing the rollout with a cancellation token completes successfully.
+/// </summary>
+[Fact]
+public async Task AdvanceRolloutAsync_WithCancellationToken_CompletesSuccessfully()
+{
+    // Arrange
+    var engine = CreateEngine(autoAdvanceOnSuccess: false); // Disable auto-advance to test manual progression
+    var request = new CanaryDeploymentRequest
     {
-        // Arrange
-        var engine = CreateEngine(autoAdvanceOnSuccess: false); // Disable auto-advance to test manual progression
-        var request = new CanaryDeploymentRequest
-        {
-            ProjectName = "test-project",
-            StableVersion = "v1.0.0",
-            CanaryVersion = "v1.1.0",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Production,
-            Strategy = CanaryStrategy.Linear,
-            NotificationChannels = CreateChannels()
-        };
+        ProjectName = "test-project",
+        StableVersion = "v1.0.0",
+        CanaryVersion = "v1.1.0",
+        TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Production,
+        Strategy = CanaryStrategy.Linear,
+        NotificationChannels = CreateChannels()
+    };
 
-        _logger.LogInformation("Starting {MethodName} for project {ProjectName}", nameof(AdvanceRolloutAsync_WithCancellationToken_CompletesSuccessfully), request.ProjectName);
+    _logger.LogInformation("Starting {MethodName} for project {ProjectName}", nameof(AdvanceRolloutAsync_WithCancellationToken_CompletesSuccessfully), request.ProjectName);
 
-        var deployment = await engine.StartCanaryAsync(request);
-        var deploymentId = deployment.Id;
+    var deployment = await engine.StartCanaryAsync(request);
+    var deploymentId = deployment.Id;
 
-        // Create a cancellation token (not cancelled)
-        var cts = new CancellationTokenSource();
-        var token = cts.Token;
+    // Create a cancellation token (not cancelled)
+    var cts = new CancellationTokenSource();
+    var token = cts.Token;
 
-        // Act - Advance with valid token
-        var deploymentAfterAttempt = await engine.AdvanceRolloutAsync(deploymentId, token);
+    // Act - Advance with valid token
+    var deploymentAfterAttempt = await engine.AdvanceRolloutAsync(deploymentId, token);
 
-        // Assert - Deployment should progress to next step
-        deploymentAfterAttempt.Status.Should().Be(CanaryStatus.Active);
-        deploymentAfterAttempt.CurrentSplit.Should().Be(TrafficSplit.FromCanaryPercent(66)); // Second step
-        deploymentAfterAttempt.ActiveStep.Should().NotBeNull();
-        deploymentAfterAttempt.ActiveStep!.StepNumber.Should().Be(2);
-        deploymentAfterAttempt.ActiveStep.Status.Should().Be(RolloutStepStatus.InProgress);
+    // Assert - Deployment should progress to next step
+    deploymentAfterAttempt.Status.Should().Be(CanaryStatus.Active);
+    deploymentAfterAttempt.CurrentSplit.Should().Be(TrafficSplit.FromCanaryPercent(66)); // Second step
+    deploymentAfterAttempt.ActiveStep.Should().NotBeNull();
+    deploymentAfterAttempt.ActiveStep!.StepNumber.Should().Be(2);
+    deploymentAfterAttempt.ActiveStep.Status.Should().Be(RolloutStepStatus.InProgress);
 
-        _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(AdvanceRolloutAsync_WithCancellationToken_CompletesSuccessfully), request.ProjectName);
-    }
+    _logger.LogInformation("Completed {MethodName} for project {ProjectName}", nameof(AdvanceRolloutAsync_WithCancellationToken_CompletesSuccessfully), request.ProjectName);
+}
 
+    /// <summary>
+    /// Tests that promoting a deployment skips the remaining steps in the rollout plan.
+    /// </summary>
     [Fact]
     public async Task PromoteAsync_SkipsRemainingSteps_WhenCalled()
     {
