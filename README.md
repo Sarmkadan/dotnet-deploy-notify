@@ -78,3 +78,23 @@ public class CanaryDeploymentEngineTestsExample
     }
 }
 ```
+
+## CanaryServiceExtensionsJsonExtensionsTests
+
+The `CanaryServiceExtensionsJsonExtensionsTests` class contains unit tests for the `CanaryServiceExtensionsJsonExtensions` class. It verifies the JSON serialization and deserialization of `CanaryServiceExtensionsMetadata`, including handling of null and invalid inputs, and ensuring round-trip correctness for all properties.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Infrastructure.Tests;
+using Xunit;
+
+public class CanaryServiceExtensionsJsonExtensionsTestsExample
+{
+    [Fact]
+    public void TestToJson()
+    {
+        var tests = new CanaryServiceExtensionsJsonExtensionsTests();
+        tests.ToJson_WithValidMetadata_ReturnsValidJson();
+    }
+}
+```
