@@ -98,3 +98,23 @@ public class CanaryServiceExtensionsJsonExtensionsTestsExample
     }
 }
 ```
+
+## CanaryHealthEvaluatorTests
+
+The `CanaryHealthEvaluatorTests` class contains unit tests for the `CanaryHealthEvaluator` class. It verifies the health evaluation logic under various conditions, including healthy metrics, threshold violations for error rate and latency, boundary conditions, and multiple simultaneous violations.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Tests.Canary;
+using Xunit;
+
+public class CanaryHealthEvaluatorTestsExample
+{
+    [Fact]
+    public async void TestHealthyMetrics()
+    {
+        var tests = new CanaryHealthEvaluatorTests();
+        await tests.EvaluateAsync_MetricsUnderAllThresholds_ShouldBeHealthy();
+    }
+}
+```
