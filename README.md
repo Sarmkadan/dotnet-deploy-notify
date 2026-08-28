@@ -58,3 +58,23 @@ public class MyClass
     }
 }
 ```
+
+## CanaryDeploymentEngineTests
+
+The `CanaryDeploymentEngineTests` class contains unit tests for the `CanaryDeploymentEngine` class. It verifies the behavior of starting a canary deployment, advancing the rollout through steps, evaluating health for auto-rollback, handling cancellation tokens, and promoting the deployment to skip remaining steps.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Tests.Canary;
+using Xunit;
+
+public class CanaryDeploymentEngineTestsExample
+{
+    [Fact]
+    public async void TestStartCanary()
+    {
+        var tests = new CanaryDeploymentEngineTests();
+        await tests.StartCanaryAsync_CreatesDeployment_WithInitialStep();
+    }
+}
+```
