@@ -131,10 +131,9 @@ public class WebhookDispatcher : IWebhookDispatcher
             stopwatch.Stop();
             _logger.LogError(
                 ex,
-                "Failed to send webhook to {Channel} for {Project}: {Message}",
+                "Failed to send webhook to {Channel} for {Project}",
                 config.ChannelType,
-                notification.ProjectName,
-                ex.Message);
+                notification.ProjectName);
 
             return NotificationResult.CreateFailure(
                 notification.Id,
@@ -157,9 +156,13 @@ public class WebhookDispatcher : IWebhookDispatcher
         ArgumentException.ThrowIfNullOrEmpty(webhookUrl);
         ArgumentNullException.ThrowIfNull(payload);
         ArgumentNullException.ThrowIfNull(headers);
+        var targetHost = Uri.TryCreate(webhookUrl, UriKind.Absolute, out var webhookUri)
+            ? webhookUri.Host
+            : "invalid-host";
+
         try
         {
-            var stopwatch = System.Diagnostics.Stopwatch.StartNew();
+            var stopwatch = Stopwatch.StartNew();
 
             var content = new StringContent(
                 payload.ToJson(),
@@ -179,8 +182,28 @@ public class WebhookDispatcher : IWebhookDispatcher
             using var cts = new CancellationTokenSource(timeoutMs);
 
             // Send the POST request
+            _logger.LogDebug(
+                "Sending webhook to {TargetHost}, attempt {AttemptNumber}",
+                targetHost,
+                1);
+
             var response = await _httpClient.PostAsync(webhookUrl, content, cts.Token);
             var responseContent = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+            {
+                _logger.LogInformation(
+                    "Webhook dispatched successfully to {TargetHost} in {ElapsedMs}ms",
+                    targetHost,
+                    stopwatch.ElapsedMilliseconds);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Webhook dispatch to {TargetHost} returned HTTP status {StatusCode}",
+                    targetHost,
+                    (int)response.StatusCode);
+            }
 
             // Convert HttpResponse to NotificationResult using unified mapping
             var httpResponse = new HttpResponse<string>
@@ -196,7 +219,7 @@ public class WebhookDispatcher : IWebhookDispatcher
         }
         catch (OperationCanceledException ex)
         {
-            _logger.LogWarning(ex, "Webhook request to {Url} timed out after {TimeoutMs}ms", webhookUrl, timeoutMs);
+            _logger.LogWarning(ex, "Webhook request to {TargetHost} timed out after {TimeoutMs}ms", targetHost, timeoutMs);
             var timeoutResult = new NotificationResult
             {
                 NotificationId = payload.EventId,
@@ -209,7 +232,7 @@ public class WebhookDispatcher : IWebhookDispatcher
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Exception sending webhook to {Url}", webhookUrl);
+            _logger.LogError(ex, "Exception sending webhook to {TargetHost}", targetHost);
             var errorResult = new NotificationResult
             {
                 NotificationId = payload.EventId,
@@ -228,6 +251,10 @@ public class WebhookDispatcher : IWebhookDispatcher
     /// </summary>
     public async Task<bool> ValidateWebhookAsync(string webhookUrl, int timeoutMs)
     {
+        var targetHost = Uri.TryCreate(webhookUrl, UriKind.Absolute, out var webhookUri)
+            ? webhookUri.Host
+            : "invalid-host";
+
         try
         {
             var testPayload = new WebhookPayload
@@ -251,7 +278,7 @@ public class WebhookDispatcher : IWebhookDispatcher
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Webhook validation failed for {Url}", webhookUrl);
+            _logger.LogWarning(ex, "Webhook validation failed for {TargetHost}", targetHost);
             return false;
         }
     }
