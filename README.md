@@ -99,6 +99,29 @@ public class CanaryServiceExtensionsJsonExtensionsTestsExample
 }
 ```
 
+## CanaryServiceExtensionsTests
+
+The `CanaryServiceExtensionsTests` class verifies the dependency-injection extensions that add or replace canary deployment services. It covers argument validation, options supplied directly or through configuration, default values, and registration of the required service lifetimes.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Tests.Infrastructure;
+using Xunit;
+
+public class CanaryServiceExtensionsTestSuite
+{
+    private readonly CanaryServiceExtensionsTests _tests = new();
+
+    [Fact]
+    public void RunRegistrationChecks()
+    {
+        _tests.AddCanaryDeployment_WithServicesAndConfigure_ConfiguresOptions();
+        _tests.AddCanaryDeployment_WithConfiguration_ConfiguresOptionsFromSection();
+        _tests.ReplaceCanaryDeployment_RemovesExistingRegistrationsAndReRegisters();
+    }
+}
+```
+
 ## CanaryHealthEvaluatorTests
 
 The `CanaryHealthEvaluatorTests` class contains unit tests for the `CanaryHealthEvaluator` class. It verifies the health evaluation logic under various conditions, including healthy metrics, threshold violations for error rate and latency, boundary conditions, and multiple simultaneous violations.
