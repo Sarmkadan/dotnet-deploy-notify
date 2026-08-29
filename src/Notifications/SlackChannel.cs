@@ -17,13 +17,47 @@ namespace DotNetDeployNotify.Notifications;
 /// </summary>
 public sealed class SlackChannel : INotificationChannel
 {
+    private static class Constants
+    {
+        public const string ChannelName = "Slack";
+        public const string SuccessColor = "#00ff00";
+        public const string FailureColor = "#ff0000";
+        public const string InProgressColor = "#ffff00";
+        public const string CancelledColor = "#ff9900";
+        public const string UnknownStatusColor = "#0000ff";
+        public const string SuccessEmoji = "✅";
+        public const string FailureEmoji = "❌";
+        public const string InProgressEmoji = "🔄";
+        public const string CancelledEmoji = "⏹️";
+        public const string UnknownStatusEmoji = "📝";
+        public const string CommitTitle = "Commit";
+        public const string RepositoryTitle = "Repository";
+        public const string DurationTitle = "Duration";
+        public const string ViewBuildTitle = "View Build";
+        public const string TypeField = "type";
+        public const string TextField = "text";
+        public const string TitleField = "title";
+        public const string ValueField = "value";
+        public const string ShortField = "short";
+        public const string FieldsField = "fields";
+        public const string EmojiField = "emoji";
+        public const string ElementsField = "elements";
+        public const string MarkdownType = "mrkdwn";
+        public const string PlainTextType = "plain_text";
+        public const string SectionType = "section";
+        public const string IncludeCommitDetailsSetting = "includeCommitDetails";
+        public const string UseSlackBlockKitSetting = "useSlackBlockKit";
+        public const string TrueValue = "true";
+        public const string FalseValue = "false";
+    }
+
     private readonly ILogger<SlackChannel> _logger;
     private readonly IWebhookClient _webhookClient;
 
     /// <summary>
     /// Gets the name of the Slack channel
     /// </summary>
-    public string Name => "Slack";
+    public string Name => Constants.ChannelName;
 
     /// <summary>
     /// Gets the channel type this instance handles
@@ -105,33 +139,33 @@ public sealed class SlackChannel : INotificationChannel
         // Determine color based on deployment status
         var statusColor = notification.Status switch
         {
-            BuildStatus.DeploymentSuccess or BuildStatus.Success => "#00ff00", // Green
-            BuildStatus.DeploymentFailed or BuildStatus.Failed => "#ff0000", // Red
-            BuildStatus.Started or BuildStatus.InProgress => "#ffff00", // Yellow
-            BuildStatus.Cancelled => "#ff9900", // Orange
-            _ => "#0000ff" // Blue for unknown status
+            BuildStatus.DeploymentSuccess or BuildStatus.Success => Constants.SuccessColor, // Green
+            BuildStatus.DeploymentFailed or BuildStatus.Failed => Constants.FailureColor, // Red
+            BuildStatus.Started or BuildStatus.InProgress => Constants.InProgressColor, // Yellow
+            BuildStatus.Cancelled => Constants.CancelledColor, // Orange
+            _ => Constants.UnknownStatusColor // Blue for unknown status
         };
 
         // Build main attachment
         var attachment = new JsonObject
         {
             ["color"] = statusColor,
-            ["title"] = $"🚀 Deployment: {notification.ProjectName} v{notification.Version}",
+            [Constants.TitleField] = $"🚀 Deployment: {notification.ProjectName} v{notification.Version}",
             ["title_link"] = notification.BuildUrl,
-            ["text"] = notification.Message,
+            [Constants.TextField] = notification.Message,
             ["ts"] = DateTimeOffset.UtcNow.ToUnixTimeSeconds()
         };
 
         // Add fields if commit details are enabled
         var fields = new JsonArray();
 
-        if (target.GetSetting("includeCommitDetails") != "false" && !string.IsNullOrWhiteSpace(notification.CommitHash))
+        if (target.GetSetting(Constants.IncludeCommitDetailsSetting) != Constants.FalseValue && !string.IsNullOrWhiteSpace(notification.CommitHash))
         {
             fields.Add(new JsonObject
             {
-                ["title"] = "Commit",
-                ["value"] = $"`{notification.CommitHash[..8]}` - {notification.CommitAuthor}",
-                ["short"] = true
+                [Constants.TitleField] = Constants.CommitTitle,
+                [Constants.ValueField] = $"`{notification.CommitHash[..8]}` - {notification.CommitAuthor}",
+                [Constants.ShortField] = true
             });
         }
 
@@ -139,9 +173,9 @@ public sealed class SlackChannel : INotificationChannel
         {
             fields.Add(new JsonObject
             {
-                ["title"] = "Repository",
-                ["value"] = notification.RepositoryUrl,
-                ["short"] = true
+                [Constants.TitleField] = Constants.RepositoryTitle,
+                [Constants.ValueField] = notification.RepositoryUrl,
+                [Constants.ShortField] = true
             });
         }
 
@@ -149,15 +183,15 @@ public sealed class SlackChannel : INotificationChannel
         {
             fields.Add(new JsonObject
             {
-                ["title"] = "Duration",
-                ["value"] = $"{notification.DurationSeconds.Value}s",
-                ["short"] = true
+                [Constants.TitleField] = Constants.DurationTitle,
+                [Constants.ValueField] = $"{notification.DurationSeconds.Value}s",
+                [Constants.ShortField] = true
             });
         }
 
         if (fields.Count > 0)
         {
-            attachment["fields"] = fields;
+            attachment[Constants.FieldsField] = fields;
         }
 
         // Add footer with environment
@@ -166,12 +200,12 @@ public sealed class SlackChannel : INotificationChannel
         // Build main payload
         var payload = new JsonObject
         {
-            ["text"] = $"*Deployment Notification*\n{notification.GetSummary()}",
+            [Constants.TextField] = $"*Deployment Notification*\n{notification.GetSummary()}",
             ["attachments"] = new JsonArray { attachment }
         };
 
         // Add Slack Block Kit format if enabled in settings
-        if (target.GetSetting("useSlackBlockKit") == "true")
+        if (target.GetSetting(Constants.UseSlackBlockKitSetting) == Constants.TrueValue)
         {
             payload = BuildSlackBlockKitPayload(notification, target, statusColor);
         }
@@ -189,23 +223,23 @@ public sealed class SlackChannel : INotificationChannel
         // Header block
         blocks.Add(new JsonObject
         {
-            ["type"] = "header",
-            ["text"] = new JsonObject
+            [Constants.TypeField] = "header",
+            [Constants.TextField] = new JsonObject
             {
-                ["type"] = "plain_text",
-                ["text"] = $"🚀 {notification.ProjectName} v{notification.Version}",
-                ["emoji"] = true
+                [Constants.TypeField] = Constants.PlainTextType,
+                [Constants.TextField] = $"🚀 {notification.ProjectName} v{notification.Version}",
+                [Constants.EmojiField] = true
             }
         });
 
         // Section block with status
         var statusEmoji = notification.Status switch
         {
-            BuildStatus.DeploymentSuccess or BuildStatus.Success => "✅",
-            BuildStatus.DeploymentFailed or BuildStatus.Failed => "❌",
-            BuildStatus.Started or BuildStatus.InProgress => "🔄",
-            BuildStatus.Cancelled => "⏹️",
-            _ => "📝"
+            BuildStatus.DeploymentSuccess or BuildStatus.Success => Constants.SuccessEmoji,
+            BuildStatus.DeploymentFailed or BuildStatus.Failed => Constants.FailureEmoji,
+            BuildStatus.Started or BuildStatus.InProgress => Constants.InProgressEmoji,
+            BuildStatus.Cancelled => Constants.CancelledEmoji,
+            _ => Constants.UnknownStatusEmoji
         };
 
         var statusText = notification.Status switch
@@ -219,47 +253,47 @@ public sealed class SlackChannel : INotificationChannel
 
         blocks.Add(new JsonObject
         {
-            ["type"] = "section",
-            ["text"] = new JsonObject
+            [Constants.TypeField] = Constants.SectionType,
+            [Constants.TextField] = new JsonObject
             {
-                ["type"] = "mrkdwn",
-                ["text"] = $"*{statusEmoji} {statusText}*\n{notification.Message}"
+                [Constants.TypeField] = Constants.MarkdownType,
+                [Constants.TextField] = $"*{statusEmoji} {statusText}*\n{notification.Message}"
             }
         });
 
         // Fields block
         var fieldsBlock = new JsonObject
         {
-            ["type"] = "section",
-            ["fields"] = new JsonArray()
+            [Constants.TypeField] = Constants.SectionType,
+            [Constants.FieldsField] = new JsonArray()
         };
 
-        var fields = (JsonArray)fieldsBlock["fields"];
+        var fields = (JsonArray)fieldsBlock[Constants.FieldsField];
 
         fields.Add(new JsonObject
         {
-            ["type"] = "mrkdwn",
-            ["text"] = $"*Environment:*\n{notification.TargetEnvironment}"
+            [Constants.TypeField] = Constants.MarkdownType,
+            [Constants.TextField] = $"*Environment:*\n{notification.TargetEnvironment}"
         });
 
         fields.Add(new JsonObject
         {
-            ["type"] = "mrkdwn",
-            ["text"] = $"*Branch:*\n`{notification.BranchName}`"
+            [Constants.TypeField] = Constants.MarkdownType,
+            [Constants.TextField] = $"*Branch:*\n`{notification.BranchName}`"
         });
 
         if (!string.IsNullOrWhiteSpace(notification.CommitHash))
         {
             fields.Add(new JsonObject
             {
-                ["type"] = "mrkdwn",
-                ["text"] = $"*Commit:*\n`{notification.CommitHash[..8]}`"
+                [Constants.TypeField] = Constants.MarkdownType,
+                [Constants.TextField] = $"*Commit:*\n`{notification.CommitHash[..8]}`"
             });
 
             fields.Add(new JsonObject
             {
-                ["type"] = "mrkdwn",
-                ["text"] = $"*Author:*\n{notification.CommitAuthor}"
+                [Constants.TypeField] = Constants.MarkdownType,
+                [Constants.TextField] = $"*Author:*\n{notification.CommitAuthor}"
             });
         }
 
@@ -270,17 +304,17 @@ public sealed class SlackChannel : INotificationChannel
         {
             blocks.Add(new JsonObject
             {
-                ["type"] = "actions",
-                ["elements"] = new JsonArray
+                [Constants.TypeField] = "actions",
+                [Constants.ElementsField] = new JsonArray
                 {
                     new JsonObject
                     {
-                        ["type"] = "button",
-                        ["text"] = new JsonObject
+                        [Constants.TypeField] = "button",
+                        [Constants.TextField] = new JsonObject
                         {
-                            ["type"] = "plain_text",
-                            ["text"] = "View Build",
-                            ["emoji"] = true
+                            [Constants.TypeField] = Constants.PlainTextType,
+                            [Constants.TextField] = Constants.ViewBuildTitle,
+                            [Constants.EmojiField] = true
                         },
                         ["url"] = notification.BuildUrl,
                         ["style"] = "primary"
@@ -292,13 +326,13 @@ public sealed class SlackChannel : INotificationChannel
         // Context block with timestamp
         blocks.Add(new JsonObject
         {
-            ["type"] = "context",
-            ["elements"] = new JsonArray
+            [Constants.TypeField] = "context",
+            [Constants.ElementsField] = new JsonArray
             {
                 new JsonObject
                 {
-                    ["type"] = "mrkdwn",
-                    ["text"] = $"📅 {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC"
+                    [Constants.TypeField] = Constants.MarkdownType,
+                    [Constants.TextField] = $"📅 {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC"
                 }
             }
         });
