@@ -164,3 +164,27 @@ public class ServiceExtensionsValidationTestSuite
     }
 }
 ```
+
+## ServiceExtensionsValidationTests
+
+The `ServiceExtensionsValidationTests` class verifies the validation extensions for `DeploymentNotification` and `NotificationResult`. It covers valid objects, null arguments, missing or invalid property values, and the aggregation of multiple validation errors.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Tests;
+using Xunit;
+
+public class ServiceExtensionsValidationTestSuite
+{
+    private readonly ServiceExtensionsValidationTests _tests = new();
+
+    [Fact]
+    public void RunValidationChecks()
+    {
+        _tests.Validate_DeploymentNotification_WithAllValidProperties_ReturnsEmptyList();
+        _tests.Validate_DeploymentNotification_WithMultipleProblems_ReturnsAllErrors();
+        _tests.Validate_NotificationResult_WithAllValidProperties_ReturnsEmptyList();
+        _tests.Validate_NotificationResult_WithEmptyNotificationId_ReturnsError();
+    }
+}
+```
