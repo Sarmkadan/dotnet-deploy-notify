@@ -118,3 +118,26 @@ public class CanaryHealthEvaluatorTestsExample
     }
 }
 ```
+
+## ServiceExtensionsJsonExtensionsValidationTests
+
+The `ServiceExtensionsJsonExtensionsValidationTests` class verifies validation of service-extension metadata, including required type, namespace, assembly, and methods values. It also checks the `Validate`, `IsValid`, and `EnsureValid` behaviors for valid metadata and representative invalid inputs.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Tests;
+using Xunit;
+
+public class ServiceExtensionsValidationTestSuite
+{
+    private readonly ServiceExtensionsJsonExtensionsValidationTests _tests = new();
+
+    [Fact]
+    public void RunValidationChecks()
+    {
+        _tests.Validate_WithValidMetadata_ReturnsEmptyList();
+        _tests.IsValid_WithNullType_ReturnsFalse();
+        _tests.EnsureValid_WithNullType_ThrowsArgumentException();
+    }
+}
+```
