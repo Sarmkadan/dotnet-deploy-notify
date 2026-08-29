@@ -165,6 +165,37 @@ public class ServiceExtensionsValidationTestSuite
 }
 ```
 
+## ServiceExtensionsJsonExtensionsTests
+
+The `ServiceExtensionsJsonExtensionsTests` class verifies JSON serialization and deserialization for service-extension metadata, including indented and compact output, valid, partial, empty, invalid, and camel-case JSON, and the `TryFromJson` pattern. It also checks that metadata properties are nullable and that an empty methods array can be serialized and deserialized.
+
+Example usage:
+```csharp
+using DotNetDeployNotify.Tests;
+using Xunit;
+
+public class ServiceExtensionsJsonTestSuite
+{
+    [Fact]
+    public void RunJsonChecks()
+    {
+        var serializationTests = new ServiceExtensionsJsonExtensionsTests.ToJson();
+        serializationTests.ToJson_ShouldSerializeMetadataWithCorrectProperties();
+        serializationTests.ToJson_WithIndentedTrue_ShouldFormatJsonWithIndentation();
+
+        var deserializationTests = new ServiceExtensionsJsonExtensionsTests.FromJson();
+        deserializationTests.FromJson_WithValidJson_ShouldDeserializeCorrectly();
+
+        var tryFromJsonTests = new ServiceExtensionsJsonExtensionsTests.TryFromJson();
+        tryFromJsonTests.TryFromJson_WithInvalidJson_ShouldReturnFalseAndNullValue();
+
+        var propertyTests =
+            new ServiceExtensionsJsonExtensionsTests.ServiceExtensionsMetadataProperties();
+        propertyTests.MethodsProperty_WithEmptyArray_ShouldSerializeAndDeserialize();
+    }
+}
+```
+
 ## ServiceExtensionsValidationTests
 
 The `ServiceExtensionsValidationTests` class verifies the validation extensions for `DeploymentNotification` and `NotificationResult`. It covers valid objects, null arguments, missing or invalid property values, and the aggregation of multiple validation errors.
