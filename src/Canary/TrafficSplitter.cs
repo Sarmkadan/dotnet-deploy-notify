@@ -21,14 +21,24 @@ public sealed class TrafficSplitter : ITrafficSplitter
     private readonly CanaryOptions _options;
     private readonly ILogger<TrafficSplitter> _logger;
 
+    // Constants for rollout plan generation
+    private const int MinLinearStepCount = 2;
+    private const int MaxLinearStepCount = 20;
+    private static readonly double[] ExponentialPercentages = [1, 2, 5, 10, 25, 50, 100];
+    private const int ShadowStep1CanaryPercent = 0;
+    private const int ShadowStep2CanaryPercent = 5;
+    private const int ShadowStep3CanaryPercent = 25;
+    private const int ShadowStep4CanaryPercent = 100;
+    private const int ShadowStep3SoakMultiplier = 2;
+
     /// <summary>Initialises the splitter with options and a logger</summary>
     public TrafficSplitter(IOptions<CanaryOptions> options, ILogger<TrafficSplitter> logger)
-        {
-            if (options == null) throw new ArgumentNullException(nameof(options));
-            if (logger == null) throw new ArgumentNullException(nameof(logger));
-            _options = options.Value;
-            _logger = logger;
-        }
+    {
+        ArgumentNullException.ThrowIfNull(options);
+        ArgumentNullException.ThrowIfNull(logger);
+        _options = options.Value;
+        _logger = logger;
+    }
 
     /// <inheritdoc />
     public TrafficSplit ComputeNextSplit(CanaryDeployment deployment)
@@ -65,21 +75,7 @@ public sealed class TrafficSplitter : ITrafficSplitter
                 return deployment.CurrentSplit;
             }
 
-            var split = TrafficSplit.FromCanaryPercent(activeStep.CanaryPercent);
-
-            _logger.LogDebug(
-                "Computed split for {Project} step {Step}/{Total}: {Split}",
-                deployment.ProjectName,
-                activeStep.StepNumber,
-                deployment.RolloutPlan.Count,
-                split);
-
-            _logger.LogInformation(
-                "ComputeNextSplit returning split {Split} for project {Project}",
-                split,
-                deployment.ProjectName);
-
-            return split;
+            return GetSplitFromActiveStep(activeStep, deployment);
         }
         catch (Exception ex)
         {
@@ -170,48 +166,73 @@ public sealed class TrafficSplitter : ITrafficSplitter
 
     private List<CanaryRolloutStep> GenerateLinearPlan()
     {
-        var stepCount = Math.Clamp(_options.LinearStepCount, 2, 20);
+        var stepCount = Math.Clamp(_options.LinearStepCount, MinLinearStepCount, MaxLinearStepCount);
         var stepPercent = 100.0 / stepCount;
 
         return Enumerable.Range(1, stepCount)
-            .Select(i => new CanaryRolloutStep
-            {
-                StepNumber    = i,
-                CanaryPercent = Math.Min(100.0, Math.Round(stepPercent * i, 1)),
-                SoakDuration  = _options.StepSoakDuration
-            })
+            .Select(i => CreateStep(
+                i,
+                Math.Min(100.0, Math.Round(stepPercent * i, 1)),
+                _options.StepSoakDuration))
             .ToList();
     }
 
     private List<CanaryRolloutStep> GenerateExponentialPlan()
     {
-        double[] percentages = [1, 2, 5, 10, 25, 50, 100];
-
-        return percentages
-            .Select((p, i) => new CanaryRolloutStep
-            {
-                StepNumber    = i + 1,
-                CanaryPercent = p,
-                // Soak duration increases linearly with step index to allow more observation at higher traffic
-                SoakDuration  = _options.StepSoakDuration * (i + 1)
-            })
+        return ExponentialPercentages
+            .Select((p, i) => CreateStep(
+                i + 1,
+                p,
+                _options.StepSoakDuration * (i + 1)))
             .ToList();
     }
 
     private List<CanaryRolloutStep> GenerateBlueGreenPlan() =>
     [
-        new() { StepNumber = 1, CanaryPercent = 50,  SoakDuration = _options.StepSoakDuration },
-        new() { StepNumber = 2, CanaryPercent = 100, SoakDuration = _options.StepSoakDuration }
+        CreateStep(1, 50, _options.StepSoakDuration),
+        CreateStep(2, 100, _options.StepSoakDuration)
     ];
 
     private List<CanaryRolloutStep> GenerateShadowPlan() =>
     [
-        // Step 1: mirror-only — canary handles 0% production traffic while observing request shapes
-        new() { StepNumber = 1, CanaryPercent = 0,   SoakDuration = _options.StepSoakDuration },
-        new() { StepNumber = 2, CanaryPercent = 5,   SoakDuration = _options.StepSoakDuration },
-        new() { StepNumber = 3, CanaryPercent = 25,  SoakDuration = _options.StepSoakDuration * 2 },
-        new() { StepNumber = 4, CanaryPercent = 100, SoakDuration = _options.StepSoakDuration }
+        CreateStep(1, ShadowStep1CanaryPercent, _options.StepSoakDuration),
+        CreateStep(2, ShadowStep2CanaryPercent, _options.StepSoakDuration),
+        CreateStep(3, ShadowStep3CanaryPercent, _options.StepSoakDuration * ShadowStep3SoakMultiplier),
+        CreateStep(4, ShadowStep4CanaryPercent, _options.StepSoakDuration)
     ];
+
+    // -------------------------------------------------------------------------
+    // Private helpers
+    // -------------------------------------------------------------------------
+
+    private TrafficSplit GetSplitFromActiveStep(CanaryRolloutStep activeStep, CanaryDeployment deployment)
+    {
+        var split = TrafficSplit.FromCanaryPercent(activeStep.CanaryPercent);
+
+        _logger.LogDebug(
+            "Computed split for {Project} step {Step}/{Total}: {Split}",
+            deployment.ProjectName,
+            activeStep.StepNumber,
+            deployment.RolloutPlan.Count,
+            split);
+
+        _logger.LogInformation(
+            "ComputeNextSplit returning split {Split} for project {Project}",
+            split,
+            deployment.ProjectName);
+
+        return split;
+    }
+
+    private CanaryRolloutStep CreateStep(int stepNumber, double canaryPercent, TimeSpan soakDuration)
+    {
+        return new CanaryRolloutStep
+        {
+            StepNumber = stepNumber,
+            CanaryPercent = canaryPercent,
+            SoakDuration = soakDuration
+        };
+    }
 }
 
 /// <summary>
