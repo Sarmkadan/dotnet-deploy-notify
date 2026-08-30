@@ -26,8 +26,11 @@ public sealed class NotificationDispatcher
         IEnumerable<INotificationChannel> channels,
         ILogger<NotificationDispatcher> logger)
     {
-        _channels = channels ?? throw new ArgumentNullException(nameof(channels));
-        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        ArgumentNullException.ThrowIfNull(channels);
+        ArgumentNullException.ThrowIfNull(logger);
+
+        _channels = channels;
+        _logger = logger;
     }
 
     /// <summary>
