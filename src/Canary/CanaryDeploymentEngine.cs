@@ -109,6 +109,82 @@ public sealed class CanaryDeploymentEngine : ICanaryDeploymentService
         return deployment;
     }
 
+    /// <summary>
+    /// Pauses an in-flight canary deployment.
+    /// </summary>
+    public async Task<CanaryDeployment> PauseCanaryAsync(
+        string deploymentId,
+        string reason,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(deploymentId);
+        ArgumentException.ThrowIfNullOrWhiteSpace(reason);
+
+        var deployment = GetOrThrow(deploymentId);
+
+        if (deployment.IsTerminal || deployment.Status == CanaryStatus.RollingBack)
+            throw new NotificationValidationException(
+                $"Cannot pause deployment '{deploymentId}': status is {deployment.Status}.",
+                [$"Completed or rolling-back deployments cannot be paused; current state: {deployment.Status}"]);
+
+        deployment.Status = CanaryStatus.Paused;
+        deployment.Metadata["PausedAt"] = DateTime.UtcNow;
+        deployment.Metadata["PauseReason"] = reason;
+
+        _logger.LogInformation(
+            "Canary paused: {Project} v{Canary} on {Env} — Reason: {Reason}",
+            deployment.ProjectName,
+            deployment.CanaryVersion,
+            deployment.TargetEnvironment,
+            reason);
+
+        await DispatchNotificationAsync(
+            deployment,
+            BuildStatus.Deploying,
+            $"Canary deployment paused: {deployment.ProjectName} v{deployment.CanaryVersion} " +
+            $"on {deployment.TargetEnvironment}. Reason: {reason}",
+            cancellationToken);
+
+        return deployment;
+    }
+
+    /// <summary>
+    /// Resumes a paused canary deployment.
+    /// </summary>
+    public async Task<CanaryDeployment> ResumeCanaryAsync(
+        string deploymentId,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(deploymentId);
+
+        var deployment = GetOrThrow(deploymentId);
+
+        if (deployment.Status != CanaryStatus.Paused)
+            throw new NotificationValidationException(
+                $"Cannot resume deployment '{deploymentId}': status is {deployment.Status}, expected Paused.",
+                [$"Deployment must be in Paused state to resume; current state: {deployment.Status}"]);
+
+        deployment.Status = CanaryStatus.Active;
+        deployment.Metadata.Remove("PausedAt");
+        deployment.Metadata.Remove("PauseReason");
+        deployment.Metadata["ResumedAt"] = DateTime.UtcNow;
+
+        _logger.LogInformation(
+            "Canary resumed: {Project} v{Canary} on {Env}",
+            deployment.ProjectName,
+            deployment.CanaryVersion,
+            deployment.TargetEnvironment);
+
+        await DispatchNotificationAsync(
+            deployment,
+            BuildStatus.Deploying,
+            $"Canary deployment resumed: {deployment.ProjectName} v{deployment.CanaryVersion} " +
+            $"on {deployment.TargetEnvironment} — {deployment.CurrentSplit}",
+            cancellationToken);
+
+        return deployment;
+    }
+
     /// <inheritdoc />
     public async Task<CanaryDeployment> AdvanceRolloutAsync(
         string deploymentId,
