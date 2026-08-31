@@ -1,4 +1,6 @@
 #nullable enable
+using System.Collections.Concurrent;
+
 // =============================================================================
 // Author: Vladyslav Zaiets | https://sarmkadan.com
 // CTO & Software Architect
@@ -74,7 +76,7 @@ public interface IEventBus
 /// </summary>
 public sealed class InMemoryEventBus : IEventBus
 {
-    private readonly Dictionary<Type, List<object>> _handlers = new();
+    private readonly ConcurrentDictionary<Type, List<object>> _handlers = new();
     private readonly ILogger<InMemoryEventBus> _logger;
 
     public InMemoryEventBus(ILogger<InMemoryEventBus> logger)
@@ -88,10 +90,11 @@ public sealed class InMemoryEventBus : IEventBus
         ArgumentNullException.ThrowIfNull(handler);
         var eventType = typeof(TEvent);
 
-        if (!_handlers.ContainsKey(eventType))
-            _handlers[eventType] = new List<object>();
-
-        _handlers[eventType].Add(handler);
+        var handlersForEvent = _handlers.GetOrAdd(eventType, static _ => new List<object>());
+        lock (handlersForEvent)
+        {
+            handlersForEvent.Add(handler);
+        }
         _logger.LogDebug("Subscribed {HandlerType} to {EventType}",
             handler.GetType().Name, eventType.Name);
     }
@@ -107,10 +110,16 @@ public sealed class InMemoryEventBus : IEventBus
             return;
         }
 
-        _logger.LogDebug("Publishing event: {EventType} with {HandlerCount} handlers",
-            eventType.Name, handlersForEvent.Count);
+        object[] handlerSnapshot;
+        lock (handlersForEvent)
+        {
+            handlerSnapshot = handlersForEvent.ToArray();
+        }
 
-        var tasks = handlersForEvent
+        _logger.LogDebug("Publishing event: {EventType} with {HandlerCount} handlers",
+            eventType.Name, handlerSnapshot.Length);
+
+        var tasks = handlerSnapshot
             .Cast<IEventHandler<TEvent>>()
             .Select(handler => PublishToHandlerAsync(handler, @event));
 
@@ -124,7 +133,10 @@ public sealed class InMemoryEventBus : IEventBus
 
         if (_handlers.TryGetValue(eventType, out var handlersForEvent))
         {
-            handlersForEvent.Remove(handler);
+            lock (handlersForEvent)
+            {
+                handlersForEvent.Remove(handler);
+            }
             _logger.LogDebug("Unsubscribed {HandlerType} from {EventType}",
                 handler.GetType().Name, eventType.Name);
         }
