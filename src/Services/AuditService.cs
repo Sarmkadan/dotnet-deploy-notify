@@ -82,6 +82,7 @@ public class AuditService : IAuditService
     /// <summary>Initializes the audit service</summary>
     public AuditService(ILogger<AuditService> logger)
     {
+        ArgumentNullException.ThrowIfNull(logger);
         _logger = logger;
     }
 
