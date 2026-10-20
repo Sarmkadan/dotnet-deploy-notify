@@ -3,7 +3,28 @@
     <LangVersion>latest</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <!-- Existing codebase warnings that predate TreatWarningsAsErrors:
+         CS1570  - malformed XML doc comments
+         CS7022  - duplicate entry point (global code + Main)
+         CS0168  - unused variable
+         CS8600  - converting null to non-nullable type
+         CS8601  - possible null reference assignment
+         CS8602  - dereference of possibly null reference
+         CS8604  - possible null reference argument
+         CS8625  - null literal to non-nullable type
+         CS8633  - nullability constraint mismatch
+         CS8714  - nullability type argument mismatch
+         CA2264  - ThrowIfNull on non-nullable value (no-op guards)
+         CS1591  - missing XML doc comments (GenerateDocumentationFile is on)
+         CS1573  - param tag mismatch in XML doc comments
+         CS8632  - nullable annotation outside #nullable context (test files)
+         xUnit1012 - null for non-nullable InlineData param
+         xUnit2002 - Assert.NotNull on value type -->
+    <WarningsNotAsErrors>CS1570;CS1573;CS1591;CS7022;CS0168;CS8600;CS8601;CS8602;CS8604;CS8625;CS8632;CS8633;CS8714;CA2264;xUnit1012;xUnit2002</WarningsNotAsErrors>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+    <Deterministic>true</Deterministic>
     <Authors>Vladyslav Zaiets</Authors>
     <PackageProjectUrl>https://github.com/sarmkadan/dotnet-deploy-notify</PackageProjectUrl>
   </PropertyGroup>

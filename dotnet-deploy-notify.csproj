@@ -2,14 +2,11 @@
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
     <OutputType>Exe</OutputType>
     <RootNamespace>DotNetDeployNotify</RootNamespace>
     <AssemblyName>DotNetDeployNotify</AssemblyName>
     <PackageId>dotnet-deploy-notify</PackageId>
     <Version>1.0.0</Version>
-    <Authors>Vladyslav Zaiets</Authors>
     <Description>A notification tool for .NET deployment processes.</Description>
     <PackageTags>dotnet, deployment, notification, webhook, devops</PackageTags>
     <PackageProjectUrl>https://github.com/sarmkadan/dotnet-deploy-notify</PackageProjectUrl>
@@ -18,8 +15,6 @@
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <LangVersion>latest</LangVersion>
-    <NoWarn></NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
