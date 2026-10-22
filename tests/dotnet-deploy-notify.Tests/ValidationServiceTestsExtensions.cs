@@ -21,7 +21,7 @@ namespace DotNetDeployNotify.Tests
             return new[]
             {
                 nameof(ValidationServiceTests.ValidateNotification_WithValidNotification_ReturnsSuccess),
-                nameof(ValidationServiceTests.ValidateNotification_WithNullNotification_ReturnsFailure),
+                nameof(ValidationServiceTests.ValidateNotification_WithNullNotification_ThrowsArgumentNullException),
                 nameof(ValidationServiceTests.ValidateNotification_WithMissingProjectName_ReturnsFailure),
                 nameof(ValidationServiceTests.ValidateNotification_WithMissingVersion_ReturnsFailure),
                 nameof(ValidationServiceTests.ValidateNotification_WithMissingBranchName_ReturnsFailure),
@@ -46,7 +46,7 @@ namespace DotNetDeployNotify.Tests
             return new[]
             {
                 nameof(ValidationServiceTests.ValidateChannelConfiguration_WithValidConfig_ReturnsSuccess),
-                nameof(ValidationServiceTests.ValidateChannelConfiguration_WithNullConfig_ReturnsFailure),
+                nameof(ValidationServiceTests.ValidateChannelConfiguration_WithNullConfig_ThrowsArgumentNullException),
                 nameof(ValidationServiceTests.ValidateChannelConfiguration_WithMissingDisplayName_ReturnsFailure),
                 nameof(ValidationServiceTests.ValidateChannelConfiguration_WithInvalidWebhookUrl_ReturnsFailure),
                 nameof(ValidationServiceTests.ValidateChannelConfiguration_WithMissingTargetId_ReturnsFailure),

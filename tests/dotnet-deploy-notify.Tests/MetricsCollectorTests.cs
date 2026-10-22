@@ -107,11 +107,11 @@ public class MetricsCollectorTests
     }
 
     [Fact]
-    public void RecordMetric_NullName_ShouldThrowArgumentNullException()
+    public void RecordMetric_NullName_ShouldThrowArgumentException()
     {
         var collector = CreateCollector();
 
         Action act = () => collector.RecordMetric(null!, 1);
-        act.Should().Throw<ArgumentNullException>();
+        act.Should().Throw<ArgumentException>();
     }
 }

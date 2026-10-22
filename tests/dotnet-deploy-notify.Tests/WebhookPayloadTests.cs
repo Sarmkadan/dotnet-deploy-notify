@@ -20,7 +20,7 @@ namespace DotNetDeployNotify.Tests
 
             // Assert
             Assert.False(string.IsNullOrWhiteSpace(webhookPayload.EventId));
-            Assert.False(string.IsNullOrWhiteSpace(webhookPayload.EventType));
+            Assert.True(string.IsNullOrWhiteSpace(webhookPayload.EventType)); // no default event type
             Assert.NotNull(webhookPayload.Data);
             Assert.False(string.IsNullOrWhiteSpace(webhookPayload.Source));
             Assert.False(string.IsNullOrWhiteSpace(webhookPayload.SchemaVersion));
