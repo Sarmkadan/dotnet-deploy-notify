@@ -53,14 +53,13 @@ public class ValidationServiceTests
     /// Tests that ValidateNotification returns a failed result when given a null notification.
     /// </summary>
     [Fact]
-    public void ValidateNotification_WithNullNotification_ReturnsFailure()
+    public void ValidateNotification_WithNullNotification_ThrowsArgumentNullException()
     {
         // Act
-        var result = _validationService.ValidateNotification(null!);
+        Action act = () => _validationService.ValidateNotification(null!);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain("Notification cannot be null");
+        act.Should().Throw<ArgumentNullException>();
     }
 
     /// <summary>
@@ -315,14 +314,13 @@ public class ValidationServiceTests
     /// Tests that ValidateChannelConfiguration returns a failed result when given a null channel configuration.
     /// </summary>
     [Fact]
-    public void ValidateChannelConfiguration_WithNullConfig_ReturnsFailure()
+    public void ValidateChannelConfiguration_WithNullConfig_ThrowsArgumentNullException()
     {
         // Act
-        var result = _validationService.ValidateChannelConfiguration(null!);
+        Action act = () => _validationService.ValidateChannelConfiguration(null!);
 
         // Assert
-        result.IsValid.Should().BeFalse();
-        result.Errors.Should().Contain("Channel configuration cannot be null");
+        act.Should().Throw<ArgumentNullException>();
     }
 
     /// <summary>
@@ -525,10 +523,11 @@ public class ValidationServiceTests
     /// Tests that IsValidUrl returns false for a null string.
     /// </summary>
     [Fact]
-    public void IsValidUrl_WithNullString_ReturnsFalse()
+    public void IsValidUrl_WithNullString_ThrowsArgumentNullException()
     {
         // Act & Assert
-        _validationService.IsValidUrl(null!).Should().BeFalse();
+        Action act = () => _validationService.IsValidUrl(null!);
+        act.Should().Throw<ArgumentNullException>();
     }
 
     /// <summary>
@@ -575,10 +574,11 @@ public class ValidationServiceTests
     /// Tests that IsValidEmail returns false for a null string.
     /// </summary>
     [Fact]
-    public void IsValidEmail_WithNullString_ReturnsFalse()
+    public void IsValidEmail_WithNullString_ThrowsArgumentNullException()
     {
         // Act & Assert
-        _validationService.IsValidEmail(null!).Should().BeFalse();
+        Action act = () => _validationService.IsValidEmail(null!);
+        act.Should().Throw<ArgumentNullException>();
     }
 
     /// <summary>

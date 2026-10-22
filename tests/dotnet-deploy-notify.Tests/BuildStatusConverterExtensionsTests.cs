@@ -82,11 +82,16 @@ namespace dotnet_deploy_notify.Tests
             Assert.Equal(expected, result);
         }
 
+        [Fact]
+        public void ParseStatus_Null_ThrowsArgumentNullException()
+        {
+            Assert.Throws<ArgumentNullException>(() => _converter.ParseStatus(null!));
+        }
+
         [Theory]
-        [InlineData(null)]
         [InlineData("")]
         [InlineData("   ")]
-        public void ParseStatus_NullOrEmpty_ThrowsArgumentException(string input)
+        public void ParseStatus_EmptyOrWhitespace_ThrowsArgumentException(string input)
         {
             Assert.Throws<ArgumentException>(() => _converter.ParseStatus(input));
         }
