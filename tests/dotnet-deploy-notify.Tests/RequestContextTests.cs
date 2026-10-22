@@ -20,7 +20,7 @@ namespace DotNetDeployNotify.Tests
 
             // Assert
             Assert.NotNull(correlationId);
-            Assert.IsType<Guid>(correlationId);
+            Assert.True(Guid.TryParse(correlationId, out _), "CorrelationId should be a GUID string");
         }
 
         [Fact]
@@ -34,7 +34,7 @@ namespace DotNetDeployNotify.Tests
 
             // Assert
             Assert.NotNull(requestId);
-            Assert.IsType<Guid>(requestId);
+            Assert.True(Guid.TryParse(requestId, out _), "RequestId should be a GUID string");
         }
 
         [Fact]
@@ -59,7 +59,7 @@ namespace DotNetDeployNotify.Tests
             context.UserId = null;
 
             // Act and Assert
-            Assert.NotNull(context.UserId);
+            Assert.Null(context.UserId);
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace DotNetDeployNotify.Tests
             context.ClientId = null;
 
             // Act and Assert
-            Assert.NotNull(context.ClientId);
+            Assert.Null(context.ClientId);
         }
 
         [Fact]
@@ -80,7 +80,7 @@ namespace DotNetDeployNotify.Tests
             var context = new RequestContext();
 
             // Act and Assert
-            Assert.Throws<ArgumentException>(() => context.SetMetadata(null, "value"));
+            Assert.Throws<ArgumentNullException>(() => context.SetMetadata(null!, "value"));
         }
     }
 }
