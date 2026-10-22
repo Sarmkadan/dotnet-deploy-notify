@@ -68,7 +68,7 @@ public sealed class CustomTemplateValidationTests
             Category = new string('c', 201)
         };
 
-        var errors = template.Validate();
+        var errors = CustomTemplateValidation.Validate(template);
 
         Assert.Equal(7, errors.Count);
         Assert.Contains("Id cannot be null or whitespace.", errors);
@@ -143,7 +143,7 @@ public sealed class CustomTemplateValidationTests
             UpdatedAt = default
         };
 
-        var ex = Assert.Throws<ArgumentException>(() => template.EnsureValid());
+        var ex = Assert.Throws<ArgumentException>(() => CustomTemplateValidation.EnsureValid(template));
 
         Assert.Contains("The CustomTemplate is invalid.", ex.Message);
         Assert.Contains("Id cannot be null or whitespace.", ex.Message);
