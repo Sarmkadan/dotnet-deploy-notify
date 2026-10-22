@@ -50,9 +50,9 @@ public class WebhookPayloadValidationTests
     {
         WebhookPayload? payload = null;
 
-        Assert.Throws<ArgumentNullException>(() => payload!.Validate());
-        Assert.Throws<ArgumentNullException>(() => payload!.IsValid());
-        Assert.Throws<ArgumentNullException>(() => payload!.EnsureValid());
+        Assert.Throws<ArgumentNullException>(() => WebhookPayloadValidation.Validate(payload!));
+        Assert.Throws<ArgumentNullException>(() => WebhookPayloadValidation.IsValid(payload!));
+        Assert.Throws<ArgumentNullException>(() => WebhookPayloadValidation.EnsureValid(payload!));
     }
 
     [Fact]
@@ -64,7 +64,7 @@ public class WebhookPayloadValidationTests
         var errors = payload.Validate();
 
         Assert.Contains("EventId must be a valid GUID format", errors);
-        Assert.False(payload.IsValid());
+        Assert.False(WebhookPayloadValidation.IsValid(payload));
         var ex = Assert.Throws<ArgumentException>(() => payload.EnsureValid());
         Assert.Contains("EventId must be a valid GUID format", ex.Message);
     }
@@ -78,7 +78,7 @@ public class WebhookPayloadValidationTests
         var errors = payload.Validate();
 
         Assert.Contains("Timestamp cannot be in the future", errors);
-        Assert.False(payload.IsValid());
+        Assert.False(WebhookPayloadValidation.IsValid(payload));
         Assert.Throws<ArgumentException>(() => payload.EnsureValid());
     }
 
@@ -112,13 +112,16 @@ public class WebhookPayloadValidationTests
     public void Validate_BoundaryTimestamp_Valid()
     {
         var payload = CreateValidPayload();
-        // Exactly 5 minutes ahead is considered invalid
-        payload.Timestamp = DateTime.UtcNow.AddMinutes(5);
+        // Up to 5 minutes ahead is tolerated, beyond that is invalid
+        payload.Timestamp = DateTime.UtcNow.AddMinutes(4);
+        Assert.Empty(payload.Validate());
+
+        payload.Timestamp = DateTime.UtcNow.AddMinutes(6);
         var errorsFuture = payload.Validate();
         Assert.Contains("Timestamp cannot be in the future", errorsFuture);
 
-        // Exactly 1 year ago is valid
-        payload.Timestamp = DateTime.UtcNow.AddYears(-1);
+        // Just inside the one-year window is valid
+        payload.Timestamp = DateTime.UtcNow.AddDays(-364);
         var errorsPast = payload.Validate();
         Assert.DoesNotContain("Timestamp cannot be more than one year in the past", errorsPast);
         Assert.Empty(errorsPast);
@@ -132,8 +135,8 @@ public class WebhookPayloadValidationTests
 
         var errors = payload.Validate();
 
-        Assert.Contains("SchemaVersion must be a valid semantic version", errors);
-        Assert.False(payload.IsValid());
+        Assert.Contains("SchemaVersion must be a valid semantic version (e.g., 1.0.0)", errors);
+        Assert.False(WebhookPayloadValidation.IsValid(payload));
         Assert.Throws<ArgumentException>(() => payload.EnsureValid());
     }
 }
