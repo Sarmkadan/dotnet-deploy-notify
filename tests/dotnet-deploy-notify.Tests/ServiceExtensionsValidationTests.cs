@@ -6,6 +6,7 @@
 
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Infrastructure;
 using FluentAssertions;
 using Xunit;
 
@@ -18,7 +19,7 @@ namespace DotNetDeployNotify.Tests;
 /// </summary>
 public class ServiceExtensionsValidationTests
 {
-    #region DeploymentNotification.Validate() Tests
+    #region ServiceExtensionsValidation.Validate(DeploymentNotification) Tests
 
     [Fact]
     public void Validate_DeploymentNotification_WithAllValidProperties_ReturnsEmptyList()
@@ -31,7 +32,7 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram },
@@ -42,7 +43,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().BeEmpty();
@@ -55,7 +56,7 @@ public class ServiceExtensionsValidationTests
         DeploymentNotification? notification = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => notification!.Validate());
+        Assert.Throws<ArgumentNullException>(() => ServiceExtensionsValidation.Validate(notification!));
     }
 
     [Fact]
@@ -69,7 +70,7 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram },
@@ -80,7 +81,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("ProjectName is required and cannot be empty");
@@ -97,7 +98,7 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram },
@@ -108,7 +109,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("ProjectName is required and cannot be empty");
@@ -125,14 +126,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("Version is required and cannot be empty");
@@ -149,14 +150,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("BranchName is required and cannot be empty");
@@ -173,14 +174,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("CommitHash is required and cannot be empty");
@@ -197,14 +198,14 @@ public class ServiceExtensionsValidationTests
             Status = default,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("Status must be a valid BuildStatus value");
@@ -228,7 +229,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("TargetEnvironment must be a valid Environment value");
@@ -245,14 +246,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = null!
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("Channels collection must contain at least one channel");
@@ -269,14 +270,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel>()
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("Channels collection must contain at least one channel");
@@ -293,7 +294,7 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             DurationSeconds = -1,
@@ -301,7 +302,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("DurationSeconds cannot be negative");
@@ -318,14 +319,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = default,
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("CreatedAt must be a valid DateTime");
@@ -342,14 +343,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddHours(1),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("CreatedAt cannot be in the future");
@@ -366,14 +367,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = default,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
         result.Should().ContainSingle("Priority must be a valid NotificationPriority value");
@@ -397,10 +398,10 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var result = notification.Validate();
+        var result = ServiceExtensionsValidation.Validate(notification);
 
         // Assert
-        result.Should().HaveCount(8);
+        result.Should().HaveCount(9);
         result.Should().Contain("ProjectName is required and cannot be empty");
         result.Should().Contain("Version is required and cannot be empty");
         result.Should().Contain("BranchName is required and cannot be empty");
@@ -409,11 +410,12 @@ public class ServiceExtensionsValidationTests
         result.Should().Contain("TargetEnvironment must be a valid Environment value");
         result.Should().Contain("Channels collection must contain at least one channel");
         result.Should().Contain("CreatedAt cannot be in the future");
+        result.Should().Contain("Priority must be a valid NotificationPriority value");
     }
 
     #endregion
 
-    #region NotificationResult.Validate() Tests
+    #region ServiceExtensionsValidation.Validate(NotificationResult) Tests
 
     [Fact]
     public void Validate_NotificationResult_WithAllValidProperties_ReturnsEmptyList()
@@ -431,7 +433,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().BeEmpty();
@@ -444,7 +446,7 @@ public class ServiceExtensionsValidationTests
         NotificationResult? notificationResult = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => notificationResult!.Validate());
+        Assert.Throws<ArgumentNullException>(() => ServiceExtensionsValidation.Validate(notificationResult!));
     }
 
     [Fact]
@@ -463,7 +465,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().ContainSingle("NotificationId is required and cannot be empty");
@@ -485,7 +487,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().ContainSingle("ConfigurationId is required and cannot be empty");
@@ -507,7 +509,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().ContainSingle("Channel must be a valid NotificationChannel value");
@@ -529,7 +531,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().ContainSingle("Status must be a valid DeliveryStatus value");
@@ -551,7 +553,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().ContainSingle("DurationMs cannot be negative");
@@ -573,7 +575,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().ContainSingle("AttemptNumber must be at least 1");
@@ -595,7 +597,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().ContainSingle("AttemptedAt must be a valid DateTime");
@@ -617,7 +619,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().ContainSingle("AttemptedAt cannot be in the future");
@@ -639,7 +641,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var validationResult = result.Validate();
+        var validationResult = ServiceExtensionsValidation.Validate(result);
 
         // Assert
         validationResult.Should().HaveCount(7);
@@ -654,7 +656,7 @@ public class ServiceExtensionsValidationTests
 
     #endregion
 
-    #region DeploymentNotification.IsValid() Tests
+    #region ServiceExtensionsValidation.IsValid(DeploymentNotification) Tests
 
     [Fact]
     public void IsValid_DeploymentNotification_WithValidProperties_ReturnsTrue()
@@ -667,14 +669,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
         };
 
         // Act
-        var isValid = notification.IsValid();
+        var isValid = ServiceExtensionsValidation.IsValid(notification);
 
         // Assert
         isValid.Should().BeTrue();
@@ -691,14 +693,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "",
             CommitHash = "",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel>()
         };
 
         // Act
-        var isValid = notification.IsValid();
+        var isValid = ServiceExtensionsValidation.IsValid(notification);
 
         // Assert
         isValid.Should().BeFalse();
@@ -711,12 +713,12 @@ public class ServiceExtensionsValidationTests
         DeploymentNotification? notification = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => notification!.IsValid());
+        Assert.Throws<ArgumentNullException>(() => ServiceExtensionsValidation.IsValid(notification!));
     }
 
     #endregion
 
-    #region NotificationResult.IsValid() Tests
+    #region ServiceExtensionsValidation.IsValid(NotificationResult) Tests
 
     [Fact]
     public void IsValid_NotificationResult_WithValidProperties_ReturnsTrue()
@@ -734,7 +736,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var isValid = result.IsValid();
+        var isValid = ServiceExtensionsValidation.IsValid(result);
 
         // Assert
         isValid.Should().BeTrue();
@@ -756,7 +758,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        var isValid = result.IsValid();
+        var isValid = ServiceExtensionsValidation.IsValid(result);
 
         // Assert
         isValid.Should().BeFalse();
@@ -769,12 +771,12 @@ public class ServiceExtensionsValidationTests
         NotificationResult? result = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => result!.IsValid());
+        Assert.Throws<ArgumentNullException>(() => ServiceExtensionsValidation.IsValid(result!));
     }
 
     #endregion
 
-    #region DeploymentNotification.EnsureValid() Tests
+    #region ServiceExtensionsValidation.EnsureValid(DeploymentNotification) Tests
 
     [Fact]
     public void EnsureValid_DeploymentNotification_WithValidProperties_DoesNotThrow()
@@ -787,14 +789,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel> { NotificationChannel.Telegram }
         };
 
         // Act
-        Action act = () => notification.EnsureValid();
+        Action act = () => ServiceExtensionsValidation.EnsureValid(notification);
 
         // Assert
         act.Should().NotThrow();
@@ -811,14 +813,14 @@ public class ServiceExtensionsValidationTests
             Status = BuildStatus.Success,
             BranchName = "main",
             CommitHash = "abc123",
-            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Development,
+            TargetEnvironment = global::DotNetDeployNotify.Core.Environment.Staging,
             Priority = NotificationPriority.Normal,
             CreatedAt = DateTime.UtcNow.AddMinutes(-5),
             Channels = new List<NotificationChannel>()
         };
 
         // Act
-        Action act = () => notification.EnsureValid();
+        Action act = () => ServiceExtensionsValidation.EnsureValid(notification);
 
         // Assert
         act.Should().Throw<ArgumentException>();
@@ -831,12 +833,12 @@ public class ServiceExtensionsValidationTests
         DeploymentNotification? notification = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => notification!.EnsureValid());
+        Assert.Throws<ArgumentNullException>(() => ServiceExtensionsValidation.EnsureValid(notification!));
     }
 
     #endregion
 
-    #region NotificationResult.EnsureValid() Tests
+    #region ServiceExtensionsValidation.EnsureValid(NotificationResult) Tests
 
     [Fact]
     public void EnsureValid_NotificationResult_WithValidProperties_DoesNotThrow()
@@ -854,7 +856,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        Action act = () => result.EnsureValid();
+        Action act = () => ServiceExtensionsValidation.EnsureValid(result);
 
         // Assert
         act.Should().NotThrow();
@@ -876,7 +878,7 @@ public class ServiceExtensionsValidationTests
         };
 
         // Act
-        Action act = () => result.EnsureValid();
+        Action act = () => ServiceExtensionsValidation.EnsureValid(result);
 
         // Assert
         act.Should().Throw<ArgumentException>();
@@ -889,7 +891,7 @@ public class ServiceExtensionsValidationTests
         NotificationResult? result = null;
 
         // Act & Assert
-        Assert.Throws<ArgumentNullException>(() => result!.EnsureValid());
+        Assert.Throws<ArgumentNullException>(() => ServiceExtensionsValidation.EnsureValid(result!));
     }
 
     #endregion
