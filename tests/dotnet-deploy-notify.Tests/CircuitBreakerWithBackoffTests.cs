@@ -235,24 +235,12 @@ public class CircuitBreakerWithBackoffTests
         callCount = 0;
 
         // Act - multiple concurrent calls should all fail fast
-        var tasks = new List<Task<int>>();
-        for (int i = 0; i < 10; i++)
-        {
-            tasks.Add(breaker.ExecuteAsync(FailingOperation));
-        }
+        var outcomes = await Task.WhenAll(
+            Enumerable.Range(0, 10).Select(_ => CaptureAsync(() => breaker.ExecuteAsync(FailingOperation))));
 
-        // Wait for all tasks to complete
-        var results = await Task.WhenAll(tasks);
-
-        // Assert - all should have failed fast without calling the operation
-        foreach (var result in results)
-        {
-            // Verify the operation was never called by checking callCount is still 0
-            callCount.Should().Be(0, "No operations should have been called when circuit is open");
-            // And verify we get the expected exception
-            await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.ExecuteAsync(() => Task.FromResult(result)));
-        }
-
+        // Assert - every call was rejected by the open circuit and the operation never ran
+        outcomes.Should().HaveCount(10);
+        outcomes.Should().OnlyContain(e => e is InvalidOperationException);
         callCount.Should().Be(0, "No operations should have been called when circuit is open");
     }
 
@@ -270,8 +258,9 @@ public class CircuitBreakerWithBackoffTests
         );
 
         // First failure cycle
-        await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.ExecuteAsync(() => Task.FromResult(1)));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.ExecuteAsync(() => Task.FromResult(1)));
+        Func<Task<int>> failing = () => Task.FromException<int>(new InvalidOperationException("Operation failed"));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.ExecuteAsync(failing));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.ExecuteAsync(failing));
         breaker.State.Should().Be(CircuitBreakerWithBackoff.CircuitState.Open);
 
         // Wait and recover
@@ -280,14 +269,30 @@ public class CircuitBreakerWithBackoffTests
         result1.Should().Be(1);
 
         // Second failure cycle - need to fail again to reopen
-        await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.ExecuteAsync(() => Task.FromResult(1)));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.ExecuteAsync(() => Task.FromResult(1)));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.ExecuteAsync(failing));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => breaker.ExecuteAsync(failing));
         breaker.State.Should().Be(CircuitBreakerWithBackoff.CircuitState.Open);
 
         // Wait and recover again
         await Task.Delay(100);
         var result2 = await breaker.ExecuteAsync(async () => 2);
         result2.Should().Be(2);
+    }
+
+    /// <summary>
+    /// Runs an operation and returns the exception it threw, or null when it succeeded.
+    /// </summary>
+    private static async Task<Exception?> CaptureAsync<T>(Func<Task<T>> operation)
+    {
+        try
+        {
+            await operation();
+            return null;
+        }
+        catch (Exception ex)
+        {
+            return ex;
+        }
     }
 
     /// <summary>
