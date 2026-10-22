@@ -97,8 +97,8 @@ public class DateTimeExtensionsTests
         future.IsPast().Should().BeFalse();
         future.IsFuture().Should().BeTrue();
 
-        // 'now' is considered not past and not future (depends on exact tick)
-        now.IsPast().Should().BeFalse();
+        // 'now' was captured before the call, so it is already past and not future
+        now.IsPast().Should().BeTrue();
         now.IsFuture().Should().BeFalse();
     }
 
