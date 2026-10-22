@@ -8,6 +8,7 @@
 using System.Net;
 using DotNetDeployNotify.Integration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
 
@@ -17,6 +18,12 @@ using Xunit;
 public class RetryableHttpClientTests
 {
     private readonly ILogger<RetryableHttpClient> _logger;
+
+    /// <summary>
+    /// Registry with a logger factory: CircuitBreaker rejects a null logger, so the default registry path cannot be used in tests
+    /// </summary>
+    private static ICircuitBreakerRegistry NewBreakerRegistry() =>
+        new CircuitBreakerRegistry(loggerFactory: NullLoggerFactory.Instance);
 
     public RetryableHttpClientTests()
     {
@@ -53,7 +60,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 5, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 5, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         var attemptCount = 0;
         mockHttp
@@ -97,7 +104,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         var attemptCount = 0;
         mockHttp
@@ -132,7 +139,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 5, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 5, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         var attemptCount = 0;
         mockHttp
@@ -166,7 +173,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         var attemptCount = 0;
         mockHttp
@@ -206,7 +213,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         var attemptCount = 0;
         mockHttp
@@ -248,7 +255,7 @@ public class RetryableHttpClientTests
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
         var baseDelay = TimeSpan.FromMilliseconds(100);
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 4, retryDelay: baseDelay);
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 4, retryDelay: baseDelay, circuitBreakers: NewBreakerRegistry());
 
         var attemptCount = 0;
         mockHttp
@@ -292,7 +299,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         mockHttp
             .SendAsync(Arg.Any<HttpRequestMessage>(), Arg.Any<CancellationToken>())
@@ -320,7 +327,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         mockHttp
             .SendAsync(Arg.Any<HttpRequestMessage>(), Arg.Any<CancellationToken>())
@@ -349,7 +356,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         mockHttp
             .SendAsync(Arg.Any<HttpRequestMessage>(), Arg.Any<CancellationToken>())
@@ -377,7 +384,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         var attemptCount = 0;
         mockHttp
@@ -412,7 +419,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 3, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         var attemptCount = 0;
         mockHttp
@@ -459,7 +466,7 @@ public class RetryableHttpClientTests
         // Arrange
         var mockHttp = Substitute.For<HttpClient>();
         var logger = new TestLogger();
-        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 5, retryDelay: TimeSpan.FromMilliseconds(10));
+        var client = new RetryableHttpClient(mockHttp, logger, maxRetries: 5, retryDelay: TimeSpan.FromMilliseconds(10), circuitBreakers: NewBreakerRegistry());
 
         var attemptCount = 0;
         mockHttp
