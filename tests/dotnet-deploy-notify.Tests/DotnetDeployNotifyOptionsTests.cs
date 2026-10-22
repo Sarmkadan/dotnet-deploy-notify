@@ -55,11 +55,14 @@ namespace DotnetDeployNotify.Tests
             options.Notification.RetryDelayMs = 60001;
             options.Notification.ProcessingIntervalSeconds = 3601;
 
+            // Act - the properties themselves do not throw; validation reports the problems
+            var problems = DotnetDeployNotifyOptionsValidation.Validate(options.Notification);
+
             // Assert
-            Assert.Throws<ValidationException>(() => options.Notification.MaxRetries);
-            Assert.Throws<ValidationException>(() => options.Notification.WebhookTimeoutMs);
-            Assert.Throws<ValidationException>(() => options.Notification.RetryDelayMs);
-            Assert.Throws<ValidationException>(() => options.Notification.ProcessingIntervalSeconds);
+            Assert.Contains(problems, p => p.StartsWith("Notification.MaxRetries must be between 0 and 100"));
+            Assert.Contains(problems, p => p.StartsWith("Notification.WebhookTimeoutMs must be between 100 and 60000"));
+            Assert.Contains(problems, p => p.StartsWith("Notification.RetryDelayMs must be between 100 and 60000"));
+            Assert.Contains(problems, p => p.StartsWith("Notification.ProcessingIntervalSeconds must be between 1 and 3600"));
         }
 
         [Fact]
@@ -84,8 +87,10 @@ namespace DotnetDeployNotify.Tests
             // Act
             options.Notification.StorageType = string.Empty;
 
+            var problems = DotnetDeployNotifyOptionsValidation.Validate(options.Notification);
+
             // Assert
-            Assert.Throws<ValidationException>(() => options.Notification.StorageType);
+            Assert.Contains(problems, p => p.StartsWith("Notification.StorageType is required"));
         }
     }
 }

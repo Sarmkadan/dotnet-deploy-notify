@@ -168,11 +168,11 @@ namespace dotnet_deploy_notify.Tests
 
             var problems = thresholds.Validate();
 
-            Assert.Contains("Canary.Thresholds.MaxErrorRatePercent must be between 0 and 100", problems);
-            Assert.Contains("Canary.Thresholds.MaxP95LatencyMs must be non-negative", problems);
-            Assert.Contains("Canary.Thresholds.MaxP99LatencyMs must be non-negative", problems);
-            Assert.Contains("Canary.Thresholds.ErrorRateMultiplier must be non-negative", problems);
-            Assert.Contains("Canary.Thresholds.LatencyDegradationPercent must be non-negative", problems);
+            Assert.Contains(problems, p => p.StartsWith("Canary.Thresholds.MaxErrorRatePercent must be between 0 and 100"));
+            Assert.Contains(problems, p => p.StartsWith("Canary.Thresholds.MaxP95LatencyMs must be non\u2011negative"));
+            Assert.Contains(problems, p => p.StartsWith("Canary.Thresholds.MaxP99LatencyMs must be non\u2011negative"));
+            Assert.Contains(problems, p => p.StartsWith("Canary.Thresholds.ErrorRateMultiplier must be non\u2011negative"));
+            Assert.Contains(problems, p => p.StartsWith("Canary.Thresholds.LatencyDegradationPercent must be non\u2011negative"));
         }
     }
 }

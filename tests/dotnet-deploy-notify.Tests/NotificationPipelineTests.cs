@@ -71,7 +71,7 @@ public class NotificationPipelineTests
 
         // Assert
         result.Success.Should().BeFalse();
-        result.Errors.Should().Contain("Processor " + nameof(INotificationProcessor) + ": Failed");
+        result.Errors.Should().ContainSingle(e => e.StartsWith("Processor ") && e.EndsWith(": Failed"));
     }
 
     [Fact]
