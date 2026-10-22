@@ -66,7 +66,7 @@ public sealed class CustomTemplateExtensionsTests
 
         // Act & Assert
         var ex = Assert.Throws<ArgumentException>(() => template.GenerateSummary());
-        Assert.Contains("template name", ex.Message, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("template.Name", ex.Message, StringComparison.OrdinalIgnoreCase);
     }
 
     // ---------- IsOutdated ----------

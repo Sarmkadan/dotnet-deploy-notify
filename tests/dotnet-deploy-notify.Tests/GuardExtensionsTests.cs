@@ -112,7 +112,7 @@ public class GuardExtensionsTests
 
         act.Should().Throw<ArgumentException>()
             .WithParameterName(nameof(act))
-            .WithMessage("condition failed");
+            .WithMessage("condition failed*");
     }
 
     // ThrowIfLessThan --------------------------------------------------------

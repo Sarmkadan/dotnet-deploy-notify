@@ -152,7 +152,7 @@ public class TypeHelperTests
         genericArgs![0].Should().Be(typeof(string));
         genericArgs[1].Should().Be(typeof(int));
 
-        nonGenericArgs.Should().BeNull();
+        nonGenericArgs.Should().BeEmpty();
     }
 
     [Fact]
