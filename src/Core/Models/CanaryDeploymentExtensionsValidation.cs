@@ -7,6 +7,7 @@
 
 using System;
 using System.Collections.Generic;
+using DotNetDeployNotify.Validation;
 
 namespace DotNetDeployNotify.Core.Models.Validation;
 
@@ -131,16 +132,11 @@ public static class CanaryDeploymentExtensionsValidation
     /// </summary>
     /// <param name="deployment">The canary deployment instance to validate</param>
     /// <exception cref="ArgumentNullException"><paramref name="deployment"/> is <see langword="null"/></exception>
-    /// <exception cref="ArgumentException">The deployment state is invalid with details of the problems</exception>
+    /// <exception cref="ValidationFailedException">The deployment state is invalid with details of the problems</exception>
     public static void EnsureValid(this CanaryDeployment deployment)
     {
         ArgumentNullException.ThrowIfNull(deployment);
 
-        var problems = deployment.Validate();
-        if (problems.Count > 0)
-        {
-            throw new ArgumentException(
-                $"Canary deployment state is invalid:{System.Environment.NewLine}- {string.Join($"{System.Environment.NewLine}- ", problems)}");
-        }
+        ValidationGuard.ThrowIfAny(nameof(deployment), "Canary deployment state", deployment.Validate());
     }
 }

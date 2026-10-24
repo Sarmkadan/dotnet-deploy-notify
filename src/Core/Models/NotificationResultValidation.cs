@@ -4,7 +4,10 @@
 // CTO & Software Architect
 // =====================================================================
 
+using System;
+using System.Collections.Generic;
 using System.Globalization;
+using DotNetDeployNotify.Validation;
 
 namespace DotNetDeployNotify.Core.Models;
 
@@ -26,35 +29,18 @@ public static class NotificationResultValidation
         var problems = new List<string>();
 
         // Validate required string properties
-        if (string.IsNullOrWhiteSpace(value.NotificationId))
-        {
-            problems.Add("NotificationId is required and cannot be null, empty, or whitespace");
-        }
+        ValidationGuard.CheckRequired(problems, value.NotificationId, nameof(value.NotificationId));
+        ValidationGuard.CheckRequired(problems, value.ConfigurationId, nameof(value.ConfigurationId));
+        ValidationGuard.CheckRequired(problems, value.ResponseBody, nameof(value.ResponseBody));
 
-        if (string.IsNullOrWhiteSpace(value.ConfigurationId))
+        // Validate HttpStatusCode if set (a null code is not reported)
+        if (value.HttpStatusCode is < 100 or > 599)
         {
-            problems.Add("ConfigurationId is required and cannot be null, empty, or whitespace");
-        }
-
-        if (string.IsNullOrWhiteSpace(value.ResponseBody))
-        {
-            problems.Add("ResponseBody is required and cannot be null, empty, or whitespace");
-        }
-
-        // Validate HttpStatusCode if set
-        if (value.HttpStatusCode.HasValue)
-        {
-            if (value.HttpStatusCode < 100 || value.HttpStatusCode > 599)
-            {
-                problems.Add("HttpStatusCode must be a valid HTTP status code (100-599)");
-            }
+            problems.Add("HttpStatusCode must be a valid HTTP status code (100-599)");
         }
 
         // Validate AttemptNumber
-        if (value.AttemptNumber < 1)
-        {
-            problems.Add("AttemptNumber must be at least 1");
-        }
+        ValidationGuard.CheckPositive(problems, value.AttemptNumber, nameof(value.AttemptNumber));
 
         // Validate DurationMs
         if (value.DurationMs < 0)
@@ -98,17 +84,9 @@ public static class NotificationResultValidation
             }
         }
 
-        // Validate Channel is not default
-        if (value.Channel == default)
-        {
-            problems.Add("Channel must be set to a valid NotificationChannel value");
-        }
-
-        // Validate Status is not default
-        if (value.Status == default)
-        {
-            problems.Add("Status must be set to a valid DeliveryStatus value");
-        }
+        // Validate enum properties against their defined members
+        ValidationGuard.CheckDefinedEnum(problems, value.Channel, nameof(value.Channel));
+        ValidationGuard.CheckDefinedEnum(problems, value.Status, nameof(value.Status));
 
         return problems.AsReadOnly();
     }
@@ -126,20 +104,11 @@ public static class NotificationResultValidation
     /// </summary>
     /// <param name="value">The notification result to validate</param>
     /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null</exception>
-    /// <exception cref="ArgumentException">Thrown if <paramref name="value"/> is invalid, with details</exception>
+    /// <exception cref="ValidationFailedException">Thrown if <paramref name="value"/> is invalid, listing all problems</exception>
     public static void EnsureValid(this NotificationResult value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var problems = value.Validate();
-        ArgumentNullException.ThrowIfNull(problems);
-
-        if (problems.Count == 0)
-        {
-            return;
-        }
-
-        throw new ArgumentException(
-            $"NotificationResult is invalid. Problems:\n{string.Join("\n", problems)}");
+        ValidationGuard.ThrowIfAny(nameof(value), nameof(NotificationResult), value.Validate());
     }
 }

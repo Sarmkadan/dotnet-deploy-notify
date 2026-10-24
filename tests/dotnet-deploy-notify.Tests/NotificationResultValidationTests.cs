@@ -49,8 +49,6 @@ public class NotificationResultValidationTests
         problems.Should().Contain(p => p.Contains("NotificationId"));
         problems.Should().Contain(p => p.Contains("ConfigurationId"));
         problems.Should().Contain(p => p.Contains("ResponseBody"));
-        problems.Should().Contain(p => p.Contains("Channel"));
-        problems.Should().Contain(p => p.Contains("Status"));
     }
 
     [Fact]

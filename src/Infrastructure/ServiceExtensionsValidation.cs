@@ -6,6 +6,7 @@
 
 using System;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Validation;
 
 namespace DotNetDeployNotify.Infrastructure;
 
@@ -174,40 +175,28 @@ public static class ServiceExtensionsValidation
     }
 
     /// <summary>
-    /// Ensures a DeploymentNotification is valid, throwing ArgumentException if not
+    /// Ensures a DeploymentNotification is valid, throwing ValidationFailedException if not
     /// </summary>
     /// <param name="value">The notification to validate</param>
     /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if validation fails with all problems listed</exception>
+    /// <exception cref="ValidationFailedException">Thrown if validation fails with all problems listed</exception>
     public static void EnsureValid(this DeploymentNotification value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var problems = value.Validate();
-        if (problems.Count > 0)
-        {
-            throw new ArgumentException(
-                "DeploymentNotification validation failed: " + string.Join("; ", problems),
-                nameof(value));
-        }
+        ValidationGuard.ThrowIfAny(nameof(value), nameof(DeploymentNotification), value.Validate());
     }
 
     /// <summary>
-    /// Ensures a NotificationResult is valid, throwing ArgumentException if not
+    /// Ensures a NotificationResult is valid, throwing ValidationFailedException if not
     /// </summary>
     /// <param name="value">The result to validate</param>
     /// <exception cref="ArgumentNullException">Thrown if value is null</exception>
-    /// <exception cref="ArgumentException">Thrown if validation fails with all problems listed</exception>
+    /// <exception cref="ValidationFailedException">Thrown if validation fails with all problems listed</exception>
     public static void EnsureValid(this NotificationResult value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var problems = value.Validate();
-        if (problems.Count > 0)
-        {
-            throw new ArgumentException(
-                "NotificationResult validation failed: " + string.Join("; ", problems),
-                nameof(value));
-        }
+        ValidationGuard.ThrowIfAny(nameof(value), nameof(NotificationResult), value.Validate());
     }
 }

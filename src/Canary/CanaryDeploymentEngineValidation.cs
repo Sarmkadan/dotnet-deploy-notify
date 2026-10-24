@@ -8,6 +8,7 @@ using System;
 using System.Globalization;
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Validation;
 
 namespace DotNetDeployNotify.Canary;
 
@@ -59,78 +60,65 @@ public static class CanaryDeploymentEngineValidation
     {
         ArgumentNullException.ThrowIfNull(errors);
 
-        if (string.IsNullOrWhiteSpace(deployment.ProjectName))
-            errors.Add($"Deployment {deployment.Id}: ProjectName is required.");
+        var prefix = $"Deployment {deployment.Id}";
 
-        if (string.IsNullOrWhiteSpace(deployment.StableVersion))
-            errors.Add($"Deployment {deployment.Id}: StableVersion is required.");
+        ValidationGuard.CheckRequired(errors, deployment.ProjectName, $"{prefix}: ProjectName");
+        ValidationGuard.CheckRequired(errors, deployment.StableVersion, $"{prefix}: StableVersion");
+        ValidationGuard.CheckRequired(errors, deployment.CanaryVersion, $"{prefix}: CanaryVersion");
 
-        if (string.IsNullOrWhiteSpace(deployment.CanaryVersion))
-            errors.Add($"Deployment {deployment.Id}: CanaryVersion is required.");
+        if (!string.IsNullOrWhiteSpace(deployment.StableVersion) && deployment.StableVersion == deployment.CanaryVersion)
+            errors.Add($"{prefix}: CanaryVersion must differ from StableVersion.");
 
-        if (deployment.StableVersion == deployment.CanaryVersion)
-            errors.Add($"Deployment {deployment.Id}: CanaryVersion must differ from StableVersion.");
-
-        if (!Enum.IsDefined(typeof(Environment), deployment.TargetEnvironment))
-            errors.Add($"Deployment {deployment.Id}: TargetEnvironment must be a valid Environment value.");
-
-        if (!Enum.IsDefined(typeof(CanaryStatus), deployment.Status))
-            errors.Add($"Deployment {deployment.Id}: Status must be a valid CanaryStatus value.");
-
-        if (!Enum.IsDefined(typeof(CanaryStrategy), deployment.Strategy))
-            errors.Add($"Deployment {deployment.Id}: Strategy must be a valid CanaryStrategy value.");
+        ValidationGuard.CheckDefinedEnum(errors, deployment.TargetEnvironment, $"{prefix}: TargetEnvironment");
+        ValidationGuard.CheckDefinedEnum(errors, deployment.Status, $"{prefix}: Status");
+        ValidationGuard.CheckDefinedEnum(errors, deployment.Strategy, $"{prefix}: Strategy");
 
         // Validate rollout plan
-        if (deployment.RolloutPlan is null)
-            errors.Add($"Deployment {deployment.Id}: RolloutPlan cannot be null.");
-        else if (deployment.RolloutPlan.Count == 0)
-            errors.Add($"Deployment {deployment.Id}: RolloutPlan must contain at least one step.");
-        else
+        ValidationGuard.CheckNotNull(errors, deployment.RolloutPlan, $"{prefix}: RolloutPlan");
+
+        if (deployment.RolloutPlan is { Count: 0 })
+            errors.Add($"{prefix}: RolloutPlan must contain at least one step.");
+        else if (deployment.RolloutPlan is { } rolloutPlan)
         {
-            foreach (var step in deployment.RolloutPlan)
+            foreach (var step in rolloutPlan)
             {
-                if (step.StepNumber <= 0)
-                    errors.Add($"Deployment {deployment.Id}, Step {step.StepNumber}: StepNumber must be positive.");
+                var stepPrefix = $"{prefix}, Step {step.StepNumber}";
 
-                if (step.CanaryPercent < 0 || step.CanaryPercent > 100)
-                    errors.Add($"Deployment {deployment.Id}, Step {step.StepNumber}: CanaryPercent must be between 0 and 100.");
-
-                if (step.SoakDuration.TotalSeconds <= 0)
-                    errors.Add($"Deployment {deployment.Id}, Step {step.StepNumber}: SoakDuration must be positive.");
-
-                if (!Enum.IsDefined(typeof(RolloutStepStatus), step.Status))
-                    errors.Add($"Deployment {deployment.Id}, Step {step.StepNumber}: Status must be a valid RolloutStepStatus value.");
+                ValidationGuard.CheckPositive(errors, step.StepNumber, $"{stepPrefix}: StepNumber");
+                ValidationGuard.CheckInRange(errors, step.CanaryPercent, 0, 100, $"{stepPrefix}: CanaryPercent");
+                ValidationGuard.CheckPositive(errors, step.SoakDuration, $"{stepPrefix}: SoakDuration");
+                ValidationGuard.CheckDefinedEnum(errors, step.Status, $"{stepPrefix}: Status");
             }
         }
 
         // Validate traffic split
-        if (deployment.CurrentSplit.StablePercent < 0 || deployment.CurrentSplit.StablePercent > 100)
-            errors.Add($"Deployment {deployment.Id}: CurrentSplit.StablePercent must be between 0 and 100.");
-
-        if (deployment.CurrentSplit.CanaryPercent < 0 || deployment.CurrentSplit.CanaryPercent > 100)
-            errors.Add($"Deployment {deployment.Id}: CurrentSplit.CanaryPercent must be between 0 and 100.");
+        ValidationGuard.CheckInRange(errors, deployment.CurrentSplit.StablePercent, 0, 100, $"{prefix}: CurrentSplit.StablePercent");
+        ValidationGuard.CheckInRange(errors, deployment.CurrentSplit.CanaryPercent, 0, 100, $"{prefix}: CurrentSplit.CanaryPercent");
 
         if (Math.Abs(deployment.CurrentSplit.StablePercent + deployment.CurrentSplit.CanaryPercent - 100) > 0.01)
-            errors.Add($"Deployment {deployment.Id}: CurrentSplit percentages must sum to 100 (Stable: {deployment.CurrentSplit.StablePercent:F2}%, Canary: {deployment.CurrentSplit.CanaryPercent:F2}% vs expected 100%).");
+            errors.Add($"{prefix}: CurrentSplit percentages must sum to 100 (Stable: {deployment.CurrentSplit.StablePercent:F2}%, Canary: {deployment.CurrentSplit.CanaryPercent:F2}% vs expected 100%).");
 
         // Validate timestamps
         if (deployment.CreatedAt == default)
-            errors.Add($"Deployment {deployment.Id}: CreatedAt must be set.");
+            errors.Add($"{prefix}: CreatedAt must be set.");
 
         if (deployment.Status == CanaryStatus.Promoted && deployment.PromotedAt == default)
-            errors.Add($"Deployment {deployment.Id}: PromotedAt must be set when status is Promoted.");
+            errors.Add($"{prefix}: PromotedAt must be set when status is Promoted.");
 
         if (deployment.Status == CanaryStatus.Aborted && deployment.AbortedAt == default)
-            errors.Add($"Deployment {deployment.Id}: AbortedAt must be set when status is Aborted.");
+            errors.Add($"{prefix}: AbortedAt must be set when status is Aborted.");
+
+        if (deployment.Status == CanaryStatus.Aborted && string.IsNullOrWhiteSpace(deployment.AbortReason))
+            errors.Add($"{prefix}: AbortReason must be set when status is Aborted.");
 
         if (deployment.ActiveStep?.StartedAt > DateTime.UtcNow)
-            errors.Add($"Deployment {deployment.Id}: ActiveStep.StartedAt cannot be in the future.");
+            errors.Add($"{prefix}: ActiveStep.StartedAt cannot be in the future.");
 
         if (deployment.ActiveStep?.CompletedAt > DateTime.UtcNow)
-            errors.Add($"Deployment {deployment.Id}: ActiveStep.CompletedAt cannot be in the future.");
+            errors.Add($"{prefix}: ActiveStep.CompletedAt cannot be in the future.");
 
         if (deployment.ActiveStep?.CompletedAt < deployment.ActiveStep?.StartedAt)
-            errors.Add($"Deployment {deployment.Id}: ActiveStep.CompletedAt cannot be before StartedAt.");
+            errors.Add($"{prefix}: ActiveStep.CompletedAt cannot be before StartedAt.");
     }
 
     /// <summary>
@@ -142,28 +130,24 @@ public static class CanaryDeploymentEngineValidation
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/></exception>
     public static async Task<bool> IsValidAsync(this CanaryDeploymentEngine value, CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(value);
         return (await value.ValidateAsync(cancellationToken).ConfigureAwait(false)).Count == 0;
     }
 
     /// <summary>
-    /// Ensures that the specified <see cref="CanaryDeploymentEngine"/> instance is valid, throwing an <see cref="ArgumentException"/>
-    /// with a detailed error message if validation fails.
+    /// Ensures that the specified <see cref="CanaryDeploymentEngine"/> instance is valid, throwing a <see cref="ValidationFailedException"/>
+    /// that lists every problem if validation fails.
     /// </summary>
     /// <param name="value">The canary deployment engine instance to validate</param>
     /// <param name="cancellationToken">Cancellation token for async operations</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/></exception>
-    /// <exception cref="ArgumentException">Thrown when validation fails, containing a list of all problems</exception>
+    /// <exception cref="ValidationFailedException">Thrown when validation fails, containing a list of all problems</exception>
     public static async Task EnsureValidAsync(this CanaryDeploymentEngine value, CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(value);
 
         var errors = await value.ValidateAsync(cancellationToken).ConfigureAwait(false);
 
-        if (errors.Count > 0)
-        {
-            throw new ArgumentException(
-                $"CanaryDeploymentEngine validation failed:{System.Environment.NewLine}{string.Join($"{System.Environment.NewLine}", errors)}",
-                nameof(value));
-        }
+        ValidationGuard.ThrowIfAny(nameof(value), nameof(CanaryDeploymentEngine), errors);
     }
 }
