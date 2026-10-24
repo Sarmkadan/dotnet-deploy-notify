@@ -8,6 +8,7 @@ using System;
 using System.Globalization;
 using DotNetDeployNotify.Core;
 using DotNetDeployNotify.Core.Models;
+using DotNetDeployNotify.Validation;
 
 namespace DotNetDeployNotify.Core.Models;
 
@@ -29,57 +30,30 @@ public static class CanaryDeploymentValidation
         var errors = new List<string>();
 
         // Validate required string properties
-        if (string.IsNullOrWhiteSpace(value.ProjectName))
+        ValidationGuard.CheckRequired(errors, value.ProjectName, nameof(value.ProjectName));
+        ValidationGuard.CheckRequired(errors, value.StableVersion, nameof(value.StableVersion));
+        ValidationGuard.CheckRequired(errors, value.CanaryVersion, nameof(value.CanaryVersion));
+
+        if (!string.IsNullOrWhiteSpace(value.StableVersion) && value.StableVersion == value.CanaryVersion)
         {
-            errors.Add("ProjectName must be a non-empty string");
+            errors.Add("CanaryVersion must differ from StableVersion.");
         }
 
-        if (string.IsNullOrWhiteSpace(value.StableVersion))
-        {
-            errors.Add("StableVersion must be a non-empty string");
-        }
-
-        if (string.IsNullOrWhiteSpace(value.CanaryVersion))
-        {
-            errors.Add("CanaryVersion must be a non-empty string");
-        }
-
-        if (value.TargetEnvironment == default)
-        {
-            errors.Add("TargetEnvironment must be specified");
-        }
+        // Validate enum properties against their defined members
+        ValidationGuard.CheckDefinedEnum(errors, value.TargetEnvironment, nameof(value.TargetEnvironment));
+        ValidationGuard.CheckDefinedEnum(errors, value.Strategy, nameof(value.Strategy));
+        ValidationGuard.CheckDefinedEnum(errors, value.Status, nameof(value.Status));
+        ValidationGuard.CheckDefinedEnum(errors, value.Priority, nameof(value.Priority));
 
         // Validate string properties that can be empty but not null
-        if (value.InitiatedBy is null)
-        {
-            errors.Add("InitiatedBy must not be null");
-        }
-
-        if (value.BranchName is null)
-        {
-            errors.Add("BranchName must not be null");
-        }
-
-        if (value.CommitHash is null)
-        {
-            errors.Add("CommitHash must not be null");
-        }
-
-        if (value.BuildUrl is null)
-        {
-            errors.Add("BuildUrl must not be null");
-        }
+        ValidationGuard.CheckNotNull(errors, value.InitiatedBy, nameof(value.InitiatedBy));
+        ValidationGuard.CheckNotNull(errors, value.BranchName, nameof(value.BranchName));
+        ValidationGuard.CheckNotNull(errors, value.CommitHash, nameof(value.CommitHash));
+        ValidationGuard.CheckNotNull(errors, value.BuildUrl, nameof(value.BuildUrl));
 
         // Validate TrafficSplit ranges
-        if (value.CurrentSplit.StablePercent is < 0 or > 100)
-        {
-            errors.Add("CurrentSplit.StablePercent must be between 0 and 100");
-        }
-
-        if (value.CurrentSplit.CanaryPercent is < 0 or > 100)
-        {
-            errors.Add("CurrentSplit.CanaryPercent must be between 0 and 100");
-        }
+        ValidationGuard.CheckInRange(errors, value.CurrentSplit.StablePercent, 0, 100, "CurrentSplit.StablePercent");
+        ValidationGuard.CheckInRange(errors, value.CurrentSplit.CanaryPercent, 0, 100, "CurrentSplit.CanaryPercent");
 
         if (Math.Abs(value.CurrentSplit.StablePercent + value.CurrentSplit.CanaryPercent - 100) > 0.01)
         {
@@ -87,59 +61,44 @@ public static class CanaryDeploymentValidation
         }
 
         // Validate RolloutPlan
-        if (value.RolloutPlan is null)
+        ValidationGuard.CheckNotNull(errors, value.RolloutPlan, nameof(value.RolloutPlan));
+
+        if (value.RolloutPlan is { Count: 0 })
         {
-            errors.Add("RolloutPlan must not be null");
+            errors.Add("RolloutPlan must contain at least one step.");
         }
-        else if (value.RolloutPlan.Count == 0)
-        {
-            errors.Add("RolloutPlan must contain at least one step");
-        }
-        else
+        else if (value.RolloutPlan is { } rolloutPlan)
         {
             // Validate each rollout step
-            foreach (var step in value.RolloutPlan)
+            foreach (var step in rolloutPlan)
             {
                 if (step is null)
                 {
-                    errors.Add("RolloutPlan contains a null step");
+                    errors.Add("RolloutPlan contains a null step.");
                     continue;
                 }
 
-                if (step.StepNumber < 1)
-                {
-                    errors.Add($"RolloutPlan step {step.StepNumber} has invalid StepNumber (must be >= 1)");
-                }
+                var stepPrefix = $"RolloutPlan step {step.StepNumber}";
 
-                if (step.CanaryPercent is < 0 or > 100)
-                {
-                    errors.Add($"RolloutPlan step {step.StepNumber} has invalid CanaryPercent ({step.CanaryPercent}) - must be between 0 and 100");
-                }
-
-                if (step.SoakDuration < TimeSpan.Zero)
-                {
-                    errors.Add($"RolloutPlan step {step.StepNumber} has negative SoakDuration");
-                }
+                ValidationGuard.CheckPositive(errors, step.StepNumber, $"{stepPrefix}: StepNumber");
+                ValidationGuard.CheckInRange(errors, step.CanaryPercent, 0, 100, $"{stepPrefix}: CanaryPercent");
+                ValidationGuard.CheckPositive(errors, step.SoakDuration, $"{stepPrefix}: SoakDuration");
+                ValidationGuard.CheckDefinedEnum(errors, step.Status, $"{stepPrefix}: Status");
             }
         }
 
         // Validate metrics
-        if (value.StableMetrics is null)
+        ValidationGuard.CheckNotNull(errors, value.StableMetrics, nameof(value.StableMetrics));
+        ValidationGuard.CheckNotNull(errors, value.CanaryMetrics, nameof(value.CanaryMetrics));
+
+        if (value.StableMetrics is { } stableMetrics)
         {
-            errors.Add("StableMetrics must not be null");
-        }
-        else
-        {
-            ValidateMetrics(value.StableMetrics, "StableMetrics", errors);
+            ValidateMetrics(stableMetrics, nameof(value.StableMetrics), errors);
         }
 
-        if (value.CanaryMetrics is null)
+        if (value.CanaryMetrics is { } canaryMetrics)
         {
-            errors.Add("CanaryMetrics must not be null");
-        }
-        else
-        {
-            ValidateMetrics(value.CanaryMetrics, "CanaryMetrics", errors);
+            ValidateMetrics(canaryMetrics, nameof(value.CanaryMetrics), errors);
         }
 
         // Validate CreatedAt (must not be default)
@@ -186,30 +145,25 @@ public static class CanaryDeploymentValidation
             errors.Add("Status is Promoted but PromotedAt is not set");
         }
 
+        if (value.Status == CanaryStatus.Aborted && !value.AbortedAt.HasValue)
+        {
+            errors.Add("Status is Aborted but AbortedAt is not set");
+        }
+
         if (value.Status == CanaryStatus.Aborted && string.IsNullOrWhiteSpace(value.AbortReason))
         {
             errors.Add("Status is Aborted but AbortReason is not provided");
         }
 
         // Validate NotificationChannels
-        if (value.NotificationChannels is null)
-        {
-            errors.Add("NotificationChannels must not be null");
-        }
-        else
-        {
-            foreach (var channel in value.NotificationChannels)
-            {
-                if (channel == default)
-                {
-                    errors.Add("NotificationChannels contains a default/invalid channel");
-                }
-            }
-        }
+        ValidationGuard.CheckNotNull(errors, value.NotificationChannels, nameof(value.NotificationChannels));
 
-        if (value.Priority == default)
+        if (value.NotificationChannels is { } channels)
         {
-            errors.Add("Priority must be specified");
+            foreach (var (index, channel) in channels.Index())
+            {
+                ValidationGuard.CheckDefinedEnum(errors, channel, $"NotificationChannels[{index}]");
+            }
         }
 
         return errors.AsReadOnly();
@@ -221,7 +175,7 @@ public static class CanaryDeploymentValidation
     /// <param name="metrics">The metrics to validate</param>
     /// <param name="metricsName">Name of the metrics property for error messages</param>
     /// <param name="errors">List to accumulate validation errors</param>
-    /// <exception cref="ArgumentNullException"><paramref name="errors"/></exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="metrics"/>, <paramref name="metricsName"/> or <paramref name="errors"/> is <see langword="null"/></exception>
     private static void ValidateMetrics(CanaryMetrics metrics, string metricsName, List<string> errors)
     {
         ArgumentNullException.ThrowIfNull(metrics);
@@ -277,22 +231,15 @@ public static class CanaryDeploymentValidation
     }
 
     /// <summary>
-    /// Ensures that the specified <see cref="CanaryDeployment"/> is valid, throwing an exception if it is not.
+    /// Ensures that the specified <see cref="CanaryDeployment"/> is valid, throwing a <see cref="ValidationFailedException"/> if it is not.
     /// </summary>
     /// <param name="value">The canary deployment to validate</param>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/></exception>
-    /// <exception cref="ArgumentException">Thrown when validation fails, listing all problems</exception>
+    /// <exception cref="ValidationFailedException">Thrown when validation fails, listing all problems</exception>
     public static void EnsureValid(this CanaryDeployment value)
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        var errors = value.Validate();
-        if (errors.Count > 0)
-        {
-            throw new ArgumentException(
-                $"CanaryDeployment validation failed:{System.Environment.NewLine}- {
-                    string.Join($"{System.Environment.NewLine}- ", errors)
-                }");
-        }
+        ValidationGuard.ThrowIfAny(nameof(value), nameof(CanaryDeployment), value.Validate());
     }
 }
